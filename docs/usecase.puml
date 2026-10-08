@@ -1,0 +1,173 @@
+@startuml usecase
+
+title USE CASE TỔNG THỂ HỆ THỐNG COLLABSPHERE
+
+left to right direction
+
+skinparam shadowing false
+skinparam actorStyle awesome
+
+skinparam usecase {
+    BackgroundColor White
+    BorderColor Black
+    ArrowColor Black
+}
+
+skinparam rectangle {
+    BackgroundColor #FAFAFA
+    BorderColor Black
+}
+
+' =========================================================
+' ACTORS
+' =========================================================
+
+actor "Admin" as Admin
+actor "Staff" as Staff
+actor "Head Department" as Head
+actor "Lecturer" as Lecturer
+actor "Student" as Student
+
+
+' =========================================================
+' SYSTEM
+' =========================================================
+
+rectangle "COLLABSPHERE\nHệ thống hỗ trợ học tập theo phương pháp Project-Based Learning" {
+
+    ' -----------------------------------------------------
+    ' CHỨC NĂNG CHUNG
+    ' -----------------------------------------------------
+
+    usecase "Đăng nhập" as Login
+    usecase "Nhận thông báo" as Notification
+
+
+    ' -----------------------------------------------------
+    ' ADMIN
+    ' -----------------------------------------------------
+
+    usecase "Quản lý tài khoản" as AdminAccount
+    usecase "Xem báo cáo hệ thống" as Report
+    usecase "Xem Dashboard" as Dashboard
+
+
+    ' -----------------------------------------------------
+    ' STAFF
+    ' -----------------------------------------------------
+
+    usecase "Quản lý môn học\n& Đề cương" as Subject
+    usecase "Quản lý tài khoản\nGiảng viên / Sinh viên" as UserManagement
+    usecase "Quản lý lớp học" as ClassManagement
+
+
+    ' -----------------------------------------------------
+    ' HEAD DEPARTMENT
+    ' -----------------------------------------------------
+
+    usecase "Quản lý dự án" as ProjectApproval
+    usecase "Phê duyệt /\nTừ chối dự án" as ApproveProject
+    usecase "Phân công dự án\ncho lớp" as AssignProject
+
+
+    ' -----------------------------------------------------
+    ' LECTURER
+    ' -----------------------------------------------------
+
+    usecase "Quản lý dự án" as LecturerProject
+    usecase "Quản lý lớp & nhóm" as LecturerTeam
+    usecase "Quản lý Milestone\n& Checkpoint" as LecturerMilestone
+    usecase "Theo dõi tiến độ\n& đóng góp" as Progress
+    usecase "Đánh giá &\nPhản hồi" as Evaluation
+    usecase "Cộng tác &\nGiao tiếp" as Communication
+    usecase "Hỗ trợ bằng AI" as LecturerAI
+
+
+    ' -----------------------------------------------------
+    ' STUDENT
+    ' -----------------------------------------------------
+
+    usecase "Xem lớp & nhóm" as StudentClass
+    usecase "Quản lý Milestone\n& Checkpoint" as StudentMilestone
+    usecase "Quản lý Workspace" as Workspace
+    usecase "Quản lý tài nguyên" as Resource
+    usecase "Đánh giá &\nPhản hồi" as StudentEvaluation
+    usecase "Cộng tác &\nGiao tiếp" as StudentCommunication
+    usecase "Hỗ trợ bằng AI" as StudentAI
+}
+
+
+' =========================================================
+' ADMIN
+' =========================================================
+
+Admin --> Login
+Admin --> AdminAccount
+Admin --> Report
+Admin --> Dashboard
+Admin --> Notification
+
+
+' =========================================================
+' STAFF
+' =========================================================
+
+Staff --> Login
+Staff --> Subject
+Staff --> UserManagement
+Staff --> ClassManagement
+Staff --> Notification
+
+
+' =========================================================
+' HEAD DEPARTMENT
+' =========================================================
+
+Head --> Login
+Head --> ProjectApproval
+Head --> ApproveProject
+Head --> AssignProject
+Head --> Notification
+
+
+' =========================================================
+' LECTURER
+' =========================================================
+
+Lecturer --> Login
+Lecturer --> LecturerProject
+Lecturer --> LecturerTeam
+Lecturer --> LecturerMilestone
+Lecturer --> Progress
+Lecturer --> Evaluation
+Lecturer --> Communication
+Lecturer --> LecturerAI
+Lecturer --> Notification
+
+
+' =========================================================
+' STUDENT
+' =========================================================
+
+Student --> Login
+Student --> StudentClass
+Student --> StudentMilestone
+Student --> Workspace
+Student --> Resource
+Student --> StudentEvaluation
+Student --> StudentCommunication
+Student --> StudentAI
+Student --> Notification
+
+
+' =========================================================
+' RELATIONSHIPS
+' =========================================================
+
+' Phê duyệt / Từ chối là chức năng thuộc quản lý dự án
+ApproveProject ..> ProjectApproval : <<include>>
+
+' Phân công dự án sau khi quản lý dự án
+AssignProject ..> ProjectApproval : <<include>>
+
+@enduml
