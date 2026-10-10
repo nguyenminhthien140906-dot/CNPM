@@ -4,7 +4,7 @@
 
 ```mermaid
 erDiagram
-    USER ||--|| ROLE : has
+    ROLE ||--o{ USER : has
     USER ||--o| STUDENT : is
     USER ||--o| LECTURER : is
     USER ||--o| STAFF : is
@@ -15,7 +15,7 @@ erDiagram
     SYLLABUS ||--o{ PROJECT : guides
 
     CLASS ||--o{ CLASS_MEMBER : contains
-    USER ||--o{ CLASS_MEMBER : joins
+    STUDENT ||--o{ CLASS_MEMBER : joins
     LECTURER ||--o{ CLASS : teaches
 
     PROJECT ||--o{ PROJECT_MILESTONE : has
@@ -31,7 +31,7 @@ erDiagram
     TEAM ||--o{ CHECKPOINT : has
 
     CHECKPOINT ||--o{ CHECKPOINT_SUBMISSION : receives
-    USER ||--o{ CHECKPOINT_SUBMISSION : submits
+    STUDENT ||--o{ CHECKPOINT_SUBMISSION : submits
 
     TEAM ||--o{ EVALUATION : receives
     USER ||--o{ EVALUATION : gives
