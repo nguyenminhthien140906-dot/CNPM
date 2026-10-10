@@ -73,7 +73,7 @@ erDiagram
       uuid subject_id FK
       string content
     }
-    CLASS {
+    STUDY_CLASS {
       uuid id PK
       uuid lecturer_id FK
       string code
