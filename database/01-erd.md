@@ -12,7 +12,7 @@ erDiagram
 
     STUDY_CLASS ||--o{ CLASS_MEMBER : contains 
     USER ||--o{ CLASS_MEMBER : joins
-    LECTURER ||--o{ CLASS : teaches
+    LECTURER ||--o{ STUDY_CLASS : teaches
 
     PROJECT ||--o{ PROJECT_MILESTONE : has
     PROJECT ||--o{ PROJECT_CLASS : assigned_to
