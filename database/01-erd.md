@@ -18,7 +18,7 @@ erDiagram
     PROJECT ||--o{ PROJECT_CLASS : assigned_to
     STUDY_CLASS ||--o{ PROJECT_CLASS : receives
 
-    CLASS ||--o{ TEAM : has
+    STUDY_CLASS ||--o{ TEAM : has
     TEAM ||--o{ TEAM_MEMBER : contains
     STUDENT ||--o{ TEAM_MEMBER : joins
 
@@ -33,7 +33,7 @@ erDiagram
     USER ||--o{ EVALUATION : gives
 
     TEAM ||--o{ RESOURCE : owns
-    CLASS ||--o{ RESOURCE : owns
+    STUDY_CLASS ||--o{ RESOURCE : owns
 
     USER ||--o{ NOTIFICATION : receives
 
