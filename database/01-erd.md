@@ -14,7 +14,7 @@ erDiagram
     SUBJECT ||--o{ PROJECT : supports
     SYLLABUS ||--o{ PROJECT : guides
 
-    CLASS ||--o{ CLASS_MEMBER : contains :
+    CLASS ||--o{ CLASS_MEMBER : contains 
     STUDENT ||--o{ CLASS_MEMBER : joins
     LECTURER ||--o{ CLASS : teaches
 
