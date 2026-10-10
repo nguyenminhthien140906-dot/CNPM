@@ -1,7 +1,3 @@
-# ERD - Initial Design
-
-Đây là ERD thiết kế ban đầu từ requirements. Nhóm cần review trước khi code database.
-
 ```mermaid
 erDiagram
     USER ||--|| ROLE : has
