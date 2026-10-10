@@ -16,7 +16,7 @@ erDiagram
 
     PROJECT ||--o{ PROJECT_MILESTONE : has
     PROJECT ||--o{ PROJECT_CLASS : assigned_to
-    CLASS ||--o{ PROJECT_CLASS : receives
+    STUDY_CLASS ||--o{ PROJECT_CLASS : receives
 
     CLASS ||--o{ TEAM : has
     TEAM ||--o{ TEAM_MEMBER : contains
