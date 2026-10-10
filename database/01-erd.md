@@ -9,6 +9,7 @@ erDiagram
     SUBJECT ||--|| SYLLABUS : has
     SUBJECT ||--o{ PROJECT : supports
     SYLLABUS ||--o{ PROJECT : guides
+
     STUDY_CLASS ||--o{ CLASS_MEMBER : contains 
     USER ||--o{ CLASS_MEMBER : joins
     LECTURER ||--o{ CLASS : teaches
