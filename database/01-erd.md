@@ -47,14 +47,18 @@ erDiagram
       string role_name UK
       string description
     }
-    USER {
-      uuid user_id PK
-      int role_id FK
-      string email UK
-      string password_hash
-      string full_name
-      bool is_active
-    }
+   USER {
+  uuid user_id PK
+  int role_id FK
+  string email UK
+  string password_hash
+  string full_name
+  bool is_active
+  string phone
+  string avatar_url
+  datetime created_at
+  datetime updated_at
+}
     STUDENT {
       uuid user_id PK,FK
       string student_code UK
@@ -88,24 +92,32 @@ erDiagram
       int version
     }
     STUDY_CLASS {
-      uuid class_id PK
-      uuid lecturer_id FK
-      uuid subject_id FK
-      string class_code UK
-      string class_name
-    }
+  uuid class_id PK
+  uuid lecturer_id FK
+  uuid subject_id FK
+  string class_code UK
+  string class_name
+  string semester
+  string academic_year
+  datetime created_at
+}
     CLASS_MEMBER {
       uuid class_id PK,FK
       uuid student_id PK,FK
     }
-    PROJECT {
-      uuid project_id PK
-      uuid subject_id FK
-      uuid syllabus_id FK
-      uuid created_by FK
-      string project_name
-      string status
-    }
+   PROJECT {
+  uuid project_id PK
+  uuid subject_id FK
+  uuid syllabus_id FK
+  uuid created_by FK
+  string project_code UK
+  string project_name
+  string description
+  string status
+  date start_date
+  date end_date
+  datetime created_at
+}
     PROJECT_CLASS {
       uuid project_id PK,FK
       uuid class_id PK,FK
@@ -128,12 +140,16 @@ erDiagram
       decimal contribution_percent
     }
     TASK {
-      uuid task_id PK
-      uuid team_id FK
-      uuid assigned_to FK
-      string task_name
-      string status
-    }
+  uuid task_id PK
+  uuid team_id FK
+  uuid assigned_to FK
+  string task_name
+  string description
+  string status
+  string priority
+  datetime due_date
+  datetime created_at
+}
     SUBTASK {
       uuid subtask_id PK
       uuid task_id FK
@@ -141,12 +157,15 @@ erDiagram
       string subtask_name
       string status
     }
-    CHECKPOINT {
-      uuid checkpoint_id PK
-      uuid team_id FK
-      string checkpoint_name
-      string status
-    }
+  CHECKPOINT {
+  uuid checkpoint_id PK
+  uuid team_id FK
+  string checkpoint_name
+  string description
+  datetime due_date
+  decimal max_score
+  string status
+}
     CHECKPOINT_SUBMISSION {
       uuid submission_id PK
       uuid checkpoint_id FK
@@ -162,13 +181,15 @@ erDiagram
       string feedback
     }
     RESOURCE {
-      uuid resource_id PK
-      uuid class_id FK
-      uuid team_id FK
-      uuid uploaded_by FK
-      string resource_name
-      string resource_url
-    }
+  uuid resource_id PK
+  uuid class_id FK
+  uuid team_id FK
+  uuid uploaded_by FK
+  string resource_name
+  string resource_url
+  string description
+  datetime created_at
+}
     NOTIFICATION {
       uuid notification_id PK
       uuid user_id FK
