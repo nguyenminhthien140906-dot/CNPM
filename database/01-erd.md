@@ -1,18 +1,20 @@
 ```mermaid
 erDiagram
-    USER ||--|| ROLE : has
-    USER ||--o| STUDENT : is
-    USER ||--o| LECTURER : is
-    USER ||--o| STAFF : is
-    USER ||--o| HEAD_DEPARTMENT : is
+    ROLE ||--o{ USER : assigns
+    USER ||--o| STUDENT : profile
+    USER ||--o| LECTURER : profile
+    USER ||--o| STAFF : profile
+    USER ||--o| HEAD_DEPARTMENT : profile
 
     SUBJECT ||--|| SYLLABUS : has
     SUBJECT ||--o{ PROJECT : supports
     SYLLABUS ||--o{ PROJECT : guides
+    USER ||--o{ PROJECT : creates
 
-    STUDY_CLASS ||--o{ CLASS_MEMBER : contains 
-    USER ||--o{ CLASS_MEMBER : joins
     LECTURER ||--o{ STUDY_CLASS : teaches
+    SUBJECT o|--o{ STUDY_CLASS : offered_in
+    STUDY_CLASS ||--o{ CLASS_MEMBER : contains
+    STUDENT ||--o{ CLASS_MEMBER : joins
 
     PROJECT ||--o{ PROJECT_MILESTONE : has
     PROJECT ||--o{ PROJECT_CLASS : assigned_to
@@ -24,118 +26,135 @@ erDiagram
 
     TEAM ||--o{ TASK : has
     TASK ||--o{ SUBTASK : contains
-    TEAM ||--o{ CHECKPOINT : has
+    STUDENT o|--o{ TASK : assigned
+    STUDENT o|--o{ SUBTASK : assigned
 
+    TEAM ||--o{ CHECKPOINT : has
     CHECKPOINT ||--o{ CHECKPOINT_SUBMISSION : receives
-    USER ||--o{ CHECKPOINT_SUBMISSION : submits
+    STUDENT ||--o{ CHECKPOINT_SUBMISSION : submits
 
     TEAM ||--o{ EVALUATION : receives
-    USER ||--o{ EVALUATION : gives
+    USER ||--o{ EVALUATION : evaluates
+    USER ||--o{ EVALUATION : is_evaluated
 
-    TEAM ||--o{ RESOURCE : owns
-    STUDY_CLASS ||--o{ RESOURCE : owns
-
+    STUDY_CLASS o|--o{ RESOURCE : owns
+    TEAM o|--o{ RESOURCE : owns
+    USER ||--o{ RESOURCE : uploads
     USER ||--o{ NOTIFICATION : receives
 
     ROLE {
-      int id PK
-      string name
+      int role_id PK
+      string role_name UK
+      string description
     }
     USER {
-      uuid id PK
+      uuid user_id PK
       int role_id FK
-      string email
+      string email UK
       string password_hash
       string full_name
       bool is_active
     }
     STUDENT {
       uuid user_id PK,FK
-      string student_code
+      string student_code UK
+      string major
+      int academic_year
     }
     LECTURER {
       uuid user_id PK,FK
-      string lecturer_code
+      string lecturer_code UK
+      string department
+      string academic_title
     }
     STAFF {
       uuid user_id PK,FK
     }
     HEAD_DEPARTMENT {
       uuid user_id PK,FK
+      string department_name
     }
     SUBJECT {
-      uuid id PK
-      string code
-      string name
+      uuid subject_id PK
+      string subject_code UK
+      string subject_name
+      int credits
     }
     SYLLABUS {
-      uuid id PK
-      uuid subject_id FK
+      uuid syllabus_id PK
+      uuid subject_id FK,UK
+      string title
       string content
+      int version
     }
     STUDY_CLASS {
-      uuid id PK
+      uuid class_id PK
       uuid lecturer_id FK
-      string code
-      string name
+      uuid subject_id FK
+      string class_code UK
+      string class_name
     }
     CLASS_MEMBER {
-      uuid class_id FK
-      uuid student_id FK
+      uuid class_id PK,FK
+      uuid student_id PK,FK
     }
     PROJECT {
-      uuid id PK
+      uuid project_id PK
       uuid subject_id FK
       uuid syllabus_id FK
       uuid created_by FK
-      string title
-      string description
+      string project_name
       string status
     }
+    PROJECT_CLASS {
+      uuid project_id PK,FK
+      uuid class_id PK,FK
+    }
     PROJECT_MILESTONE {
-      uuid id PK
+      uuid milestone_id PK
       uuid project_id FK
-      string title
-      string description
+      string milestone_name
       date due_date
     }
     TEAM {
-      uuid id PK
+      uuid team_id PK
       uuid class_id FK
-      string name
+      string team_name
     }
     TEAM_MEMBER {
-      uuid team_id FK
-      uuid student_id FK
+      uuid team_id PK,FK
+      uuid student_id PK,FK
       bool is_leader
       decimal contribution_percent
     }
     TASK {
-      uuid id PK
+      uuid task_id PK
       uuid team_id FK
-      string title
+      uuid assigned_to FK
+      string task_name
       string status
     }
     SUBTASK {
-      uuid id PK
+      uuid subtask_id PK
       uuid task_id FK
-      string title
+      uuid assigned_to FK
+      string subtask_name
       string status
     }
     CHECKPOINT {
-      uuid id PK
+      uuid checkpoint_id PK
       uuid team_id FK
-      string title
+      string checkpoint_name
       string status
     }
     CHECKPOINT_SUBMISSION {
-      uuid id PK
+      uuid submission_id PK
       uuid checkpoint_id FK
       uuid student_id FK
       string content
     }
     EVALUATION {
-      uuid id PK
+      uuid evaluation_id PK
       uuid team_id FK
       uuid evaluator_id FK
       uuid target_user_id FK
@@ -143,27 +162,28 @@ erDiagram
       string feedback
     }
     RESOURCE {
-      uuid id PK
+      uuid resource_id PK
       uuid class_id FK
       uuid team_id FK
-      string name
-      string url
+      uuid uploaded_by FK
+      string resource_name
+      string resource_url
     }
     NOTIFICATION {
-      uuid id PK
+      uuid notification_id PK
       uuid user_id FK
-      string type
+      string notification_type
       string content
       bool is_read
     }
 ```
 
-## Các điểm cần review trước khi migration
+## Ràng buộc nghiệp vụ chính
 
-- Có cần tách Department thành bảng riêng hay không.
-- Syllabus có một hay nhiều version.
-- Contribution percent được tính tự động hay Lecturer/Team Leader nhập.
-- Resource thuộc Class/Team/Milestone/Checkpoint như thế nào.
-- Meeting/Chat/Message/Whiteboard sẽ dùng storage riêng hay lưu metadata trong PostgreSQL.
-
-Các điểm trên chưa được đặc tả chi tiết trong đề, nên nhóm phải thống nhất trước khi chốt schema.
+- `students`, `lecturers`, `staff`, `head_departments`: `user_id` vừa là PK vừa là FK đến `users.user_id`.
+- Mỗi môn học có đúng một đề cương (`syllabus.subject_id` là `UNIQUE`).
+- Một sinh viên không thể được thêm hai lần vào cùng lớp hoặc cùng nhóm.
+- Mỗi nhóm có tối đa một trưởng nhóm (`team_members.is_leader = TRUE`).
+- `contribution_percent` nằm trong khoảng 0–100; điểm đánh giá nằm trong khoảng 0–100.
+- Tài liệu (`resources`) phải thuộc **một trong hai** đối tượng: lớp học hoặc nhóm; không được để cả hai cùng rỗng hoặc cùng có giá trị.
+- Ngày kết thúc dự án không được trước ngày bắt đầu.
