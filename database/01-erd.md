@@ -6,7 +6,7 @@ erDiagram
     USER ||--o| STAFF : profile
     USER ||--o| HEAD_DEPARTMENT : profile
 
-    SUBJECT ||--|| SYLLABUS : has
+    SUBJECT ||--o| SYLLABUS : has
     SUBJECT ||--o{ PROJECT : supports
     SYLLABUS ||--o{ PROJECT : guides
     USER ||--o{ PROJECT : creates
@@ -181,7 +181,7 @@ erDiagram
 ## Ràng buộc nghiệp vụ chính
 
 - `students`, `lecturers`, `staff`, `head_departments`: `user_id` vừa là PK vừa là FK đến `users.user_id`.
-- Mỗi môn học có đúng một đề cương (`syllabus.subject_id` là `UNIQUE`).
+- Mỗi môn học có tối đa một đề cương (`syllabus.subject_id` là `UNIQUE`); môn học có thể chưa có đề cương.
 - Một sinh viên không thể được thêm hai lần vào cùng lớp hoặc cùng nhóm.
 - Mỗi nhóm có tối đa một trưởng nhóm (`team_members.is_leader = TRUE`).
 - `contribution_percent` nằm trong khoảng 0–100; điểm đánh giá nằm trong khoảng 0–100.
