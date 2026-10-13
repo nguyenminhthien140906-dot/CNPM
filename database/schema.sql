@@ -87,8 +87,9 @@ CREATE TABLE IF NOT EXISTS syllabus (
     version INT NOT NULL DEFAULT 1,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_syllabus_subjects FOREIGN KEY (subject_id)
-        REFERENCES subjects(subject_id) ON DELETE CASCADE,
-    CONSTRAINT chk_syllabus_version CHECK (version > 0)
+    REFERENCES subjects(subject_id) ON DELETE CASCADE,
+CONSTRAINT uq_syllabus_id_subject UNIQUE (syllabus_id, subject_id),
+CONSTRAINT chk_syllabus_version CHECK (version > 0)
 );
 
 -- 9. STUDY_CLASSES
@@ -132,10 +133,9 @@ CREATE TABLE IF NOT EXISTS projects (
     start_date DATE,
     end_date DATE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_projects_subjects FOREIGN KEY (subject_id)
-        REFERENCES subjects(subject_id),
-    CONSTRAINT fk_projects_syllabus FOREIGN KEY (syllabus_id)
-        REFERENCES syllabus(syllabus_id),
+    CONSTRAINT fk_projects_syllabus_subject
+    FOREIGN KEY (syllabus_id, subject_id)
+    REFERENCES syllabus(syllabus_id, subject_id),
     CONSTRAINT fk_projects_users FOREIGN KEY (created_by)
         REFERENCES users(user_id),
     CONSTRAINT chk_projects_dates CHECK (
