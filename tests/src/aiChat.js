@@ -1,13 +1,13 @@
+```javascript
 const processUserMessage = async (message) => {
   const lowerMsg = message.toLowerCase();
 
   if (lowerMsg.includes('tiến độ') || lowerMsg.includes('progress')) {
     return {
       type: 'ai_response',
-      text: "🤖 [AI Bedrock Analysis]: Tiến độ hiện tại của module Realtime & Chat đã hoàn thành phần kết nối Socket.IO cơ bản. Cần tiếp tục tối ưu hóa kết nối WebRTC và hoàn thiện giao diện."
+      text: '🤖 [AI Bedrock Analysis]: Tiến độ hiện tại của module Realtime & Chat đã hoàn thành phần kết nối Socket.IO cơ bản. Cần tiếp tục tối ưu hóa kết nối WebRTC và hoàn thiện giao diện.'
     };
   }
-
 
   return {
     type: 'ai_response',
@@ -16,3 +16,4 @@ const processUserMessage = async (message) => {
 };
 
 module.exports = { processUserMessage };
+```

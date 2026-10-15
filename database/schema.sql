@@ -1,7 +1,6 @@
--- =========================================================
+
 -- CollabSphere - Database Schema
 -- PostgreSQL; synchronized with database/01-erd.md
--- =========================================================
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE SCHEMA IF NOT EXISTS collabsphere;
@@ -241,7 +240,7 @@ CREATE TABLE IF NOT EXISTS subtasks (
     CONSTRAINT chk_subtasks_status CHECK (status IN ('todo', 'in_progress', 'completed'))
 );
 
--- 18. CHECKPOINTS: checkpoints belong to teams according to the ERD
+-- 18. CHECKPOINTS
 CREATE TABLE IF NOT EXISTS checkpoints (
     checkpoint_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     team_id UUID NOT NULL,
@@ -254,6 +253,17 @@ CREATE TABLE IF NOT EXISTS checkpoints (
         REFERENCES teams(team_id) ON DELETE CASCADE,
     CONSTRAINT chk_checkpoints_max_score CHECK (max_score > 0),
     CONSTRAINT chk_checkpoints_status CHECK (status IN ('pending', 'in_progress', 'completed'))
+    status VARCHAR(30) NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_checkpoints_teams
+        FOREIGN KEY (team_id)
+        REFERENCES teams(team_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT chk_checkpoints_status
+        CHECK (status IN ('pending', 'in_progress', 'completed'))
+
 );
 
 -- 19. CHECKPOINT_SUBMISSIONS
@@ -311,8 +321,40 @@ CREATE TABLE IF NOT EXISTS resources (
         (class_id IS NULL AND team_id IS NOT NULL)
     )
 );
+-- 22. MILESTONE_QUESTIONS
+CREATE TABLE IF NOT EXISTS milestone_questions (
+    question_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    milestone_id UUID NOT NULL,
+    question_content TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_milestone_questions_milestones
+        FOREIGN KEY (milestone_id)
+        REFERENCES project_milestones(milestone_id)
+        ON DELETE CASCADE
+);
 
--- 22. NOTIFICATIONS
+-- 23. MILESTONE_ANSWERS
+CREATE TABLE IF NOT EXISTS milestone_answers (
+    answer_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    question_id UUID NOT NULL,
+    student_id UUID NOT NULL,
+    answer_content TEXT NOT NULL,
+    submitted_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_milestone_answers_questions
+        FOREIGN KEY (question_id)
+        REFERENCES milestone_questions(question_id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_milestone_answers_students
+        FOREIGN KEY (student_id)
+        REFERENCES students(user_id)
+        ON DELETE CASCADE,
+    -- Mỗi sinh viên chỉ có một câu trả lời cho mỗi câu hỏi;
+    -- có thể sửa câu trả lời bằng UPDATE.
+    CONSTRAINT uq_milestone_answer_student
+        UNIQUE (question_id, student_id)
+);
+
+-- 24. NOTIFICATIONS
 CREATE TABLE IF NOT EXISTS notifications (
     notification_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL,
@@ -323,8 +365,11 @@ CREATE TABLE IF NOT EXISTS notifications (
     CONSTRAINT fk_notifications_users FOREIGN KEY (user_id)
         REFERENCES users(user_id) ON DELETE CASCADE
 );
-
 -- Indexes for common foreign-key lookups
+CREATE INDEX IF NOT EXISTS idx_milestone_questions_milestone_id
+    ON milestone_questions(milestone_id);
+CREATE INDEX IF NOT EXISTS idx_milestone_answers_student_id
+    ON milestone_answers(student_id);
 CREATE INDEX IF NOT EXISTS idx_users_role_id ON users(role_id);
 CREATE INDEX IF NOT EXISTS idx_classes_lecturer_id ON study_classes(lecturer_id);
 CREATE INDEX IF NOT EXISTS idx_classes_subject_id ON study_classes(subject_id);
@@ -350,4 +395,10 @@ VALUES
     ('staff', 'Nhân viên'),
     ('head_department', 'Trưởng bộ môn'),
     ('admin', 'Quản trị viên')
+ON CONFLICT (role_name) DO NOTHING;
+    ('Student', 'Sinh viên'),
+    ('Lecturer', 'Giảng viên'),
+    ('Staff', 'Nhân viên'),
+    ('HeadDepartment', 'Trưởng bộ môn'),
+    ('Admin', 'Quản trị viên')
 ON CONFLICT (role_name) DO NOTHING;

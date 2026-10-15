@@ -1,3 +1,7 @@
+# ERD - Initial Design
+
+Đây là ERD thiết kế ban đầu từ requirements. Nhóm cần review trước khi code database.
+
 ```mermaid
 erDiagram
     ROLE ||--o{ USER : assigns
@@ -17,6 +21,9 @@ erDiagram
     STUDENT ||--o{ CLASS_MEMBER : joins
 
     PROJECT ||--o{ PROJECT_MILESTONE : has
+    PROJECT_MILESTONE ||--o{ MILESTONE_QUESTION : has
+    MILESTONE_QUESTION ||--o{ MILESTONE_ANSWER : receives
+
     PROJECT ||--o{ PROJECT_CLASS : assigned_to
     STUDY_CLASS ||--o{ PROJECT_CLASS : receives
 
@@ -43,168 +50,157 @@ erDiagram
     USER ||--o{ NOTIFICATION : receives
 
     ROLE {
-      int role_id PK
-      string role_name UK
-      string description
+      int id PK
+      string name
     }
-   USER {
-  uuid user_id PK
-  int role_id FK
-  string email UK
-  string password_hash
-  string full_name
-  bool is_active
-  string phone
-  string avatar_url
-  datetime created_at
-  datetime updated_at
-}
+    USER {
+      uuid id PK
+      int role_id FK
+      string email
+      string password_hash
+      string full_name
+      bool is_active
+    }
     STUDENT {
       uuid user_id PK,FK
-      string student_code UK
-      string major
-      int academic_year
+      string student_code
     }
+
     LECTURER {
       uuid user_id PK,FK
-      string lecturer_code UK
-      string department
-      string academic_title
+      string lecturer_code
     }
+
     STAFF {
-      uuid user_id PK,FK
+        uuid user_id PK,FK
     }
+
     HEAD_DEPARTMENT {
       uuid user_id PK,FK
-      string department_name
     }
+
     SUBJECT {
-      uuid subject_id PK
-      string subject_code UK
-      string subject_name
-      int credits
+      uuid id PK
+      string code
+      string name
     }
+
     SYLLABUS {
-      uuid syllabus_id PK
-      uuid subject_id FK,UK
-      string title
+      uuid id PK
+      uuid subject_id FK
       string content
-      int version
     }
-    STUDY_CLASS {
-  uuid class_id PK
-  uuid lecturer_id FK
-  uuid subject_id FK
-  string class_code UK
-  string class_name
-  string semester
-  string academic_year
-  datetime created_at
-}
+    CLASS {
+      uuid id PK
+      uuid lecturer_id FK
+      string code
+      string name
+    }
     CLASS_MEMBER {
-      uuid class_id PK,FK
-      uuid student_id PK,FK
+      uuid class_id FK
+      uuid student_id FK
     }
-   PROJECT {
-  uuid project_id PK
-  uuid subject_id FK
-  uuid syllabus_id FK
-  uuid created_by FK
-  string project_code UK
-  string project_name
-  string description
-  string status
-  date start_date
-  date end_date
-  datetime created_at
-}
-    PROJECT_CLASS {
-      uuid project_id PK,FK
-      uuid class_id PK,FK
+    PROJECT {
+      uuid id PK
+      uuid subject_id FK
+      uuid syllabus_id FK
+      uuid created_by FK
+      string title
+      string description
+      string status
     }
+
     PROJECT_MILESTONE {
-      uuid milestone_id PK
+      uuid id PK
       uuid project_id FK
-      string milestone_name
+      string title
+      string description
       date due_date
     }
-    TEAM {
-      uuid team_id PK
-      uuid class_id FK
-      string team_name
+
+    MILESTONE_QUESTION {
+        uuid question_id PK
+        uuid milestone_id FK
+        string question_content
+        datetime created_at
     }
+
+    MILESTONE_ANSWER {
+        uuid answer_id PK
+        uuid question_id FK
+        uuid student_id FK
+        string answer_content
+        datetime submitted_at
+    }
+
+    TEAM {
+      uuid id PK
+      uuid class_id FK
+      string name
+    }
+
     TEAM_MEMBER {
-      uuid team_id PK,FK
-      uuid student_id PK,FK
+      uuid team_id FK
+      uuid student_id FK
       bool is_leader
       decimal contribution_percent
     }
+
     TASK {
-  uuid task_id PK
-  uuid team_id FK
-  uuid assigned_to FK
-  string task_name
-  string description
-  string status
-  string priority
-  datetime due_date
-  datetime created_at
-}
-    SUBTASK {
-      uuid subtask_id PK
-      uuid task_id FK
-      uuid assigned_to FK
-      string subtask_name
+      uuid id PK
+      uuid team_id FK
+      string title
       string status
     }
-  CHECKPOINT {
-  uuid checkpoint_id PK
-  uuid team_id FK
-  string checkpoint_name
-  string description
-  datetime due_date
-  decimal max_score
-  string status
-}
+    SUBTASK {
+      uuid id PK
+      uuid task_id FK
+      string title
+      string status
+    }
+    CHECKPOINT {
+      uuid id PK
+      uuid team_id FK
+      string title
+      string status
+    }
     CHECKPOINT_SUBMISSION {
-      uuid submission_id PK
+      uuid id PK
       uuid checkpoint_id FK
       uuid student_id FK
       string content
     }
-    EVALUATION {
-      uuid evaluation_id PK
+1409    EVALUATION {
+      uuid id PK
       uuid team_id FK
       uuid evaluator_id FK
       uuid target_user_id FK
       decimal score
       string feedback
     }
+
     RESOURCE {
-  uuid resource_id PK
-  uuid class_id FK
-  uuid team_id FK
-  uuid uploaded_by FK
-  string resource_name
-  string resource_url
-  string description
-  datetime created_at
-}
+      uuid id PK
+      uuid class_id FK
+      uuid team_id FK
+      string name
+      string url
+    }
     NOTIFICATION {
-      uuid notification_id PK
+      uuid id PK
       uuid user_id FK
-      string notification_type
+      string type
       string content
       bool is_read
     }
 ```
 
-## Ràng buộc nghiệp vụ chính
+## Các điểm cần review trước khi migration
 
-- `students`, `lecturers`, `staff`, `head_departments`: `user_id` vừa là PK vừa là FK đến `users.user_id`.
-- Mỗi môn học có tối đa một đề cương (`syllabus.subject_id` là `UNIQUE`); môn học có thể chưa có đề cương.
-- Một sinh viên không thể được thêm hai lần vào cùng lớp hoặc cùng nhóm.
-- Mỗi nhóm có tối đa một trưởng nhóm (`team_members.is_leader = TRUE`).
-- `contribution_percent` nằm trong khoảng 0–100; điểm đánh giá nằm trong khoảng 0–100.
-- Tài liệu (`resources`) phải thuộc **một trong hai** đối tượng: lớp học hoặc nhóm; không được để cả hai cùng rỗng hoặc cùng có giá trị.
-- Ngày kết thúc dự án không được trước ngày bắt đầu.
+- Có cần tách Department thành bảng riêng hay không.
+- Syllabus có một hay nhiều version.
+- Contribution percent được tính tự động hay Lecturer/Team Leader nhập.
+- Resource thuộc Class/Team/Milestone/Checkpoint như thế nào.
+- Meeting/Chat/Message/Whiteboard sẽ dùng storage riêng hay lưu metadata trong PostgreSQL.
+
+Các điểm trên chưa được đặc tả chi tiết trong đề, nên nhóm phải thống nhất trước khi chốt schema.

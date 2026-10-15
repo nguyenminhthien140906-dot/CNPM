@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="backend/CollabSphere.Api/CollabSphere.Api.csproj" />
+    <Project Path="backend/CollabSphere.Application/CollabSphere.Application.csproj" />
+    <Project Path="backend/CollabSphere.Domain/CollabSphere.Domain.csproj" />
+    <Project Path="backend/CollabSphere.Infrastructure/CollabSphere.Infrastructure.csproj" />
+  </Folder>
+</Solution>
