@@ -3,7 +3,7 @@ erDiagram
     ROLE ||--o{ USER : assigns
     USER ||--o| STUDENT : profile
     USER ||--o| LECTURER : profile
-    USER ||--o| STAFF : profile
+    USER ||--o| STAFF : profile 
     USER ||--o| HEAD_DEPARTMENT : profile
 
     SUBJECT ||--o| SYLLABUS : has
