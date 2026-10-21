@@ -1,785 +1,1132 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EduProject Hub - Academic Project Management System</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Vue 3 CDN -->
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-  </style>
-</head>
-<body class="bg-slate-900 text-slate-100 font-sans antialiased min-h-screen">
-  <div id="app" class="flex flex-col h-screen overflow-hidden">
-    
-    <!-- TOP NAVBAR & ROLE SWITCHER -->
-    <header class="bg-slate-800 border-b border-slate-700 px-6 py-3 flex items-center justify-between z-30 shrink-0">
-      <div class="flex items-center space-x-3">
-        <div class="bg-indigo-600 text-white p-2 rounded-lg font-bold text-xl flex items-center justify-center w-10 h-10 shadow-lg shadow-indigo-500/30">
-          <i class="fa-solid fa-graduation-cap"></i>
-        </div>
-        <div>
-          <h1 class="font-bold text-lg text-white leading-none">EduProject Hub</h1>
-          <p class="text-xs text-slate-400 mt-0.5">Academic Project Management System</p>
-        </div>
-      </div>
+import React, { useState, useMemo } from 'react';
+import { 
+  GraduationCap, UserCheck, User, Bell, ChevronRight, Plus, 
+  BookOpen, Users, FolderKanban, Milestone, ClipboardCheck, 
+  Home, UsersRound, Lightbulb, CheckSquare, Upload, Trash2, 
+  Edit3, ExternalLink, Send, CheckCircle2, XCircle, Clock, 
+  FileText, Link as LinkIcon, ShieldAlert, Code2, Play, Terminal,
+  MessageSquare, UserPlus, Star, BarChart3, ArrowRight, RefreshCw, Paperclip
+} from 'lucide-react';
 
-      <!-- ROLE TOGGLE & SYSTEM NOTIFICATIONS -->
-      <div class="flex items-center space-x-4">
-        <!-- Role Switcher -->
-        <div class="bg-slate-900/80 p-1 rounded-xl border border-slate-700 flex items-center">
-          <button 
-            @click="currentRole = 'lecturer'" 
-            :class="currentRole === 'lecturer' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'"
-            class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center space-x-2">
-            <i class="fa-solid fa-chalkboard-user"></i>
-            <span>Giảng viên (Lecturer UI)</span>
-          </button>
-          <button 
-            @click="currentRole = 'student'" 
-            :class="currentRole === 'student' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'"
-            class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center space-x-2">
-            <i class="fa-solid fa-user-graduate"></i>
-            <span>Sinh viên (Student UI)</span>
-          </button>
-        </div>
+export default function App() {
+  // Role & View State
+  const [currentRole, setCurrentRole] = useState('lecturer'); // 'lecturer' | 'student'
+  const [lecturerView, setLecturerView] = useState('dashboard');
+  const [studentView, setStudentView] = useState('dashboard');
+  const [showNotifs, setShowNotifs] = useState(false);
 
-        <!-- Notification Dropdown Toggle -->
-        <div class="relative">
-          <button @click="showNotifs = !showNotifs" class="relative p-2 text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-700 rounded-lg transition-colors">
-            <i class="fa-solid fa-bell"></i>
-            <span v-if="unreadNotifsCount > 0" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
-              {{ unreadNotifsCount }}
-            </span>
-          </button>
+  // Notifications
+  const [notifications, setNotifications] = useState([
+    { id: 1, title: 'Bài nộp Checkpoint mới', message: 'Nhóm 01 vừa nộp Checkpoint 2: Architecture & DB Design', time: '10 phút trước', read: false },
+    { id: 2, title: 'Đề xuất Đề tài mới', message: 'Sinh viên Lê Văn B đã nộp đề xuất đề tài "AI Code Reviewer"', time: '1 giờ trước', read: false },
+    { id: 3, title: 'Thêm thành viên', message: 'Bạn đã được thêm vào Nhóm 01 - Đồ án CNPM', time: '3 giờ trước', read: true }
+  ]);
 
-          <!-- Notification Drawer Popover -->
-          <div v-if="showNotifs" class="absolute right-0 mt-2 w-80 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden">
-            <div class="px-4 py-3 bg-slate-800/90 border-b border-slate-700 flex justify-between items-center">
-              <span class="font-semibold text-sm">Thông báo Realtime</span>
-              <span class="text-xs text-slate-400">{{ notifications.length }} tin</span>
-            </div>
-            <div class="max-h-64 overflow-y-auto custom-scrollbar divide-y divide-slate-700/50">
-              <div v-for="notif in notifications" :key="notif.id" class="p-3 hover:bg-slate-700/30 transition-colors">
-                <p class="text-xs text-slate-200 font-medium">{{ notif.title }}</p>
-                <p class="text-[11px] text-slate-400 mt-1">{{ notif.message }}</p>
-                <span class="text-[10px] text-slate-500 mt-1 block">{{ notif.time }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
+  // Console Logs Inspector
+  const [apiLogs, setApiLogs] = useState([]);
+  const logAPI = (method, endpoint, payload = null) => {
+    const time = new Date().toLocaleTimeString();
+    setApiLogs(prev => [{ id: Date.now(), time, method, endpoint, payload }, ...prev.slice(0, 19)]);
+  };
 
-    <!-- MAIN APP LAYOUT (SIDEBAR + CONTENT) -->
-    <div class="flex flex-1 overflow-hidden">
+  // State: Subjects & Syllabus
+  const [subjects, setSubjects] = useState([
+    { id: 'SUB1', code: 'SE104', name: 'Nhập môn Công nghệ phần mềm', credits: 3, syllabus: 'Quy trình Agile, Scrum, thiết kế UML, kiểm thử phần mềm.', updated: '2026-09-01' },
+    { id: 'SUB2', code: 'CS301', name: 'Lập trình Web Nâng cao', credits: 4, syllabus: 'RESTful API, ReactJS, Node.js Microservices, CI/CD.', updated: '2026-09-10' }
+  ]);
+
+  // State: Classes
+  const [classesList, setClassesList] = useState([
+    { id: 'CLS101', code: 'SE104.O12', subject: 'Nhập môn CNPM', studentsCount: 42, lecturers: ['TS. Nguyễn Văn A', 'ThS. Trần C'] },
+    { id: 'CLS102', code: 'CS301.O11', subject: 'Lập trình Web', studentsCount: 38, lecturers: ['TS. Nguyễn Văn A'] }
+  ]);
+
+  // State: Projects (Pool & Pending Proposals)
+  const [projectPool, setProjectPool] = useState([
+    { id: 'PROJ-01', title: 'Hệ thống Quản lý Ký túc xá thông minh', category: 'Web App', description: 'Quản lý phòng, hóa đơn điện nước và gửi phản ánh qua ứng dụng Web.', classId: 'SE104.O12' },
+    { id: 'PROJ-02', title: 'Điểm danh Sinh viên bằng AI Face Matching', category: 'AI & Mobile', description: 'Nhận diện khuôn mặt thời gian thực tích hợp hệ thống quản lý đào tạo.', classId: 'CS301.O11' }
+  ]);
+
+  const [pendingProposals, setPendingProposals] = useState([
+    { id: 'PROP-101', title: 'Hệ thống Đánh giá Mã nguồn Tự động (Code Reviewer)', description: 'Tích hợp Static Analysis tool hỗ trợ Giảng viên chấm bài tập lập trình.', proposedBy: 'Lê Văn B (20520001)', teamName: 'Nhóm 01' }
+  ]);
+
+  // State: Team Management
+  const [hasTeam, setHasTeam] = useState(true);
+  const [teamInfo, setTeamInfo] = useState({
+    id: 'TEAM-01',
+    name: 'Nhóm 01 - ProCoder',
+    className: 'SE104.O12',
+    projectTitle: 'Website Quản Lý Đồ Án EduProject Hub',
+    members: [
+      { id: 'M1', name: 'Lê Văn B', code: '20520001', role: 'Leader', email: 'levanb@edu.vn' },
+      { id: 'M2', name: 'Phạm Thị D', code: '20520002', role: 'Developer', email: 'phamd@edu.vn' },
+      { id: 'M3', name: 'Trần Văn E', code: '20520003', role: 'UI/UX Designer', email: 'trane@edu.vn' }
+    ]
+  });
+
+  // State: Milestones & Checkpoints
+  const [milestones, setMilestones] = useState([
+    { id: 'M-1', title: 'Milestone 1: Khảo sát & Yêu cầu phần mềm (SRS)', deadline: '2026-10-15', status: 'completed' },
+    { id: 'M-2', title: 'Milestone 2: Kiến trúc Hệ thống & CSDL', deadline: '2026-11-01', status: 'in_progress' },
+    { id: 'M-3', title: 'Milestone 3: Báo cáo Giữa kỳ & Demo MVP', deadline: '2026-11-20', status: 'pending' }
+  ]);
+
+  const [submissions, setSubmissions] = useState([
+    { id: 'SUB-201', checkpointName: 'Checkpoint 2: Database Schema & API Docs', teamId: 'TEAM-01', teamName: 'Nhóm 01 - ProCoder', repoLink: 'https://github.com/eduproject/backend-service', note: 'Đã thiết kế xong 12 bảng PostgreSQL và Swagger API Documentation.', submittedAt: '2026-10-20 14:30', status: 'submitted', feedback: '', score: '' }
+  ]);
+
+  // State: Kanban Tasks
+  const [tasks, setTasks] = useState([
+    { id: 'T1', title: 'Thiết kế Database Postgres & ERD Diagram', assignee: 'Lê Văn B', status: 'done', priority: 'High' },
+    { id: 'T2', title: 'Tích hợp UI Tailwind & Lucide React Icon', assignee: 'Phạm Thị D', status: 'in_progress', priority: 'Medium' },
+    { id: 'T3', title: 'Viết API Swagger Endpoint /auth & /projects', assignee: 'Trần Văn E', status: 'review', priority: 'High' },
+    { id: 'T4', title: 'Thực hiện Unit Test cho Service Module', assignee: 'Lê Văn B', status: 'todo', priority: 'Low' }
+  ]);
+
+  // State: Resources & Attachments
+  const [resources, setResources] = useState([
+    { id: 'R1', title: 'Syllabus & Quy định Đồ án Môn học 2026', type: 'PDF Document', url: 'https://edu.vn/docs/syllabus-2026.pdf', sharedBy: 'TS. Nguyễn Văn A' },
+    { id: 'R2', title: 'Mẫu slide Báo cáo Giữa kỳ (PPTX)', type: 'Template', url: 'https://edu.vn/docs/midterm-template.pptx', sharedBy: 'TS. Nguyễn Văn A' }
+  ]);
+
+  // State: Form Inputs & Active Submissions Evaluation
+  const [selectedSubmission, setSelectedSubmission] = useState(submissions[0]);
+  const [evaluationForm, setEvaluationForm] = useState({ feedback: '', groupScore: '9.0', memberScores: { M1: '9.0', M2: '8.5', M3: '9.0' } });
+
+  // Custom Propose Form State
+  const [proposalInput, setProposalInput] = useState({ title: '', description: '' });
+  const [checkpointInput, setCheckpointInput] = useState({ checkpointName: 'Checkpoint 2: Database Schema', repoLink: '', note: '' });
+
+  // Task Creation Form Modal/State
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [newTaskAssignee, setNewTaskAssignee] = useState('Lê Văn B');
+
+  // Resource Upload Form State
+  const [newResTitle, setNewResTitle] = useState('');
+  const [newResUrl, setNewResUrl] = useState('');
+
+  // Unread Notification Count
+  const unreadCount = useMemo(() => notifications.filter(n => !n.read).length, [notifications]);
+
+  // Action Handlers
+  const handleApproveProposal = (prop) => {
+    logAPI('POST', `/api/v1/projects/${prop.id}/approve`, { approvedBy: 'Lecturer' });
+    setProjectPool(prev => [...prev, { id: `PROJ-${Date.now()}`, title: prop.title, category: 'Student Proposal', description: prop.description, classId: 'SE104.O12' }]);
+    setPendingProposals(prev => prev.filter(p => p.id !== prop.id));
+  };
+
+  const handleDenyProposal = (prop) => {
+    logAPI('POST', `/api/v1/projects/${prop.id}/deny`, { reason: 'Cần bổ sung mô tả công nghệ' });
+    setPendingProposals(prev => prev.filter(p => p.id !== prop.id));
+  };
+
+  const handleMoveTask = (taskId, newStatus) => {
+    logAPI('PATCH', `/api/v1/tasks/${taskId}/status`, { status: newStatus });
+    setTasks(tasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+  };
+
+  const handleCreateTask = (e) => {
+    e.preventDefault();
+    if (!newTaskTitle.trim()) return;
+    const newTask = { id: `T${Date.now()}`, title: newTaskTitle, assignee: newTaskAssignee, status: 'todo', priority: 'Medium' };
+    logAPI('POST', '/api/v1/teams/TEAM-01/tasks', newTask);
+    setTasks(prev => [...prev, newTask]);
+    setNewTaskTitle('');
+  };
+
+  const handleSubmitCheckpoint = (e) => {
+    e.preventDefault();
+    if (!checkpointInput.repoLink) return;
+    const newSub = {
+      id: `SUB-${Date.now()}`,
+      checkpointName: checkpointInput.checkpointName,
+      teamId: teamInfo.id,
+      teamName: teamInfo.name,
+      repoLink: checkpointInput.repoLink,
+      note: checkpointInput.note,
+      submittedAt: new Date().toLocaleString(),
+      status: 'submitted',
+      feedback: '',
+      score: ''
+    };
+    logAPI('POST', `/api/v1/checkpoints/submit`, newSub);
+    setSubmissions(prev => [newSub, ...prev]);
+    setSelectedSubmission(newSub);
+    setCheckpointInput({ checkpointName: 'Checkpoint 2: Database Schema', repoLink: '', note: '' });
+  };
+
+  const handleSaveEvaluation = () => {
+    if (!selectedSubmission) return;
+    logAPI('POST', `/api/v1/evaluations/${selectedSubmission.id}`, evaluationForm);
+    setSubmissions(submissions.map(s => s.id === selectedSubmission.id ? { ...s, feedback: evaluationForm.feedback, score: evaluationForm.groupScore, status: 'evaluated' } : s));
+  };
+
+  const handleAddResource = (e) => {
+    e.preventDefault();
+    if (!newResTitle || !newResUrl) return;
+    const newR = { id: `R${Date.now()}`, title: newResTitle, type: 'External Link', url: newResUrl, sharedBy: currentRole === 'lecturer' ? 'TS. Nguyễn Văn A' : 'Sinh viên' };
+    logAPI('POST', '/api/v1/resources', newR);
+    setResources(prev => [newR, ...prev]);
+    setNewResTitle('');
+    setNewResUrl('');
+  };
+
+  return (
+    <div className="flex flex-col h-screen bg-slate-900 text-slate-100 font-sans antialiased overflow-hidden">
       
-      <!-- SIDEBAR NAVIGATION -->
-      <aside class="w-64 bg-slate-800/50 border-r border-slate-700 flex flex-col justify-between shrink-0">
-        <div class="p-4 space-y-6">
-          
-          <!-- LECTURER NAVIGATION -->
-          <div v-if="currentRole === 'lecturer'">
-            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-3">Giao diện Giảng viên</div>
-            <nav class="space-y-1">
-              <button @click="lecturerView = 'dashboard'" :class="lecturerView === 'dashboard' ? 'bg-indigo-600/20 text-indigo-400 border-l-4 border-indigo-500' : 'text-slate-300 hover:bg-slate-700/40'" class="w-full text-left px-3 py-2.5 rounded-r-lg text-sm font-medium flex items-center space-x-3 transition-colors">
-                <i class="fa-solid fa-chart-pie w-5 text-center"></i>
-                <span>Dashboard</span>
-              </button>
-              <button @click="lecturerView = 'subjects'" :class="lecturerView === 'subjects' ? 'bg-indigo-600/20 text-indigo-400 border-l-4 border-indigo-500' : 'text-slate-300 hover:bg-slate-700/40'" class="w-full text-left px-3 py-2.5 rounded-r-lg text-sm font-medium flex items-center space-x-3 transition-colors">
-                <i class="fa-solid fa-book-bookmark w-5 text-center"></i>
-                <span>Môn học & Syllabus</span>
-              </button>
-              <button @click="lecturerView = 'classes'" :class="lecturerView === 'classes' ? 'bg-indigo-600/20 text-indigo-400 border-l-4 border-indigo-500' : 'text-slate-300 hover:bg-slate-700/40'" class="w-full text-left px-3 py-2.5 rounded-r-lg text-sm font-medium flex items-center space-x-3 transition-colors">
-                <i class="fa-solid fa-users-rectangle w-5 text-center"></i>
-                <span>Quản lý Lớp học</span>
-              </button>
-              <button @click="lecturerView = 'projects'" :class="lecturerView === 'projects' ? 'bg-indigo-600/20 text-indigo-400 border-l-4 border-indigo-500' : 'text-slate-300 hover:bg-slate-700/40'" class="w-full text-left px-3 py-2.5 rounded-r-lg text-sm font-medium flex items-center space-x-3 transition-colors">
-                <i class="fa-solid fa-folder-tree w-5 text-center"></i>
-                <span>Kho & Duyệt Đề tài</span>
-              </button>
-              <button @click="lecturerView = 'milestones'" :class="lecturerView === 'milestones' ? 'bg-indigo-600/20 text-indigo-400 border-l-4 border-indigo-500' : 'text-slate-300 hover:bg-slate-700/40'" class="w-full text-left px-3 py-2.5 rounded-r-lg text-sm font-medium flex items-center space-x-3 transition-colors">
-                <i class="fa-solid fa-timeline w-5 text-center"></i>
-                <span>Cột mốc & Milestone</span>
-              </button>
-              <button @click="lecturerView = 'evaluations'" :class="lecturerView === 'evaluations' ? 'bg-indigo-600/20 text-indigo-400 border-l-4 border-indigo-500' : 'text-slate-300 hover:bg-slate-700/40'" class="w-full text-left px-3 py-2.5 rounded-r-lg text-sm font-medium flex items-center space-x-3 transition-colors">
-                <i class="fa-solid fa-clipboard-check w-5 text-center"></i>
-                <span>Chấm điểm & Feedback</span>
-              </button>
-            </nav>
+      {/* ================= TOP NAVBAR & ROLE SWITCHER ================= */}
+      <header className="bg-slate-800/90 backdrop-blur border-b border-slate-700/80 px-6 py-3 flex items-center justify-between shrink-0 z-30">
+        <div className="flex items-center space-x-3">
+          <div className="bg-indigo-600 text-white p-2.5 rounded-xl font-extrabold text-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
+            <GraduationCap className="w-6 h-6" />
           </div>
-
-          <!-- STUDENT NAVIGATION -->
-          <div v-else>
-            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-3">Giao diện Sinh viên</div>
-            <nav class="space-y-1">
-              <button @click="studentView = 'dashboard'" :class="studentView === 'dashboard' ? 'bg-emerald-600/20 text-emerald-400 border-l-4 border-emerald-500' : 'text-slate-300 hover:bg-slate-700/40'" class="w-full text-left px-3 py-2.5 rounded-r-lg text-sm font-medium flex items-center space-x-3 transition-colors">
-                <i class="fa-solid fa-house w-5 text-center"></i>
-                <span>Dashboard</span>
-              </button>
-              <button @click="studentView = 'teams'" :class="studentView === 'teams' ? 'bg-emerald-600/20 text-emerald-400 border-l-4 border-emerald-500' : 'text-slate-300 hover:bg-slate-700/40'" class="w-full text-left px-3 py-2.5 rounded-r-lg text-sm font-medium flex items-center space-x-3 transition-colors">
-                <i class="fa-solid fa-user-group w-5 text-center"></i>
-                <span>Nhóm của tôi</span>
-              </button>
-              <button @click="studentView = 'projects'" :class="studentView === 'projects' ? 'bg-emerald-600/20 text-emerald-400 border-l-4 border-emerald-500' : 'text-slate-300 hover:bg-slate-700/40'" class="w-full text-left px-3 py-2.5 rounded-r-lg text-sm font-medium flex items-center space-x-3 transition-colors">
-                <i class="fa-solid fa-lightbulb w-5 text-center"></i>
-                <span>Đăng ký / Đề xuất Project</span>
-              </button>
-              <button @click="studentView = 'tasks'" :class="studentView === 'tasks' ? 'bg-emerald-600/20 text-emerald-400 border-l-4 border-emerald-500' : 'text-slate-300 hover:bg-slate-700/40'" class="w-full text-left px-3 py-2.5 rounded-r-lg text-sm font-medium flex items-center space-x-3 transition-colors">
-                <i class="fa-solid fa-list-check w-5 text-center"></i>
-                <span>Task Board (Kanban)</span>
-              </button>
-              <button @click="studentView = 'checkpoints'" :class="studentView === 'checkpoints' ? 'bg-emerald-600/20 text-emerald-400 border-l-4 border-emerald-500' : 'text-slate-300 hover:bg-slate-700/40'" class="w-full text-left px-3 py-2.5 rounded-r-lg text-sm font-medium flex items-center space-x-3 transition-colors">
-                <i class="fa-solid fa-upload w-5 text-center"></i>
-                <span>Nộp bài Checkpoint</span>
-              </button>
-            </nav>
-          </div>
-
-        </div>
-
-        <!-- USER PROFILE FOOTER -->
-        <div class="p-4 border-t border-slate-700/60 bg-slate-800/80 flex items-center space-x-3">
-          <div class="w-9 h-9 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center font-bold text-sm text-indigo-400">
-            {{ currentRole === 'lecturer' ? 'GV' : 'SV' }}
-          </div>
-          <div class="overflow-hidden">
-            <p class="text-xs font-semibold text-white truncate">{{ currentRole === 'lecturer' ? 'TS. Nguyễn Văn A' : 'Lê Văn B (Leader)' }}</p>
-            <p class="text-[11px] text-slate-400 truncate">{{ currentRole === 'lecturer' ? 'lecturer@university.edu.vn' : 'student@university.edu.vn' }}</p>
+          <div>
+            <div className="flex items-center space-x-2">
+              <h1 className="font-bold text-lg text-white tracking-tight">EduProject Hub</h1>
+              <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full font-semibold border border-indigo-500/30">v2.4 React</span>
+            </div>
+            <p className="text-xs text-slate-400">Academic Project Management System</p>
           </div>
         </div>
-      </aside>
 
-      <!-- MAIN CONTENT DISPLAY AREA -->
-      <main class="flex-1 overflow-y-auto custom-scrollbar p-6 bg-slate-900/90 relative">
+        {/* ROLE TOGGLE & NOTIFICATIONS */}
+        <div className="flex items-center space-x-4">
+          <div className="bg-slate-950 p-1 rounded-xl border border-slate-700/80 flex items-center shadow-inner">
+            <button
+              onClick={() => { setCurrentRole('lecturer'); logAPI('ROLE_SWITCH', '/ui/switch-role', { role: 'lecturer' }); }}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center space-x-2 ${
+                currentRole === 'lecturer' 
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' 
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <UserCheck className="w-4 h-4" />
+              <span>Giảng viên (Lecturer UI)</span>
+            </button>
+            <button
+              onClick={() => { setCurrentRole('student'); logAPI('ROLE_SWITCH', '/ui/switch-role', { role: 'student' }); }}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center space-x-2 ${
+                currentRole === 'student' 
+                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30' 
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <User className="w-4 h-4" />
+              <span>Sinh viên (Student UI)</span>
+            </button>
+          </div>
+
+          {/* Notification Popover Button */}
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifs(!showNotifs)}
+              className="relative p-2.5 text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-700 rounded-xl transition-colors border border-slate-600/50"
+            >
+              <Bell className="w-4 h-4" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* Notification Drawer */}
+            {showNotifs && (
+              <div className="absolute right-0 mt-3 w-80 bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl z-50 overflow-hidden divide-y divide-slate-700/60">
+                <div className="px-4 py-3 bg-slate-800/90 flex justify-between items-center">
+                  <span className="font-semibold text-xs text-white">Thông báo System Realtime</span>
+                  <button onClick={() => setNotifications(notifications.map(n => ({ ...n, read: true })))} className="text-[10px] text-indigo-400 hover:underline">
+                    Đánh dấu đã đọc
+                  </button>
+                </div>
+                <div className="max-h-72 overflow-y-auto divide-y divide-slate-700/40">
+                  {notifications.map(n => (
+                    <div key={n.id} className={`p-3 text-xs transition-colors hover:bg-slate-700/30 ${!n.read ? 'bg-indigo-950/30' : ''}`}>
+                      <div className="flex justify-between items-start">
+                        <p className="font-semibold text-slate-200">{n.title}</p>
+                        {!n.read && <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0"></span>}
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-1 leading-snug">{n.message}</p>
+                      <span className="text-[10px] text-slate-500 mt-1.5 block">{n.time}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* ================= MAIN CONTENT BODY ================= */}
+      <div className="flex flex-1 overflow-hidden">
         
-        <!-- ================= LECTURER VIEWS ================= -->
-        <div v-if="currentRole === 'lecturer'">
-          
-          <!-- LECTURER DASHBOARD -->
-          <div v-if="lecturerView === 'dashboard'" class="space-y-6">
-            <div class="flex justify-between items-center">
+        {/* SIDEBAR NAVIGATION */}
+        <aside className="w-64 bg-slate-800/40 border-r border-slate-700/80 flex flex-col justify-between shrink-0">
+          <div className="p-4 space-y-6">
+            
+            {/* LECTURER SIDEBAR */}
+            {currentRole === 'lecturer' ? (
               <div>
-                <h2 class="text-xl font-bold text-white">Tổng quan Giảng viên</h2>
-                <p class="text-xs text-slate-400 mt-1">Theo dõi hoạt động các lớp học và bài nộp gần đây</p>
-              </div>
-            </div>
-
-            <!-- Metric Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-4">
-                <p class="text-xs text-slate-400">Số lớp đang dạy</p>
-                <p class="text-2xl font-bold text-indigo-400 mt-1">4 Lớp</p>
-              </div>
-              <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-4">
-                <p class="text-xs text-slate-400">Đề tài chờ duyệt</p>
-                <p class="text-2xl font-bold text-amber-400 mt-1">3 Yêu cầu</p>
-              </div>
-              <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-4">
-                <p class="text-xs text-slate-400">Checkpoint chờ chấm</p>
-                <p class="text-2xl font-bold text-rose-400 mt-1">8 Bài nộp</p>
-              </div>
-              <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-4">
-                <p class="text-xs text-slate-400">Tổng sinh viên</p>
-                <p class="text-2xl font-bold text-emerald-400 mt-1">142 SV</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- SUBJECTS & SYLLABUS SCREEN -->
-          <div v-if="lecturerView === 'subjects'" class="space-y-6">
-            <div class="flex justify-between items-center">
-              <div>
-                <h2 class="text-xl font-bold text-white">Môn học & Syllabus (/subjects)</h2>
-                <p class="text-xs text-slate-400 mt-1">Quản lý môn học và xây dựng cấu trúc Syllabus bài giảng</p>
-              </div>
-              <button @click="logAPI('POST', '/subjects', { name: 'Môn học mới', code: 'CS302' })" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2">
-                <i class="fa-solid fa-plus"></i>
-                <span>Tạo Môn Học</span>
-              </button>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <!-- Subject List Card -->
-              <div v-for="subj in subjects" :key="subj.id" class="bg-slate-800 border border-slate-700 rounded-xl p-5 hover:border-indigo-500/50 transition-all">
-                <div class="flex justify-between items-start">
-                  <span class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded border border-indigo-500/20">{{ subj.code }}</span>
-                  <span class="text-xs text-slate-400">{{ subj.credits }} Tín chỉ</span>
-                </div>
-                <h3 class="font-bold text-white mt-3">{{ subj.name }}</h3>
-                <p class="text-xs text-slate-400 mt-2 line-clamp-2">{{ subj.description }}</p>
-                
-                <div class="mt-4 pt-4 border-t border-slate-700/60 flex justify-between items-center">
-                  <button @click="logAPI('GET', `/subjects/${subj.id}/syllabus`)" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium">
-                    Xem Syllabus
-                  </button>
-                  <button @click="logAPI('POST', `/subjects/${subj.id}/syllabus`, { updated: true })" class="text-xs text-slate-300 hover:text-white bg-slate-700 px-2.5 py-1 rounded">
-                    + Cập nhật Syllabus
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- CLASS MANAGEMENT SCREEN -->
-          <div v-if="lecturerView === 'classes'" class="space-y-6">
-            <div class="flex justify-between items-center">
-              <div>
-                <h2 class="text-xl font-bold text-white">Quản lý Lớp học (/classes)</h2>
-                <p class="text-xs text-slate-400 mt-1">Danh sách các lớp học, gán giảng viên hỗ trợ và quản lý danh sách SV</p>
-              </div>
-              <button @click="logAPI('POST', '/classes', { name: 'SE104.O12', subjectId: 1 })" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2">
-                <i class="fa-solid fa-plus"></i>
-                <span>Tạo Lớp Mới</span>
-              </button>
-            </div>
-
-            <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
-              <table class="w-full text-left text-xs">
-                <thead class="bg-slate-800/80 text-slate-400 border-b border-slate-700">
-                  <tr>
-                    <th class="p-3">Mã Lớp</th>
-                    <th class="p-3">Môn học</th>
-                    <th class="p-3">Sĩ số</th>
-                    <th class="p-3">Giảng viên phụ trách</th>
-                    <th class="p-3 text-right">Thao tác API Mapping</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-700/50">
-                  <tr v-for="cls in classesList" :key="cls.id" class="hover:bg-slate-700/20">
-                    <td class="p-3 font-semibold text-indigo-400">{{ cls.code }}</td>
-                    <td class="p-3 text-slate-200">{{ cls.subject }}</td>
-                    <td class="p-3 text-slate-300">{{ cls.studentsCount }} SV</td>
-                    <td class="p-3 text-slate-300">{{ cls.lecturers.join(', ') }}</td>
-                    <td class="p-3 text-right space-x-2">
-                      <button @click="logAPI('POST', `/classes/${cls.id}/students`, { list: ['SV001', 'SV002'] })" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2 py-1 rounded">
-                        + Import SV
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 px-3">Giao diện Giảng viên</div>
+                <nav className="space-y-1">
+                  {[
+                    { key: 'dashboard', label: 'Tổng quan Dashboard', icon: BarChart3 },
+                    { key: 'subjects', label: 'Môn học & Syllabus', icon: BookOpen },
+                    { key: 'classes', label: 'Quản lý Lớp & SV', icon: Users },
+                    { key: 'projects', label: 'Kho & Duyệt Đề tài', icon: FolderKanban },
+                    { key: 'milestones', label: 'Cột mốc & Milestone', icon: Milestone },
+                    { key: 'evaluations', label: 'Chấm điểm & Feedback', icon: ClipboardCheck },
+                    { key: 'resources', label: 'Tài nguyên & Tài liệu', icon: Paperclip },
+                  ].map(item => {
+                    const Icon = item.icon;
+                    const active = lecturerView === item.key;
+                    return (
+                      <button
+                        key={item.key}
+                        onClick={() => setLecturerView(item.key)}
+                        className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center space-x-3 transition-all ${
+                          active 
+                            ? 'bg-indigo-600/20 text-indigo-400 border-l-4 border-indigo-500 shadow-sm' 
+                            : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                        }`}
+                      >
+                        <Icon className="w-4 h-4" />
+                        <span>{item.label}</span>
                       </button>
-                      <button @click="logAPI('POST', `/classes/${cls.id}/lecturer`, { lecturerId: 2 })" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2 py-1 rounded">
-                        + Thêm GV
+                    );
+                  })}
+                </nav>
+              </div>
+            ) : (
+              /* STUDENT SIDEBAR */
+              <div>
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 px-3">Giao diện Sinh viên</div>
+                <nav className="space-y-1">
+                  {[
+                    { key: 'dashboard', label: 'Dashboard Cá nhân', icon: Home },
+                    { key: 'teams', label: 'Nhóm của tôi', icon: UsersRound },
+                    { key: 'projects', label: 'Đăng ký / Đề xuất Project', icon: Lightbulb },
+                    { key: 'tasks', label: 'Task Board (Kanban)', icon: CheckSquare },
+                    { key: 'checkpoints', label: 'Nộp bài Checkpoint', icon: Upload },
+                    { key: 'resources', label: 'Tài nguyên Môn học', icon: Paperclip },
+                  ].map(item => {
+                    const Icon = item.icon;
+                    const active = studentView === item.key;
+                    return (
+                      <button
+                        key={item.key}
+                        onClick={() => setStudentView(item.key)}
+                        className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center space-x-3 transition-all ${
+                          active 
+                            ? 'bg-emerald-600/20 text-emerald-400 border-l-4 border-emerald-500 shadow-sm' 
+                            : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                        }`}
+                      >
+                        <Icon className="w-4 h-4" />
+                        <span>{item.label}</span>
                       </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+                    );
+                  })}
+                </nav>
+              </div>
+            )}
           </div>
 
-          <!-- PROJECT POOL & APPROVAL SCREEN -->
-          <div v-if="lecturerView === 'projects'" class="space-y-6">
-            <div class="flex justify-between items-center">
-              <div>
-                <h2 class="text-xl font-bold text-white">Duyệt & Quản lý Đề tài (/projects)</h2>
-                <p class="text-xs text-slate-400 mt-1">Quản lý Kho đề tài và Thẩm định các đề tài do sinh viên tự đề xuất</p>
-              </div>
-              <button @click="logAPI('POST', '/projects', { title: 'Đề tài mẫu mới' })" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2">
-                <i class="fa-solid fa-plus"></i>
-                <span>Tạo Đề Tài Mẫu</span>
-              </button>
+          {/* USER PROFILE FOOTER */}
+          <div className="p-4 border-t border-slate-700/60 bg-slate-800/60 flex items-center space-x-3">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs ${
+              currentRole === 'lecturer' ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30'
+            }`}>
+              {currentRole === 'lecturer' ? 'GV' : 'SV'}
             </div>
-
-            <!-- Tabs selector -->
-            <div class="flex space-x-4 border-b border-slate-700 pb-2">
-              <button @click="projectTab = 'pool'" :class="projectTab === 'pool' ? 'text-indigo-400 font-bold border-b-2 border-indigo-500' : 'text-slate-400'" class="pb-2 text-xs">
-                Kho đề tài (Project Pool)
-              </button>
-              <button @click="projectTab = 'pending'" :class="projectTab === 'pending' ? 'text-indigo-400 font-bold border-b-2 border-indigo-500' : 'text-slate-400'" class="pb-2 text-xs flex items-center space-x-2">
-                <span>Đề tài chờ duyệt (Pending Requests)</span>
-                <span class="bg-amber-500/20 text-amber-400 text-[10px] px-1.5 py-0.5 rounded-full font-bold">2</span>
-              </button>
-            </div>
-
-            <!-- Tab: Project Pool -->
-            <div v-if="projectTab === 'pool'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div v-for="proj in projectPool" :key="proj.id" class="bg-slate-800 border border-slate-700 rounded-xl p-4">
-                <div class="flex justify-between items-start">
-                  <h4 class="font-bold text-sm text-white">{{ proj.title }}</h4>
-                  <span class="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded">{{ proj.category }}</span>
-                </div>
-                <p class="text-xs text-slate-400 mt-2">{{ proj.description }}</p>
-                <div class="mt-4 pt-3 border-t border-slate-700/60 flex justify-between items-center">
-                  <button @click="logAPI('PUT', `/projects/${proj.id}`, { status: 'updated' })" class="text-xs text-slate-300 hover:text-white">
-                    <i class="fa-solid fa-pen-to-square"></i> Chỉnh sửa
-                  </button>
-                  <button @click="logAPI('POST', `/projects/${proj.id}/assign-class`, { classId: 'SE104.O12' })" class="text-xs bg-indigo-600/30 text-indigo-300 hover:bg-indigo-600/50 px-2.5 py-1 rounded">
-                    Gán vào Lớp học
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Tab: Pending Requests -->
-            <div v-if="projectTab === 'pending'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div v-for="req in pendingProjects" :key="req.id" class="bg-slate-800 border border-amber-500/30 rounded-xl p-4">
-                <div class="flex justify-between items-start">
-                  <h4 class="font-bold text-sm text-amber-300">{{ req.title }}</h4>
-                  <span class="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded border border-amber-500/20">Chờ duyệt</span>
-                </div>
-                <p class="text-xs text-slate-400 mt-2">{{ req.description }}</p>
-                <p class="text-[11px] text-slate-500 mt-2">Đề xuất bởi: <span class="text-slate-300">{{ req.proposedBy }}</span></p>
-                
-                <div class="mt-4 pt-3 border-t border-slate-700/60 flex justify-end space-x-2">
-                  <button @click="logAPI('POST', `/projects/${req.id}/deny`, { reason: 'Cần làm rõ phạm vi' })" class="bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 px-3 py-1 rounded text-xs">
-                    Từ chối
-                  </button>
-                  <button @click="logAPI('POST', `/projects/${req.id}/approve`, {})" class="bg-emerald-600 text-white hover:bg-emerald-500 px-3 py-1 rounded text-xs font-semibold">
-                    Duyệt Đề Tài
-                  </button>
-                </div>
-              </div>
+            <div className="overflow-hidden">
+              <p className="text-xs font-semibold text-white truncate">
+                {currentRole === 'lecturer' ? 'TS. Nguyễn Văn A' : 'Lê Văn B (Leader)'}
+              </p>
+              <p className="text-[11px] text-slate-400 truncate">
+                {currentRole === 'lecturer' ? 'nguyenvana@university.edu.vn' : '20520001@student.edu.vn'}
+              </p>
             </div>
           </div>
+        </aside>
 
-          <!-- MILESTONES & TIMELINE SCREEN -->
-          <div v-if="lecturerView === 'milestones'" class="space-y-6">
-            <div class="flex justify-between items-center">
-              <div>
-                <h2 class="text-xl font-bold text-white">Cột mốc & Checkpoint (/milestones)</h2>
-                <p class="text-xs text-slate-400 mt-1">Lập tiến độ Gantt/Timeline và gán các mốc Checkpoint cho dự án</p>
-              </div>
-              <div class="space-x-2">
-                <button @click="logAPI('POST', '/projects/1/milestones', { title: 'New Milestone' })" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg text-xs font-semibold">
-                  + Tạo Cột Mốc (Milestone)
-                </button>
-                <button @click="logAPI('POST', '/teams/101/checkpoints', { title: 'Checkpoint N' })" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-semibold">
-                  + Tạo Checkpoint Nhóm
-                </button>
-              </div>
-            </div>
-
-            <!-- Gantt / Timeline Visual -->
-            <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 space-y-4">
-              <div v-for="m in milestones" :key="m.id" class="bg-slate-900/60 p-4 rounded-lg border border-slate-700/50 flex justify-between items-center">
-                <div class="flex items-center space-x-4">
-                  <button @click="logAPI('PATCH', `/milestones/${m.id}/complete`, { completed: true })" class="w-5 h-5 rounded border border-slate-600 flex items-center justify-center text-emerald-400">
-                    <i v-if="m.completed" class="fa-solid fa-check text-xs"></i>
-                  </button>
-                  <div>
-                    <h4 class="text-sm font-semibold text-white">{{ m.title }}</h4>
-                    <span class="text-xs text-slate-400">Hạn chót: {{ m.deadline }}</span>
-                  </div>
-                </div>
-                <button @click="logAPI('PUT', `/milestones/${m.id}`, { deadline: '2026-11-30' })" class="text-xs text-indigo-400 hover:text-indigo-300">
-                  <i class="fa-solid fa-calendar-days"></i> Sửa Deadline
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- EVALUATION & FEEDBACK SCREEN (SPLIT VIEW) -->
-          <div v-if="lecturerView === 'evaluations'" class="space-y-6">
-            <div>
-              <h2 class="text-xl font-bold text-white">Chấm điểm & Phản hồi (/evaluations)</h2>
-              <p class="text-xs text-slate-400 mt-1">Split-View: Xem bài nộp và thực hiện đánh giá nhóm & cá nhân</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 h-[500px]">
-              <!-- Left Sidebar: Submissions list -->
-              <div class="md:col-span-4 bg-slate-800 border border-slate-700 rounded-xl p-3 overflow-y-auto custom-scrollbar">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 px-2">Danh sách Checkpoint nộp</h3>
-                <div class="space-y-2">
-                  <div @click="selectedSub = 1" :class="selectedSub === 1 ? 'bg-indigo-600/20 border-indigo-500' : 'bg-slate-900/40 border-slate-700/50'" class="p-3 rounded-lg border cursor-pointer">
-                    <p class="text-xs font-semibold text-white">Nhóm 01 - Checkpoint 2</p>
-                    <p class="text-[11px] text-slate-400 mt-1">Nộp lúc: 14/10/2026</p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Right Panel: Feedback Form -->
-              <div class="md:col-span-8 bg-slate-800 border border-slate-700 rounded-xl p-5 flex flex-col justify-between">
-                <div class="space-y-4">
-                  <div class="border-b border-slate-700 pb-3">
-                    <h3 class="font-bold text-white">Nội dung bài nộp: Nhóm 01</h3>
-                    <a href="#" class="text-xs text-indigo-400 hover:underline"><i class="fa-solid fa-link"></i> https://github.com/group01/edu-project</a>
-                  </div>
-
-                  <!-- Feedback Form -->
-                  <div>
-                    <label class="block text-xs text-slate-400 mb-1">Gửi Phản hồi Checkpoint</label>
-                    <textarea v-model="feedbackText" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500" placeholder="Nhận xét bài làm..."></textarea>
-                  </div>
-                </div>
-
-                <div class="pt-4 border-t border-slate-700 flex justify-between items-center">
-                  <button @click="logAPI('PATCH', '/checkpoints/101/complete', { completed: true })" class="text-xs bg-slate-700 text-slate-300 px-3 py-1.5 rounded">
-                    Đánh dấu Đã Duyệt
-                  </button>
-                  <div class="space-x-2">
-                    <button @click="logAPI('POST', '/checkpoints/101/feedback', { text: feedbackText })" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded text-xs font-semibold">
-                      Gửi Feedback
-                    </button>
-                    <button @click="logAPI('POST', '/teams/101/evaluations', { score: 9.0 })" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded text-xs font-semibold">
-                      Chấm điểm Nhóm
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- ================= STUDENT VIEWS ================= -->
-        <div v-else>
+        {/* DYNAMIC MAIN PANEL */}
+        <main className="flex-1 overflow-y-auto p-6 bg-slate-900/90 relative flex flex-col justify-between">
           
-          <!-- STUDENT DASHBOARD -->
-          <div v-if="studentView === 'dashboard'" class="space-y-6">
-            <div>
-              <h2 class="text-xl font-bold text-white">Dashboard Sinh viên</h2>
-              <p class="text-xs text-slate-400 mt-1">Lịch deadline cá nhân, nhóm và công việc được gán</p>
-            </div>
+          <div className="space-y-6">
+            
+            {/* ================= LECTURER VIEWS ================= */}
+            {currentRole === 'lecturer' && (
+              <>
+                {/* 1. LECTURER DASHBOARD */}
+                {lecturerView === 'dashboard' && (
+                  <div className="space-y-6">
+                    <div>
+                      <h2 className="text-xl font-bold text-white">Tổng quan Giảng viên</h2>
+                      <p class="text-xs text-slate-400 mt-1">Thống kê hoạt động lớp học, đề tài và tiến độ chấm bài</p>
+                    </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="bg-slate-800 border border-slate-700 rounded-xl p-4">
-                <p class="text-xs text-slate-400">Trạng thái Nhóm</p>
-                <p class="text-lg font-bold text-emerald-400 mt-1">Đã có nhóm (Nhóm 01)</p>
-              </div>
-              <div class="bg-slate-800 border border-slate-700 rounded-xl p-4">
-                <p class="text-xs text-slate-400">Đề tài</p>
-                <p class="text-lg font-bold text-indigo-400 mt-1">Website Quản Lý Dự Án</p>
-              </div>
-              <div class="bg-slate-800 border border-slate-700 rounded-xl p-4">
-                <p class="text-xs text-slate-400">Task được gán</p>
-                <p class="text-lg font-bold text-amber-400 mt-1">2 Work items</p>
-              </div>
-            </div>
-          </div>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4">
+                        <p className="text-xs font-medium text-slate-400">Lớp giảng dạy</p>
+                        <p className="text-2xl font-bold text-indigo-400 mt-1">2 Lớp</p>
+                        <span className="text-[10px] text-slate-500">80 Sinh viên tổng cộng</span>
+                      </div>
+                      <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4">
+                        <p className="text-xs font-medium text-slate-400">Đề xuất chờ duyệt</p>
+                        <p className="text-2xl font-bold text-amber-400 mt-1">{pendingProposals.length} Yêu cầu</p>
+                        <span className="text-[10px] text-slate-500">Từ sinh viên tự đề xuất</span>
+                      </div>
+                      <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4">
+                        <p className="text-xs font-medium text-slate-400">Checkpoint chờ chấm</p>
+                        <p className="text-2xl font-bold text-rose-400 mt-1">{submissions.filter(s=>s.status==='submitted').length} Bài nộp</p>
+                        <span className="text-[10px] text-slate-500">Cần feedback & cho điểm</span>
+                      </div>
+                      <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4">
+                        <p className="text-xs font-medium text-slate-400">Môn học phụ trách</p>
+                        <p className="text-2xl font-bold text-emerald-400 mt-1">{subjects.length} Môn</p>
+                        <span className="text-[10px] text-slate-500">SE104, CS301</span>
+                      </div>
+                    </div>
 
-          <!-- TEAM MANAGEMENT SCREEN (STATE A / B) -->
-          <div v-if="studentView === 'teams'" class="space-y-6">
-            <div class="flex justify-between items-center">
-              <div>
-                <h2 class="text-xl font-bold text-white">Quản lý Nhóm (/teams)</h2>
-                <p class="text-xs text-slate-400 mt-1">Tham gia nhóm, mời thành viên hoặc quản lý danh sách nhóm</p>
-              </div>
-              <button @click="hasTeam = !hasTeam" class="text-xs bg-slate-700 text-slate-300 px-3 py-1.5 rounded">
-                Switch Demo: {{ hasTeam ? 'Trạng thái: Chưa có nhóm' : 'Trạng thái: Đã có nhóm' }}
-              </button>
-            </div>
-
-            <!-- State A: Chưa có nhóm -->
-            <div v-if="!hasTeam" class="bg-slate-800 border border-slate-700 rounded-xl p-8 text-center space-y-4">
-              <i class="fa-solid fa-users-slash text-4xl text-slate-600"></i>
-              <h3 class="text-base font-bold text-white">Bạn chưa gia nhập nhóm nào</h3>
-              <p class="text-xs text-slate-400 max-w-md mx-auto">Tạo nhóm mới để bắt đầu thực hiện đồ án hoặc tham gia vào các nhóm đang tìm thành viên.</p>
-              <div class="flex justify-center space-x-3 pt-2">
-                <button @click="logAPI('POST', '/teams', { name: 'Nhóm mới' }); hasTeam = true" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-semibold">
-                  + Tạo Nhóm Mới
-                </button>
-                <button @click="logAPI('GET', '/teams')" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2 rounded-lg text-xs font-semibold">
-                  Tìm Nhóm Đang Tuyển
-                </button>
-              </div>
-            </div>
-
-            <!-- State B: Đã có nhóm -->
-            <div v-else class="space-y-4">
-              <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 flex justify-between items-center">
-                <div>
-                  <h3 class="text-lg font-bold text-white">Nhóm 01 - Đồ án Công nghệ phần mềm</h3>
-                  <p class="text-xs text-slate-400 mt-1">Sĩ số: 4/5 Thành viên</p>
-                </div>
-                <button @click="logAPI('POST', '/teams/1/members', { email: 'student@edu.vn' })" class="bg-emerald-600 text-white text-xs px-3 py-2 rounded-lg font-semibold">
-                  + Thêm Thành Viên
-                </button>
-              </div>
-
-              <!-- Members Table -->
-              <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
-                <table class="w-full text-left text-xs">
-                  <thead class="bg-slate-800/80 text-slate-400 border-b border-slate-700">
-                    <tr>
-                      <th class="p-3">Họ và Tên</th>
-                      <th class="p-3">Mã Sinh Viên</th>
-                      <th class="p-3">Vai trò</th>
-                      <th class="p-3 text-right">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-slate-700/50">
-                    <tr v-for="m in teamMembers" :key="m.id">
-                      <td class="p-3 font-semibold text-white">{{ m.name }}</td>
-                      <td class="p-3 text-slate-400">{{ m.code }}</td>
-                      <td class="p-3"><span :class="m.role === 'Leader' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-700 text-slate-300'" class="px-2 py-0.5 rounded text-[10px]">{{ m.role }}</span></td>
-                      <td class="p-3 text-right">
-                        <button v-if="m.role !== 'Leader'" @click="logAPI('DELETE', `/teams/1/members/${m.id}`)" class="text-rose-400 hover:text-rose-300">Xóa</button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- PROJECT REGISTRATION & PROPOSAL SCREEN -->
-          <div v-if="studentView === 'projects'" class="space-y-6">
-            <div class="flex justify-between items-center">
-              <div>
-                <h2 class="text-xl font-bold text-white">Đăng ký / Đề xuất Project (/projects)</h2>
-                <p class="text-xs text-slate-400 mt-1">Chọn đề tài từ danh sách hoặc gửi đề xuất mới cho giảng viên</p>
-              </div>
-              <button @click="logAPI('POST', '/projects', { title: 'Đề xuất mới', description: '...' })" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-lg text-xs font-semibold">
-                + Đề Xuất Đề Tài Mới
-              </button>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div v-for="p in availableProjects" :key="p.id" class="bg-slate-800 border border-slate-700 rounded-xl p-4">
-                <div class="flex justify-between items-start">
-                  <h4 class="font-bold text-sm text-white">{{ p.title }}</h4>
-                  <span :class="p.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'" class="text-[10px] px-2 py-0.5 rounded font-semibold">
-                    {{ p.status }}
-                  </span>
-                </div>
-                <p class="text-xs text-slate-400 mt-2">{{ p.description }}</p>
-                <div class="mt-4 pt-3 border-t border-slate-700/60 flex justify-end">
-                  <button @click="logAPI('POST', `/projects/${p.id}/submit`, { teamId: 1 })" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1 rounded text-xs font-semibold">
-                    Đăng ký Đề tài này
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- TASK BOARD (KANBAN) SCREEN -->
-          <div v-if="studentView === 'tasks'" class="space-y-6">
-            <div class="flex justify-between items-center">
-              <div>
-                <h2 class="text-xl font-bold text-white">Task Board Kanban (/teams/{teamId}/tasks)</h2>
-                <p class="text-xs text-slate-400 mt-1">Phân chia nhiệm vụ và theo dõi tiến độ công việc nhóm</p>
-              </div>
-              <button @click="logAPI('POST', '/teams/1/tasks', { title: 'Task mới', column: 'todo' })" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-lg text-xs font-semibold">
-                + Tạo Task Mới
-              </button>
-            </div>
-
-            <!-- Kanban Columns -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <!-- Column: To Do -->
-              <div class="bg-slate-800/60 border border-slate-700/80 rounded-xl p-4 space-y-3">
-                <div class="flex justify-between items-center text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  <span>To Do</span>
-                  <span class="bg-slate-700 px-2 py-0.5 rounded text-white">1</span>
-                </div>
-                <div class="bg-slate-800 border border-slate-700 rounded-lg p-3 space-y-2">
-                  <p class="text-xs font-semibold text-white">Thiết kế Database Schema</p>
-                  <p class="text-[10px] text-slate-400">Deadline: 20/10/2026</p>
-                  <div class="flex justify-between items-center pt-2">
-                    <span class="text-[10px] text-indigo-400">Gán cho: SV A</span>
-                    <button @click="logAPI('PUT', '/tasks/1', { column: 'in_progress' })" class="text-[10px] text-slate-400 hover:text-white">Chuyển sang In Progress $\rightarrow$</button>
+                    <div className="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-5">
+                      <h3 className="text-sm font-bold text-white mb-3">Thao tác nhanh Giảng viên</h3>
+                      <div className="flex flex-wrap gap-3">
+                        <button onClick={() => setLecturerView('evaluations')} className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition">
+                          <ClipboardCheck className="w-4 h-4" />
+                          <span>Chấm bài Checkpoint ngay</span>
+                        </button>
+                        <button onClick={() => setLecturerView('projects')} className="bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition">
+                          <FolderKanban className="w-4 h-4" />
+                          <span>Duyệt Đề tài Sinh viên</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                )}
 
-              <!-- Column: In Progress -->
-              <div class="bg-slate-800/60 border border-slate-700/80 rounded-xl p-4 space-y-3">
-                <div class="flex justify-between items-center text-xs font-bold text-amber-400 uppercase tracking-wider">
-                  <span>In Progress</span>
-                  <span class="bg-slate-700 px-2 py-0.5 rounded text-white">1</span>
-                </div>
-                <div class="bg-slate-800 border border-amber-500/30 rounded-lg p-3 space-y-2">
-                  <p class="text-xs font-semibold text-white">Dựng UI Frontend Vue/React</p>
-                  <p class="text-[10px] text-slate-400">Deadline: 25/10/2026</p>
-                  <div class="flex justify-between items-center pt-2">
-                    <span class="text-[10px] text-indigo-400">Gán cho: SV B</span>
-                    <button @click="logAPI('PUT', '/tasks/2', { column: 'done' })" class="text-[10px] text-slate-400 hover:text-white">Hoàn thành $\rightarrow$</button>
+                {/* 2. SUBJECTS & SYLLABUS */}
+                {lecturerView === 'subjects' && (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h2 className="text-xl font-bold text-white">Quản lý Môn học & Syllabus</h2>
+                        <p className="text-xs text-slate-400 mt-1">Cấu hình thông tin môn học và đề cương chi tiết (/api/v1/subjects)</p>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          const newS = { id: `SUB${Date.now()}`, code: 'CS302', name: 'Kiến trúc Phần mềm', credits: 3, syllabus: 'Thiết kế Design Patterns, Clean Architecture.', updated: '2026-10-21' };
+                          logAPI('POST', '/api/v1/subjects', newS);
+                          setSubjects([...subjects, newS]);
+                        }} 
+                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Thêm Môn Học Mới</span>
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {subjects.map(s => (
+                        <div key={s.id} className="bg-slate-800 border border-slate-700/80 rounded-2xl p-5 space-y-3">
+                          <div className="flex justify-between items-start">
+                            <span className="text-xs font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 rounded-lg">{s.code}</span>
+                            <span className="text-xs text-slate-400">{s.credits} Tín chỉ</span>
+                          </div>
+                          <h3 className="font-bold text-white text-base">{s.name}</h3>
+                          <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-700/50">
+                            <p className="text-xs text-slate-400 font-medium mb-1">Syllabus / Nội dung đề cương:</p>
+                            <p className="text-xs text-slate-300">{s.syllabus}</p>
+                          </div>
+                          <div className="pt-2 flex justify-between items-center text-xs">
+                            <span className="text-[11px] text-slate-500">Cập nhật: {s.updated}</span>
+                            <button 
+                              onClick={() => logAPI('PUT', `/api/v1/subjects/${s.id}/syllabus`, { updatedSyllabus: s.syllabus })}
+                              className="text-indigo-400 hover:text-indigo-300 font-semibold"
+                            >
+                              Sửa Đề Cương &rarr;
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              </div>
+                )}
 
-              <!-- Column: Done -->
-              <div class="bg-slate-800/60 border border-slate-700/80 rounded-xl p-4 space-y-3">
-                <div class="flex justify-between items-center text-xs font-bold text-emerald-400 uppercase tracking-wider">
-                  <span>Done</span>
-                  <span class="bg-slate-700 px-2 py-0.5 rounded text-white">1</span>
-                </div>
-                <div class="bg-slate-800 border border-emerald-500/30 rounded-lg p-3 space-y-2">
-                  <p class="text-xs font-semibold text-white">Thu thập tài liệu yêu cầu</p>
-                  <div class="flex justify-between items-center pt-2">
-                    <span class="text-[10px] text-emerald-400">Đã xong</span>
-                    <button @click="logAPI('DELETE', '/tasks/3')" class="text-[10px] text-rose-400">Xóa</button>
+                {/* 3. CLASSES MANAGEMENT */}
+                {lecturerView === 'classes' && (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h2 class="text-xl font-bold text-white">Quản lý Lớp học & Phân công</h2>
+                        <p class="text-xs text-slate-400 mt-1">Quản lý danh sách lớp, gán giảng viên hỗ trợ và nhập danh sách sinh viên (/api/v1/classes)</p>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          const newC = { id: `CLS${Date.now()}`, code: 'SE104.O13', subject: 'Nhập môn CNPM', studentsCount: 40, lecturers: ['TS. Nguyễn Văn A'] };
+                          logAPI('POST', '/api/v1/classes', newC);
+                          setClassesList([...classesList, newC]);
+                        }} 
+                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Tạo Lớp Mới</span>
+                      </button>
+                    </div>
+
+                    <div className="bg-slate-800 border border-slate-700/80 rounded-2xl overflow-hidden">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-800/90 text-slate-400 border-b border-slate-700/80">
+                          <tr>
+                            <th className="p-4">Mã Lớp</th>
+                            <th className="p-4">Môn Học</th>
+                            <th className="p-4">Sĩ Số</th>
+                            <th className="p-4">Giảng Viên Hỗ Trợ</th>
+                            <th className="p-4 text-right">Thao Tác API</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-700/50">
+                          {classesList.map(c => (
+                            <tr key={c.id} className="hover:bg-slate-700/20">
+                              <td className="p-4 font-bold text-indigo-400">{c.code}</td>
+                              <td className="p-4 text-slate-200">{c.subject}</td>
+                              <td className="p-4 text-slate-300">{c.studentsCount} SV</td>
+                              <td className="p-4 text-slate-300">{c.lecturers.join(', ')}</td>
+                              <td className="p-4 text-right space-x-2">
+                                <button onClick={() => logAPI('POST', `/api/v1/classes/${c.id}/import-students`, { count: 5 })} className="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2.5 py-1 rounded-lg text-[11px]">
+                                  + Import SV
+                                </button>
+                                <button onClick={() => logAPI('POST', `/api/v1/classes/${c.id}/assign-lecturer`, { lecturerId: 'GV2' })} className="bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 px-2.5 py-1 rounded-lg text-[11px]">
+                                  + Thêm GV
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                )}
 
-          <!-- CHECKPOINT SUBMISSION SCREEN -->
-          <div v-if="studentView === 'checkpoints'" class="space-y-6">
-            <div>
-              <h2 class="text-xl font-bold text-white">Nộp bài Checkpoint (/checkpoints)</h2>
-              <p class="text-xs text-slate-400 mt-1">Nộp tài liệu/link báo cáo theo các đợt kiểm tra tiến độ</p>
-            </div>
+                {/* 4. PROJECTS POOL & APPROVAL */}
+                {lecturerView === 'projects' && (
+                  <div className="space-y-6">
+                    <div>
+                      <h2 className="text-xl font-bold text-white">Duyệt & Quản lý Kho Đề Tài</h2>
+                      <p className="text-xs text-slate-400 mt-1">Duyệt đề xuất từ sinh viên hoặc thêm đề tài mẫu vào Kho đề tài (/api/v1/projects)</p>
+                    </div>
 
-            <div class="space-y-4">
-              <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 space-y-4">
-                <div class="flex justify-between items-start">
+                    {/* Pending Proposals Section */}
+                    <div className="bg-slate-800/80 border border-amber-500/30 rounded-2xl p-5 space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <Lightbulb className="w-5 h-5 text-amber-400" />
+                        <h3 className="font-bold text-sm text-amber-300">Đề tài Sinh viên Tự đề xuất ({pendingProposals.length})</h3>
+                      </div>
+
+                      {pendingProposals.length === 0 ? (
+                        <p className="text-xs text-slate-400 italic">Hiện không có đề xuất nào đang chờ duyệt.</p>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {pendingProposals.map(prop => (
+                            <div key={prop.id} className="bg-slate-900/80 border border-slate-700/80 rounded-xl p-4 space-y-3">
+                              <h4 className="font-bold text-xs text-white">{prop.title}</h4>
+                              <p className="text-xs text-slate-400 leading-relaxed">{prop.description}</p>
+                              <p className="text-[11px] text-slate-500">Đề xuất bởi: <span className="text-slate-300 font-medium">{prop.proposedBy}</span></p>
+                              <div className="flex justify-end space-x-2 pt-2 border-t border-slate-700/50">
+                                <button onClick={() => handleDenyProposal(prop)} className="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+                                  Từ chối
+                                </button>
+                                <button onClick={() => handleApproveProposal(prop)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+                                  Duyệt Đề Tài
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Project Pool Section */}
+                    <div className="space-y-3">
+                      <h3 className="font-bold text-sm text-white">Kho Đề tài Mẫu (Project Pool)</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {projectPool.map(p => (
+                          <div key={p.id} className="bg-slate-800 border border-slate-700/80 rounded-2xl p-4 space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs font-bold text-indigo-400">{p.id}</span>
+                              <span className="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded-md">{p.category}</span>
+                            </div>
+                            <h4 className="font-bold text-sm text-white">{p.title}</h4>
+                            <p className="text-xs text-slate-400">{p.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 5. MILESTONES & TIMELINE */}
+                {lecturerView === 'milestones' && (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h2 className="text-xl font-bold text-white">Cột mốc Tiến độ & Milestones</h2>
+                        <p className="text-xs text-slate-400 mt-1">Thiết lập các mốc deadline chung cho các dự án đồ án môn học (/api/v1/milestones)</p>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          const newM = { id: `M-${Date.now()}`, title: 'Milestone 4: Báo cáo Cuối kỳ & Bảo vệ', deadline: '2026-12-15', status: 'pending' };
+                          logAPI('POST', '/api/v1/milestones', newM);
+                          setMilestones([...milestones, newM]);
+                        }} 
+                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Thêm Cột Mốc Mới</span>
+                      </button>
+                    </div>
+
+                    <div className="bg-slate-800 border border-slate-700/80 rounded-2xl p-6 space-y-4">
+                      {milestones.map(m => (
+                        <div key={m.id} className="bg-slate-900/70 border border-slate-700/60 p-4 rounded-xl flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <CheckCircle2 className={`w-5 h-5 ${m.status === 'completed' ? 'text-emerald-400' : 'text-slate-600'}`} />
+                            <div>
+                              <p className="text-xs font-bold text-white">{m.title}</p>
+                              <span className="text-[11px] text-slate-400">Deadline: {m.deadline}</span>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={() => logAPI('PATCH', `/api/v1/milestones/${m.id}`, { newDeadline: '2026-12-01' })}
+                            className="text-xs text-indigo-400 hover:underline"
+                          >
+                            Chỉnh sửa Deadline
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 6. EVALUATIONS SPLIT-VIEW */}
+                {lecturerView === 'evaluations' && (
+                  <div className="space-y-6">
+                    <div>
+                      <h2 className="text-xl font-bold text-white">Chấm điểm & Feedback (Split-View)</h2>
+                      <p className="text-xs text-slate-400 mt-1">Xem chi tiết bài nộp checkpoint, cho phản hồi và chấm điểm nhóm / cá nhân (/api/v1/evaluations)</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-[520px]">
+                      {/* Left: Submissions list */}
+                      <div className="md:col-span-4 bg-slate-800 border border-slate-700/80 rounded-2xl p-3 overflow-y-auto space-y-2">
+                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2">Bài Nộp Cần Chấm</span>
+                        {submissions.map(s => (
+                          <div 
+                            key={s.id} 
+                            onClick={() => setSelectedSubmission(s)}
+                            className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                              selectedSubmission?.id === s.id 
+                                ? 'bg-indigo-600/20 border-indigo-500 shadow-md' 
+                                : 'bg-slate-900/40 border-slate-700/50 hover:bg-slate-700/30'
+                            }`}
+                          >
+                            <div className="flex justify-between items-start">
+                              <span className="text-xs font-bold text-white">{s.teamName}</span>
+                              <span className={`text-[10px] px-2 py-0.5 rounded ${s.status==='evaluated' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                                {s.status === 'evaluated' ? 'Đã chấm' : 'Chờ chấm'}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 mt-1">{s.checkpointName}</p>
+                            <p className="text-[10px] text-slate-500 mt-1">{s.submittedAt}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Right: Detailed Evaluation Panel */}
+                      {selectedSubmission ? (
+                        <div className="md:col-span-8 bg-slate-800 border border-slate-700/80 rounded-2xl p-5 flex flex-col justify-between">
+                          <div className="space-y-4 overflow-y-auto pr-1">
+                            <div className="border-b border-slate-700/80 pb-3">
+                              <h3 className="font-bold text-sm text-white">{selectedSubmission.checkpointName}</h3>
+                              <p className="text-xs text-indigo-400 font-semibold mt-1">{selectedSubmission.teamName}</p>
+                              <a href={selectedSubmission.repoLink} target="_blank" rel="noreferrer" className="text-xs text-slate-300 hover:text-white flex items-center space-x-1 mt-2">
+                                <ExternalLink className="w-3.5 h-3.5 text-indigo-400" />
+                                <span className="underline">{selectedSubmission.repoLink}</span>
+                              </a>
+                            </div>
+
+                            <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-700/50">
+                              <p className="text-xs text-slate-400 font-medium">Ghi chú từ Sinh viên:</p>
+                              <p className="text-xs text-slate-200 mt-1">{selectedSubmission.note}</p>
+                            </div>
+
+                            {/* Scoring Inputs */}
+                            <div className="space-y-3">
+                              <div>
+                                <label className="block text-xs font-medium text-slate-400 mb-1">Nhận xét / Feedback cho Nhóm</label>
+                                <textarea 
+                                  value={evaluationForm.feedback} 
+                                  onChange={e => setEvaluationForm({ ...evaluationForm, feedback: e.target.value })} 
+                                  rows={2} 
+                                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" 
+                                  placeholder="Nhập nhận xét bài làm..."
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <label className="block text-xs font-medium text-slate-400 mb-1">Điểm Nhóm (Thang 10)</label>
+                                  <input 
+                                    type="text" 
+                                    value={evaluationForm.groupScore} 
+                                    onChange={e => setEvaluationForm({ ...evaluationForm, groupScore: e.target.value })} 
+                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="pt-4 border-t border-slate-700/80 flex justify-end space-x-3">
+                            <button onClick={handleSaveEvaluation} className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition">
+                              <Send className="w-4 h-4" />
+                              <span>Lưu Đánh Giá & Gửi Feedback</span>
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="md:col-span-8 bg-slate-800 border border-slate-700/80 rounded-2xl p-5 flex items-center justify-center text-slate-500 text-xs">
+                          Chọn bài nộp bên trái để bắt đầu chấm điểm.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* ================= STUDENT VIEWS ================= */}
+            {currentRole === 'student' && (
+              <>
+                {/* 1. STUDENT DASHBOARD */}
+                {studentView === 'dashboard' && (
+                  <div className="space-y-6">
+                    <div>
+                      <h2 className="text-xl font-bold text-white">Dashboard Sinh viên</h2>
+                      <p className="text-xs text-slate-400 mt-1">Trạng thái đồ án, nhóm học tập và tiến độ task cá nhân</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-slate-800 border border-slate-700/80 rounded-2xl p-4">
+                        <p className="text-xs text-slate-400">Trạng thái Nhóm</p>
+                        <p className="text-lg font-bold text-emerald-400 mt-1">{hasTeam ? teamInfo.name : 'Chưa có nhóm'}</p>
+                        <span className="text-[10px] text-slate-500">{hasTeam ? `${teamInfo.members.length} thành viên` : 'Tạo hoặc tham gia nhóm'}</span>
+                      </div>
+                      <div className="bg-slate-800 border border-slate-700/80 rounded-2xl p-4">
+                        <p className="text-xs text-slate-400">Đề tài Đã Đăng Ký</p>
+                        <p className="text-sm font-bold text-indigo-400 mt-1">{teamInfo.projectTitle}</p>
+                      </div>
+                      <div className="bg-slate-800 border border-slate-700/80 rounded-2xl p-4">
+                        <p className="text-xs text-slate-400">Task Cá nhân Được Gán</p>
+                        <p className="text-2xl font-bold text-amber-400 mt-1">{tasks.filter(t=>t.assignee==='Lê Văn B').length} Tasks</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. TEAM MANAGEMENT */}
+                {studentView === 'teams' && (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h2 className="text-xl font-bold text-white">Quản lý Nhóm Đồ Án</h2>
+                        <p className="text-xs text-slate-400 mt-1">Quản lý thành viên, phân vai trò và chuyển quyền Leader (/api/v1/teams)</p>
+                      </div>
+                      <button 
+                        onClick={() => setHasTeam(!hasTeam)} 
+                        className="text-xs bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl transition"
+                      >
+                        Demo Mode: {hasTeam ? 'Switch to No Team State' : 'Switch to In Team State'}
+                      </button>
+                    </div>
+
+                    {!hasTeam ? (
+                      /* STATE A: NO TEAM */
+                      <div className="bg-slate-800 border border-slate-700/80 rounded-2xl p-8 text-center space-y-4">
+                        <Users className="w-12 h-12 text-slate-600 mx-auto" />
+                        <h3 className="text-base font-bold text-white">Bạn chưa tham gia nhóm đồ án nào</h3>
+                        <p className="text-xs text-slate-400 max-w-md mx-auto">Hãy khởi tạo nhóm mới hoặc gửi yêu cầu tham gia các nhóm hiện có trong lớp học.</p>
+                        <button 
+                          onClick={() => {
+                            logAPI('POST', '/api/v1/teams', { name: 'Nhóm 01 mới' });
+                            setHasTeam(true);
+                          }} 
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-semibold transition"
+                        >
+                          + Tạo Nhóm Mới Ngay
+                        </button>
+                      </div>
+                    ) : (
+                      /* STATE B: IN TEAM */
+                      <div className="space-y-4">
+                        <div className="bg-slate-800 border border-slate-700/80 rounded-2xl p-5 flex justify-between items-center">
+                          <div>
+                            <h3 className="text-base font-bold text-white">{teamInfo.name}</h3>
+                            <p className="text-xs text-slate-400 mt-0.5">Lớp: {teamInfo.className} | Đề tài: {teamInfo.projectTitle}</p>
+                          </div>
+                          <button 
+                            onClick={() => {
+                              const newM = { id: `M${Date.now()}`, name: 'Nguyễn Văn F', code: '20520004', role: 'Developer', email: 'vanf@edu.vn' };
+                              logAPI('POST', `/api/v1/teams/${teamInfo.id}/members`, newM);
+                              setTeamInfo({ ...teamInfo, members: [...teamInfo.members, newM] });
+                            }} 
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition"
+                          >
+                            <UserPlus className="w-4 h-4" />
+                            <span>+ Mời Thành Viên</span>
+                          </button>
+                        </div>
+
+                        <div className="bg-slate-800 border border-slate-700/80 rounded-2xl overflow-hidden">
+                          <table className="w-full text-left text-xs">
+                            <thead className="bg-slate-800/90 text-slate-400 border-b border-slate-700">
+                              <tr>
+                                <th className="p-4">Họ & Tên</th>
+                                <th className="p-4">MSSV</th>
+                                <th className="p-4">Vai Trò</th>
+                                <th className="p-4">Email</th>
+                                <th className="p-4 text-right">Thao Tác</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-700/50">
+                              {teamInfo.members.map(m => (
+                                <tr key={m.id} className="hover:bg-slate-700/20">
+                                  <td className="p-4 font-semibold text-white">{m.name}</td>
+                                  <td className="p-4 text-slate-400">{m.code}</td>
+                                  <td className="p-4">
+                                    <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold ${m.role==='Leader' ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-slate-700 text-slate-300'}`}>
+                                      {m.role}
+                                    </span>
+                                  </td>
+                                  <td className="p-4 text-slate-400">{m.email}</td>
+                                  <td className="p-4 text-right space-x-2">
+                                    {m.role !== 'Leader' && (
+                                      <button 
+                                        onClick={() => {
+                                          logAPI('POST', `/api/v1/teams/${teamInfo.id}/transfer-leader`, { newLeaderId: m.id });
+                                          setTeamInfo({
+                                            ...teamInfo,
+                                            members: teamInfo.members.map(mem => mem.id === m.id ? { ...mem, role: 'Leader' } : { ...mem, role: 'Developer' })
+                                          });
+                                        }} 
+                                        className="text-amber-400 hover:underline text-[11px]"
+                                      >
+                                        Chuyển Leader
+                                      </button>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 3. PROJECT REGISTRATION & PROPOSAL */}
+                {studentView === 'projects' && (
+                  <div className="space-y-6">
+                    <div>
+                      <h2 className="text-xl font-bold text-white">Đăng ký & Đề xuất Đề tài</h2>
+                      <p className="text-xs text-slate-400 mt-1">Chọn từ Kho đề tài của môn học hoặc tự gửi đề xuất riêng (/api/v1/projects)</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Select from Pool */}
+                      <div className="bg-slate-800 border border-slate-700/80 rounded-2xl p-5 space-y-4">
+                        <h3 className="font-bold text-sm text-white flex items-center space-x-2">
+                          <BookOpen className="w-4 h-4 text-emerald-400" />
+                          <span>Đăng ký từ Kho Đề tài</span>
+                        </h3>
+                        <div className="space-y-3">
+                          {projectPool.map(p => (
+                            <div key={p.id} className="p-3.5 bg-slate-900/60 rounded-xl border border-slate-700/50 space-y-2">
+                              <p className="text-xs font-bold text-white">{p.title}</p>
+                              <p className="text-[11px] text-slate-400">{p.description}</p>
+                              <button 
+                                onClick={() => {
+                                  logAPI('POST', `/api/v1/teams/${teamInfo.id}/select-project`, { projectId: p.id });
+                                  setTeamInfo({ ...teamInfo, projectTitle: p.title });
+                                }} 
+                                className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold w-full mt-2 transition"
+                              >
+                                Đăng ký Đề tài này
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Custom Proposal */}
+                      <div className="bg-slate-800 border border-slate-700/80 rounded-2xl p-5 space-y-4">
+                        <h3 className="font-bold text-sm text-white flex items-center space-x-2">
+                          <Lightbulb className="w-4 h-4 text-indigo-400" />
+                          <span>Tự Đề xuất Đề tài Mới</span>
+                        </h3>
+                        <form onSubmit={(e) => {
+                          e.preventDefault();
+                          if(!proposalInput.title) return;
+                          const newProp = { id: `PROP-${Date.now()}`, title: proposalInput.title, description: proposalInput.description, proposedBy: 'Lê Văn B (20520001)', teamName: teamInfo.name };
+                          logAPI('POST', '/api/v1/projects/propose', newProp);
+                          setPendingProposals([...pendingProposals, newProp]);
+                          setProposalInput({ title: '', description: '' });
+                        }} className="space-y-3">
+                          <div>
+                            <label className="block text-xs font-medium text-slate-400 mb-1">Tên đề tài đề xuất</label>
+                            <input 
+                              type="text" 
+                              value={proposalInput.title}
+                              onChange={e => setProposalInput({ ...proposalInput, title: e.target.value })}
+                              className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" 
+                              placeholder="Nhập tên đề tài..."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-slate-400 mb-1">Mô tả công nghệ & mục tiêu</label>
+                            <textarea 
+                              rows={3} 
+                              value={proposalInput.description}
+                              onChange={e => setProposalInput({ ...proposalInput, description: e.target.value })}
+                              className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" 
+                              placeholder="Mô tả chi tiết..."
+                            />
+                          </div>
+                          <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold transition">
+                            Gửi Đề Xuất Cho Giảng Viên
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. KANBAN TASK BOARD */}
+                {studentView === 'tasks' && (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h2 className="text-xl font-bold text-white">Task Board (Kanban)</h2>
+                        <p className="text-xs text-slate-400 mt-1">Phân chia công việc và theo dõi tiến độ nhóm (/api/v1/tasks)</p>
+                      </div>
+                    </div>
+
+                    {/* New Task Form */}
+                    <form onSubmit={handleCreateTask} className="bg-slate-800 border border-slate-700/80 rounded-2xl p-4 flex gap-3 items-center">
+                      <input 
+                        type="text" 
+                        value={newTaskTitle} 
+                        onChange={e => setNewTaskTitle(e.target.value)} 
+                        placeholder="Thêm task công việc mới..." 
+                        className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      />
+                      <select 
+                        value={newTaskAssignee} 
+                        onChange={e => setNewTaskAssignee(e.target.value)}
+                        className="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-xl px-3 py-2 focus:outline-none"
+                      >
+                        {teamInfo.members.map(m => <option key={m.id} value={m.name}>{m.name}</option>)}
+                      </select>
+                      <button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-semibold shrink-0">
+                        + Tạo Task
+                      </button>
+                    </form>
+
+                    {/* Kanban Columns */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      {[
+                        { key: 'todo', label: 'To Do', color: 'text-slate-400' },
+                        { key: 'in_progress', label: 'In Progress', color: 'text-amber-400' },
+                        { key: 'review', label: 'Code Review', color: 'text-indigo-400' },
+                        { key: 'done', label: 'Done', color: 'text-emerald-400' }
+                      ].map(col => {
+                        const colTasks = tasks.filter(t => t.status === col.key);
+                        return (
+                          <div key={col.key} className="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-3 space-y-3 min-h-[300px]">
+                            <div className="flex justify-between items-center px-1">
+                              <span className={`text-xs font-bold uppercase tracking-wider ${col.color}`}>{col.label}</span>
+                              <span className="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full font-bold">{colTasks.length}</span>
+                            </div>
+
+                            <div className="space-y-2">
+                              {colTasks.map(task => (
+                                <div key={task.id} className="bg-slate-800 border border-slate-700 rounded-xl p-3 space-y-2 shadow-sm">
+                                  <p className="text-xs font-semibold text-white leading-snug">{task.title}</p>
+                                  <div className="flex justify-between items-center text-[10px] text-slate-400">
+                                    <span>Gán: <span className="text-slate-200">{task.assignee}</span></span>
+                                  </div>
+                                  <div className="pt-2 border-t border-slate-700/50 flex justify-between gap-1">
+                                    {col.key !== 'todo' && (
+                                      <button onClick={() => handleMoveTask(task.id, col.key === 'done' ? 'review' : col.key === 'review' ? 'in_progress' : 'todo')} className="text-[10px] text-slate-400 hover:text-white">
+                                        &larr; Lùi
+                                      </button>
+                                    )}
+                                    {col.key !== 'done' && (
+                                      <button onClick={() => handleMoveTask(task.id, col.key === 'todo' ? 'in_progress' : col.key === 'in_progress' ? 'review' : 'done')} className="text-[10px] text-emerald-400 hover:underline ml-auto">
+                                        Tiến &rarr;
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* 5. CHECKPOINT SUBMISSION */}
+                {studentView === 'checkpoints' && (
+                  <div className="space-y-6">
+                    <div>
+                      <h2 className="text-xl font-bold text-white">Nộp bài Checkpoint Progress</h2>
+                      <p className="text-xs text-slate-400 mt-1">Nộp báo cáo, repository link và tài nguyên bài làm (/api/v1/checkpoints)</p>
+                    </div>
+
+                    <form onSubmit={handleSubmitCheckpoint} className="bg-slate-800 border border-slate-700/80 rounded-2xl p-6 max-w-2xl space-y-4">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-400 mb-1">Chọn Checkpoint Mốc Tiến Độ</label>
+                        <select 
+                          value={checkpointInput.checkpointName} 
+                          onChange={e => setCheckpointInput({ ...checkpointInput, checkpointName: e.target.value })}
+                          className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                        >
+                          <option value="Checkpoint 1: SRS & Requirement Document">Checkpoint 1: SRS & Requirement Document</option>
+                          <option value="Checkpoint 2: Database Schema & API Docs">Checkpoint 2: Database Schema & API Docs</option>
+                          <option value="Checkpoint 3: MVP Demo & Source Code">Checkpoint 3: MVP Demo & Source Code</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-slate-400 mb-1">GitHub Repository Link / Document URL</label>
+                        <input 
+                          type="url" 
+                          required
+                          value={checkpointInput.repoLink} 
+                          onChange={e => setCheckpointInput({ ...checkpointInput, repoLink: e.target.value })}
+                          placeholder="https://github.com/..." 
+                          className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-slate-400 mb-1">Ghi chú gửi Giảng viên</label>
+                        <textarea 
+                          rows={3} 
+                          value={checkpointInput.note} 
+                          onChange={e => setCheckpointInput({ ...checkpointInput, note: e.target.value })}
+                          placeholder="Mô tả nội dung bài nộp..." 
+                          className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                        />
+                      </div>
+
+                      <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl text-xs font-semibold transition">
+                        Nộp Bài Checkpoint Ngay
+                      </button>
+                    </form>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* 7. RESOURCES & ATTACHMENTS (COMMON SHARED) */}
+            {((currentRole === 'lecturer' && lecturerView === 'resources') || (currentRole === 'student' && studentView === 'resources')) && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
                   <div>
-                    <h3 class="font-bold text-sm text-white">Checkpoint 2: Đánh giá Kiến trúc Hệ thống & Wireframe</h3>
-                    <p class="text-xs text-slate-400 mt-1">Hạn nộp: 28/10/2026</p>
+                    <h2 className="text-xl font-bold text-white">Kho Tài nguyên & Tài liệu</h2>
+                    <p className="text-xs text-slate-400 mt-1">Chia sẻ tài liệu học tập, biểu mẫu và tài nguyên dự án (/api/v1/resources)</p>
                   </div>
-                  <span class="bg-amber-500/20 text-amber-400 text-xs px-2.5 py-1 rounded font-semibold">Chờ nộp</span>
                 </div>
 
-                <!-- Submission Link Form -->
-                <div class="flex space-x-2">
-                  <input v-model="checkpointLink" type="text" placeholder="Dán link bài làm (GitHub, Google Drive, Docs...)" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
-                  <button @click="logAPI('POST', '/checkpoints/2/submit', { link: checkpointLink })" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-semibold">
-                    Nộp Bài
+                {/* Resource Upload Form */}
+                <form onSubmit={handleAddResource} className="bg-slate-800 border border-slate-700/80 rounded-2xl p-4 flex gap-3 items-center">
+                  <input 
+                    type="text" 
+                    value={newResTitle} 
+                    onChange={e => setNewResTitle(e.target.value)} 
+                    placeholder="Tên tài nguyên / Tài liệu..." 
+                    className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                  />
+                  <input 
+                    type="url" 
+                    value={newResUrl} 
+                    onChange={e => setNewResUrl(e.target.value)} 
+                    placeholder="Link URL tài liệu..." 
+                    className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                  />
+                  <button type="submit" className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-semibold shrink-0">
+                    + Thêm Link
                   </button>
-                </div>
+                </form>
 
-                <!-- Teacher Feedback display -->
-                <div class="mt-4 p-3 bg-slate-900/80 rounded-lg border border-slate-700">
-                  <p class="text-xs font-bold text-indigo-400">Phản hồi từ Giảng viên:</p>
-                  <p class="text-xs text-slate-300 mt-1 italic">"Cần cập nhật bổ sung thêm biểu đồ Sequence trước lần nộp tới."</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {resources.map(r => (
+                    <div key={r.id} className="bg-slate-800 border border-slate-700/80 rounded-2xl p-4 flex justify-between items-center">
+                      <div className="flex items-center space-x-3">
+                        <FileText className="w-5 h-5 text-indigo-400" />
+                        <div>
+                          <p className="text-xs font-bold text-white">{r.title}</p>
+                          <span className="text-[10px] text-slate-400">Đăng bởi: {r.sharedBy}</span>
+                        </div>
+                      </div>
+                      <a href={r.url} target="_blank" rel="noreferrer" className="text-xs text-indigo-400 hover:underline flex items-center space-x-1">
+                        <span>Mở Link</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  ))}
                 </div>
               </div>
+            )}
+
+          </div>
+
+          {/* ================= REALTIME API INSPECTOR CONSOLE ================= */}
+          <div className="mt-8 border-t border-slate-800 pt-4">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-2">
+                <Terminal className="w-4 h-4 text-emerald-400" />
+                <span>REST API Payload Contract Inspector</span>
+              </span>
+              <button onClick={() => setApiLogs([])} className="text-[10px] text-slate-500 hover:text-slate-300"> 
+              Clear Logs
+              </button>
+            </div>
+            <div className="bg-slate-950/90 rounded-2xl p-3 font-mono text-[11px] text-emerald-400 max-h-32 overflow-y-auto border border-slate-800 space-y-1">
+              {apiLogs.length === 0 ? (
+                <div className="text-slate-600 italic">Thực hiện các thao tác trên giao diện để xem mã payload REST API tương ứng...</div>
+              ) : (
+                apiLogs.map(log => (
+                  <div key={log.id} className="flex space-x-2">
+                    <span className="text-slate-500">[{log.time}]</span>
+                    <span className={`font-bold ${log.method === 'GET' ? 'text-blue-400' : log.method === 'POST' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                      {log.method}
+                    </span>
+                    <span className="text-slate-200">{log.endpoint}</span>
+                    <span className="text-slate-500 truncate">{log.payload ? JSON.stringify(log.payload) : ''}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
-        </div>
-
-      </main>
-    </div>
-
-    <!-- FLOATING AI ASSISTANT CO-PILOT WIDGET -->
-    <div class="fixed bottom-16 right-6 z-40">
-      <button @click="showAI = !showAI" class="bg-indigo-600 hover:bg-indigo-500 text-white w-12 h-12 rounded-full shadow-2xl flex items-center justify-center text-xl transition-all hover:scale-105">
-        <i class="fa-solid fa-robot"></i>
-      </button>
-
-      <!-- AI Popup Window -->
-      <div v-if="showAI" class="absolute bottom-16 right-0 w-80 bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-4 space-y-3">
-        <div class="flex justify-between items-center border-b border-slate-700 pb-2">
-          <span class="font-bold text-xs text-indigo-400 flex items-center space-x-2">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-            <span>AI Assistant Co-pilot</span>
-          </span>
-          <button @click="showAI = false" class="text-slate-400 hover:text-white text-xs"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <p class="text-xs text-slate-300">Gợi ý thông minh cho {{ currentRole === 'lecturer' ? 'Giảng viên' : 'Sinh viên' }}:</p>
-        <div class="space-y-2">
-          <button v-if="currentRole === 'lecturer'" @click="logAPI('AI', '/ai/suggest-syllabus', {})" class="w-full text-left bg-slate-700/50 hover:bg-slate-700 p-2 rounded text-xs text-indigo-300">
-            🤖 Gợi ý cấu trúc Syllabus chuẩn
-          </button>
-          <button v-else @click="logAPI('AI', '/ai/breakdown-tasks', {})" class="w-full text-left bg-slate-700/50 hover:bg-slate-700 p-2 rounded text-xs text-emerald-300">
-            🤖 Tự động chia nhỏ Task cho Kanban
-          </button>
-        </div>
+        </main>
       </div>
     </div>
-
-    <!-- FOOTER API INSPECTOR LOGS -->
-    <footer class="bg-slate-950 border-t border-slate-800 px-4 py-2 flex items-center justify-between text-[11px] text-slate-400 z-30 shrink-0">
-      <div class="flex items-center space-x-2">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span class="font-mono">API Inspector:</span>
-        <span class="text-slate-200 font-mono">{{ lastAPILog || 'Chờ thao tác người dùng...' }}</span>
-      </div>
-      <span class="text-slate-500">EduProject Hub v1.0.0</span>
-    </footer>
-
-  </div>
-
-  <script>
-    const { createApp, ref } = Vue;
-
-    createApp({
-      setup() {
-        // Core Navigation State
-        const currentRole = ref('lecturer');
-        const lecturerView = ref('dashboard');
-        const studentView = ref('dashboard');
-        
-        // UI Popups & Toggles
-        const showNotifs = ref(false);
-        const showAI = ref(false);
-        const projectTab = ref('pending');
-        const hasTeam = ref(true);
-        const selectedSub = ref(1);
-
-        // API Form inputs
-        const feedbackText = ref('');
-        const checkpointLink = ref('');
-        const lastAPILog = ref('');
-
-        // Realtime Notifications Mock Data
-        const unreadNotifsCount = ref(2);
-        const notifications = ref([
-          { id: 1, title: 'Bài nộp Checkpoint mới', message: 'Nhóm 01 vừa nộp bài cho Checkpoint 2', time: '5 phút trước' },
-          { id: 2, title: 'Đề xuất đề tài mới', message: 'Sinh viên Nguyễn Văn C gửi đề xuất đề tài', time: '20 phút trước' }
-        ]);
-
-        // Mock System Data
-        const subjects = ref([
-          { id: 1, code: 'SE104', name: 'Nhập môn Công nghệ phần mềm', credits: 3, description: 'Cung cấp kiến thức cơ bản về quy trình phát triển phần mềm, thiết kế hệ thống và làm việc nhóm.' }
-        ]);
-
-        const classesList = ref([
-          { id: 101, code: 'SE104.O12', subject: 'Nhập môn CNPM', studentsCount: 45, lecturers: ['TS. Nguyễn Văn A'] }
-        ]);
-
-        const projectPool = ref([
-          { id: 1, title: 'Xây dựng Website Quản lý Dự án Học thuật', category: 'Web App', description: 'Hệ thống hỗ trợ Giảng viên và Sinh viên theo dõi tiến độ đồ án môn học.' }
-        ]);
-
-        const pendingProjects = ref([
-          { id: 10, title: 'Ứng dụng Điểm danh bằng AI Face Recognition', description: 'Tự động nhận diện khuôn mặt sinh viên trong lớp học.', proposedBy: 'Nguyễn Văn C (SV001)' }
-        ]);
-
-        const milestones = ref([
-          { id: 1, title: 'Mốc 1: Phân tích Yêu cầu & Thiết kế Database', deadline: '2026-10-20', completed: true },
-          { id: 2, title: 'Mốc 2: Dựng Giao diện & Tích hợp API', deadline: '2026-11-15', completed: false }
-        ]);
-
-        const teamMembers = ref([
-          { id: 1, name: 'Lê Văn B', code: 'SV2001', role: 'Leader' },
-          { id: 2, name: 'Trần Thị C', code: 'SV2002', role: 'Member' }
-        ]);
-
-        const availableProjects = ref([
-          { id: 1, title: 'Xây dựng Website Quản lý Dự án Học thuật', status: 'Approved', description: 'Hệ thống quản lý đồ án theo mô hình Agile/Kanban.' }
-        ]);
-
-        // Logger Helper for Verification
-        const logAPI = (method, endpoint, payload = null) => {
-          const payloadStr = payload ? ` | Payload: ${JSON.stringify(payload)}` : '';
-          lastAPILog.value = `[${method}] ${endpoint}${payloadStr} -> 200 OK`;
-        };
-
-        return {
-          currentRole,
-          lecturerView,
-          studentView,
-          showNotifs,
-          showAI,
-          projectTab,
-          hasTeam,
-          selectedSub,
-          feedbackText,
-          checkpointLink,
-          lastAPILog,
-          unreadNotifsCount,
-          notifications,
-          subjects,
-          classesList,
-          projectPool,
-          pendingProjects,
-          milestones,
-          teamMembers,
-          availableProjects,
-          logAPI
-        };
-      }
-    }).mount('#app');
-  </script>
-</body>
-</html>
+  );
+}
