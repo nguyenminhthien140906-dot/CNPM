@@ -115,30 +115,28 @@ Hệ thống cần kiểm tra tài khoản giảng viên hợp lệ và bảo đ
 
 ## 3. Quy trình nghiệp vụ
 
+
 ```mermaid
 flowchart TD
-    A([Bắt đầu]) --> B[Nhân viên quản lý truy cập chức năng quản lý lớp học]
+    A([Bắt đầu]) --> B[Staff truy cập chức năng quản lý lớp học]
     B --> C{Chọn hình thức tạo lớp}
     C -->|Nhập thủ công| D[Nhập thông tin lớp]
-    C -->|Nhập từ tệp CSV| E[Tải lên tệp CSV]
-    E --> F[Kiểm tra và xem trước dữ liệu]
+    C -->|Nhập CSV| E[Tải lên tệp CSV]
+    E --> F[Kiểm tra dữ liệu]
     F --> G{Dữ liệu hợp lệ?}
-    G -->|Không| H[Thông báo lỗi và yêu cầu chỉnh sửa]
+    G -->|Không| H[Thông báo lỗi]
     H --> E
-    G -->|Có| I[Xác nhận nhập dữ liệu]
+    G -->|Có| I[Xác nhận dữ liệu]
     D --> J[Kiểm tra thông tin lớp]
     I --> J
     J --> K{Thông tin hợp lệ?}
-    K -->|Không| L[Hiển thị thông báo lỗi]
-    L --> B
-    K -->|Có| M[Lưu thông tin lớp]
-    M --> N[Phân công giảng viên]
-    N --> O[Thêm sinh viên vào lớp]
-    O --> P[Hiển thị kết quả]
-    P --> Q([Kết thúc])
+    K -->|Không| D
+    K -->|Có| L[Lưu thông tin lớp]
+    L --> M[Phân công giảng viên]
+    M --> N[Thêm sinh viên vào lớp]
+    N --> O[Hiển thị kết quả]
+    O --> P([Kết thúc])
 ```
-
----
 
 ## 4. Quy tắc nghiệp vụ
 
