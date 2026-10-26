@@ -20,7 +20,7 @@ Chức năng Quản lý lớp học cho phép nhân viên quản lý tạo lớp
 |---|---|---|
 | FE03.01 | Nhập dữ liệu lớp học | Tạo lớp từ tệp CSV và kiểm tra dữ liệu trước khi lưu |
 | FE03.02 | Quản lý thông tin lớp | Tạo mới, xem, tìm kiếm và cập nhật thông tin lớp học |
-| FE03.03 | Quản lý sinh viên | Thêm, xem và xóa sinh viên khỏi danh sách lớp |
+| FE03.03 |  Quản lý sinh viên | Thêm, xem và xóa sinh viên khỏi danh sách lớp |
 | FE03.04 | Phân công giảng viên | Phân công, xem và thay đổi giảng viên phụ trách lớp |
 
 ### 1.3. Đối tượng sử dụng
