@@ -20,7 +20,7 @@ Chức năng Quản lý lớp học cho phép nhân viên quản lý tạo lớp
 |---|---|---|
 | FE03.01 | Nhập dữ liệu lớp học | Tạo lớp từ tệp CSV và kiểm tra dữ liệu trước khi lưu |
 | FE03.02 | Quản lý thông tin lớp | Tạo mới, xem, tìm kiếm và cập nhật thông tin lớp học |
-| FE03.03 |  Quản lý sinh viên | Thêm, xem và xóa sinh viên khỏi danh sách lớp |
+| FE03.03 | cập nhật sinh viên | Thêm, xem và xóa sinh viên khỏi danh sách lớp |
 | FE03.04 | Phân công giảng viên | Phân công, xem và thay đổi giảng viên phụ trách lớp |
 
 ### 1.3. Đối tượng sử dụng
@@ -228,23 +228,24 @@ Các bảng dưới đây là phương án thiết kế đề xuất. Cần đ�
 
 ### 6.1. Sơ đồ quan hệ dữ liệu đề xuất
 
+
 ```mermaid
 erDiagram
-    SUBJECTS ||--o{ STUDY_CLASSES : bao_gom
-    STUDY_CLASSES ||--o{ CLASS_STUDENTS : co
-    USERS ||--o{ CLASS_STUDENTS : tham_gia
-    STUDY_CLASSES ||--o{ CLASS_LECTURERS : phan_cong
-    USERS ||--o{ CLASS_LECTURERS : giang_day
+    SUBJECTS ||--o{ STUDY_CLASSES : has
+    STUDY_CLASSES ||--o{ CLASS_STUDENTS : includes
+    USERS ||--o{ CLASS_STUDENTS : participates
+    STUDY_CLASSES ||--o{ CLASS_LECTURERS : assigns
+    USERS ||--o{ CLASS_LECTURERS : teaches
 
     SUBJECTS {
         int id PK
-        string subject_code
+        string subject_code UK
         string subject_name
     }
 
     STUDY_CLASSES {
         int id PK
-        string class_code
+        string class_code UK
         string class_name
         int subject_id FK
         string semester
@@ -254,18 +255,17 @@ erDiagram
     }
 
     CLASS_STUDENTS {
-        int class_id FK
-        int student_id FK
+        int class_id PK, FK
+        int student_id PK, FK
     }
 
     CLASS_LECTURERS {
-        int class_id FK
-        int lecturer_id FK
+        int class_id PK, FK
+        int lecturer_id PK, FK
         string assignment_role
     }
 ```
 
----
 
 ## 7. Tiêu chí nghiệm thu
 
