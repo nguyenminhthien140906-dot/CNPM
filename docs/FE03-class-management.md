@@ -1,10 +1,10 @@
 
-# FE03 – QUẢN LÝ LỚP HỌC
+ QUẢN LÝ LỚP HỌC
 
 > **Mã chức năng:** FE03  
 > **Tên chức năng:** Quản lý lớp học  
 > **Hệ thống:** CollabSphere – Hệ thống hỗ trợ học tập theo phương pháp học tập dựa trên dự án (Project-Based Learning – PBL)  
-> **Tác nhân chính:** Nhân viên quản lý (Staff)
+> **Tác nhân chính:** Staff
 
 ---
 
