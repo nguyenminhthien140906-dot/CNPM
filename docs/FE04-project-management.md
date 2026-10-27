@@ -4,7 +4,7 @@
 
 ## 1. Chức năng chi tiết
 
-        **1.1 — Tạo đề bài dự án**
+ **1.1 — Tạo đề bài dự án**
 
 Giảng viên tạo đề bài dự án PBL gắn với lớp học phần mình phụ trách. Hệ thống cung cấp biểu mẫu để giảng viên nhập thông tin, kiểm tra dữ liệu và lưu dự án dưới dạng bản nháp.
 
