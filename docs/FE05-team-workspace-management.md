@@ -54,8 +54,3 @@ Lecturer, Leader, Student
     }
   ]
 }
-
-
-Dữ liệu không hợp lệ được báo lỗi rõ ràng và không làm sai lệch dữ liệu đã lưu.
-
-Kết quả thao tác được trả về để giao diện hiển thị cho người dùng.
