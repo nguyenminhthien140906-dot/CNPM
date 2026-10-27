@@ -1,54 +1,56 @@
-FE5. Quản lý nhóm và không gian làm việc
+# FE5. Quản lý nhóm và không gian làm việc
 
-1. Mục tiêu
-Cung cấp chức năng giúp giảng viên khởi tạo, tổ chức không gian làm việc (workspace) và phân bổ danh sách thành viên vào các nhóm. Cung cấp biểu đồ/số liệu để giảng viên theo dõi tiến độ tổng thể và đánh giá mức độ đóng góp của từng cá nhân. Đồng thời, hỗ trợ trưởng nhóm cấp phát và quản trị công việc thực tế thông qua hệ thống thẻ (Card), cho phép chia nhỏ đầu việc thành Task, Subtask và các điểm kiểm tra (Checklist)[cite: 5].
+## 1. Mục tiêu
+Quản lý nhóm và không gian làm việc cho phép giảng viên khởi tạo nhóm, quản lý danh sách thành viên, theo dõi tiến độ công việc và đánh giá mức độ đóng góp của từng sinh viên. Đồng thời, hỗ trợ trưởng nhóm phân công công việc thông qua việc tạo thẻ công việc (Card), nhiệm vụ (Task), nhiệm vụ con (Subtask) và danh sách kiểm tra (Checklist).
 
-2. Vai trò liên quan
-Giảng viên (Lecturer), Trưởng nhóm (Leader), Thành viên (Member).
+## 2. Vai trò liên quan
+Lecturer, Leader, Student
 
-3. Luồng nghiệp vụ
-1. Người dùng truy cập vào module quản lý không gian làm việc/nhóm.
-2. Hệ thống kiểm tra vai trò để phân luồng giao diện (Giảng viên xem tổng quan; Sinh viên xem chi tiết nhóm).
-3. Hệ thống trả về dữ liệu danh sách nhóm, dashboard tiến độ hoặc bảng công việc (board).
-4. Khi người dùng thao tác nghiệp vụ (tạo nhóm, thêm Card, giao Task, tick Checklist...), hệ thống xác thực quyền, cập nhật DB và phản hồi kết quả lên UI.
+## 3. Luồng nghiệp vụ
+1. Người dùng có quyền truy cập danh sách nhóm hoặc không gian làm việc.
+2. Hệ thống kiểm tra quyền truy cập.
+3. Hệ thống trả về danh sách nhóm, không gian làm việc hoặc chi tiết công việc.
+4. Khi Giảng viên hoặc Trưởng nhóm cập nhật thông tin (tạo nhóm, giao thẻ công việc, cập nhật task, subtask, checklist), hệ thống cập nhật trạng thái và ghi nhận kết quả.
 
-4. Quy tắc nghiệp vụ
-- Phân quyền cao nhất: Chỉ Giảng viên mới được phép tạo nhóm mới, gỡ/thêm sinh viên và xem báo cáo đóng góp của tất cả các nhóm.
-- Phân quyền nhóm: Trưởng nhóm có toàn quyền cấu trúc công việc (tạo/xóa/chỉnh sửa Card, Task, Subtask, Checklist) trong phạm vi nhóm của mình[cite: 5].
-- Thành viên bình thường chỉ có quyền thay đổi trạng thái (VD: kéo thả cột tiến độ, tick Done) đối với những công việc được phân công.
-- Bảo mật: Chặn hoàn toàn việc người dùng can thiệp dữ liệu hoặc xem không gian làm việc của nhóm khác.
+## 4. Quy tắc nghiệp vụ
+- Chỉ Giảng viên mới có quyền tạo nhóm, phân công thành viên và xem thống kê tiến độ, đóng góp của tất cả các nhóm.
+- Trưởng nhóm chỉ quản lý danh sách công việc trong phạm vi nhóm được giao (tạo Card, Task, Subtask, Checklist).
+- Student chỉ được xem công việc và cập nhật trạng thái các task được phân công.
+- Không cho phép người dùng không thuộc nhóm thực hiện các thao tác quản trị hoặc chỉnh sửa công việc.
 
-5. API dự kiến
-> Đây là hợp đồng API đề xuất để nhóm thống nhất trước khi code, chưa xác nhận là đã được triển khai[cite: 2].
+## 5. API dự kiến
+> Đây là hợp đồng API đề xuất để nhóm thống nhất trước khi code, chưa xác nhận là đã được triển khai.
 
 | Phương thức | Endpoint | Mục đích |
 | :--- | :--- | :--- |
-| GET | `/api/workspaces` | Load danh sách nhóm/không gian làm việc |
+| GET | `/api/workspaces` | Xem danh sách không gian làm việc |
+| GET | `/api/workspaces/{id}` | Xem chi tiết nhóm và tiến độ công việc |
 | POST | `/api/workspaces` | Giảng viên tạo không gian làm việc mới |
-| GET | `/api/workspaces/{id}/reports` | Lấy data thống kê tiến độ và % đóng góp |
-| POST | `/api/workspaces/{id}/cards` | Trưởng nhóm tạo thẻ công việc (Card) mới |
-| PATCH | `/api/cards/{id}` | Cập nhật tiến độ của Task, Subtask, Checklist |
+| POST | `/api/workspaces/{id}/cards` | Trưởng nhóm tạo thẻ công việc (Card) |
+| PATCH | `/api/cards/{id}` | Cập nhật trạng thái Card, Task, Subtask, Checklist |
 
-Ví dụ dữ liệu JSON (Payload cập nhật Card)
+### Ví dụ dữ liệu JSON
+
 ```json
 {
-  "cardTitle": "Thiết kế UI/UX module FE5",
-  "assigneeId": "SE15000",
+  "cardTitle": "Thiết kế cơ sở dữ liệu",
+  "assigneeId": "SV12345",
   "tasks": [
     {
-      "name": "Lên wireframe",
-      "isDone": true
-    },
-    {
-      "name": "Design bản final",
-      "isDone": false,
+      "taskName": "Tạo ERD",
+      "isCompleted": true,
       "subtasks": [
-        { "name": "Màn hình tạo Card", "isDone": false },
-        { "name": "Màn hình Checklist", "isDone": false }
+        {
+          "title": "Vẽ bảng NHIEM_VU",
+          "isCompleted": true
+        }
       ]
     }
   ],
   "checklists": [
-    { "item": "Xin feedback Giảng viên", "checked": false }
+    {
+      "item": "Review bài với Giảng viên",
+      "isDone": false
+    }
   ]
 }
