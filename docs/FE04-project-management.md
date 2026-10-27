@@ -89,7 +89,7 @@
 
 ## 3. Trạng thái dự án
 
-| Trạng thái | Ý nghĩa |
+| Trạng thái | NỘI DUNG |
 |---|---|
 | `Draft` | Dự án đang ở dạng bản nháp; giảng viên tiếp tục hoàn thiện trước khi công bố. |
 | `Published` | Dự án đã được công bố; sinh viên thuộc lớp học phần có thể xem và tham gia theo cấu hình. |
@@ -119,10 +119,17 @@ flowchart TD
     N --> O([Kết thúc])
 ```
 
-## 5. Phạm vi và liên kết với các chức năng khác
+## 5. Quy tắc nghiệp vụ
 
-- **FE04 – Quản lý đề bài dự án:** phụ trách tạo, cấu hình, công bố, hoàn thành và lưu trữ dự án PBL.
-- **FE05 – Quản lý nhóm:** phụ trách việc sinh viên tạo nhóm, tham gia nhóm và quản lý thành viên theo quy định của dự án.
-- **FE06 – Milestone, checkpoint và nhiệm vụ:** phụ trách lập các mốc tiến độ, checkpoint, nhiệm vụ và phân công công việc.
-- **FE08 – Tài nguyên và sản phẩm bàn giao:** phụ trách quản lý tài nguyên, nộp sản phẩm và các phiên bản bàn giao.
+- Dự án phải liên kết với đề cương môn học phù hợp.
+- Thông tin dự án phải đầy đủ trước khi gửi phê duyệt.
+- Mỗi milestone phải có tên và thời hạn hoàn thành.
+- Thời hạn milestone phải nằm trong khoảng thời gian thực hiện dự án.
+- Dự án chỉ được phân công cho lớp hoặc nhóm sau khi được phê duyệt.
+- Nhóm được phân công phải thuộc lớp học phần được giao dự án.
+- Dự án cần chỉnh sửa phải được cập nhật trước khi gửi lại phê duyệt.
+- Dự án bị từ chối không được phân công; giảng viên chỉ được tạo hoặc gửi lại bản chỉnh sửa nếu quy trình cho phép.
+- Chỉ người dùng có quyền phù hợp mới được tạo, chỉnh sửa, phê duyệt hoặc phân công dự án.
+- Hệ thống cần lưu kết quả phê duyệt và cập nhật trạng thái dự án.
+- Việc chỉnh sửa dự án sau phê duyệt phải tuân theo quyền hạn và quy định của hệ thống.
 
