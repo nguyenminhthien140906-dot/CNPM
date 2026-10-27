@@ -2,75 +2,160 @@
 
 ## 1. Quản lý dự án
 
-### 1.1. Tạo dự án
+## 1. Chức năng chi tiết
 
-| STT | Chức năng | Mô tả chi tiết |
-|---:|---|---|
-| 1 | Tạo dự án mới | Cho phép giảng viên tạo dự án PBL mới gắn với lớp học phần mà giảng viên được phân công phụ trách. |
-| 2 | Nhập thông tin dự án | Nhập tên dự án, mô tả vấn đề thực tế cần giải quyết và nội dung tổng quan của dự án. |
-| 3 | Thiết lập mục tiêu học tập | Xác định kiến thức, kỹ năng và kết quả học tập mà sinh viên cần đạt được sau khi hoàn thành dự án. |
-| 4 | Xác định yêu cầu sản phẩm | Mô tả sản phẩm cần xây dựng, các yêu cầu bắt buộc và kết quả đầu ra dự kiến. |
-| 5 | Thiết lập tiêu chí nghiệm thu | Xác định các điều kiện để đánh giá sản phẩm có đáp ứng yêu cầu của dự án hay không. |
-| 6 | Thiết lập thời gian | Khai báo ngày bắt đầu và hạn cuối hoàn thành dự án. Hạn cuối không được trước ngày bắt đầu. |
-| 7 | Thiết lập quy mô nhóm | Xác định số lượng sinh viên tối thiểu hoặc tối đa trong một nhóm theo yêu cầu của dự án. |
-| 8 | Thiết lập rubric | Khai báo các tiêu chí đánh giá, mô tả mức độ đạt được và trọng số hoặc điểm số tương ứng để phục vụ đánh giá sản phẩm. |
-| 9 | Lưu bản nháp | Lưu dự án ở trạng thái `Draft` để giảng viên tiếp tục chỉnh sửa trước khi công bố. |
-| 10 | Kiểm tra dữ liệu | Kiểm tra các trường bắt buộc và tính hợp lệ của thông tin trước khi lưu dự án. |
+1.1 — Tạo đề bài dự án
 
-### 1.2. Xem danh sách và chi tiết dự án
+Giảng viên tạo đề bài dự án PBL gắn với lớp học phần mình phụ trách. Hệ thống cung cấp biểu mẫu để giảng viên nhập thông tin, kiểm tra dữ liệu và lưu dự án dưới dạng bản nháp.
 
-| STT | Chức năng | Mô tả chi tiết |
-|---:|---|---|
-| 1 | Xem danh sách dự án | Hiển thị các dự án do giảng viên tạo hoặc được phân quyền quản lý. |
-| 2 | Hiển thị thông tin tổng quan | Hiển thị tên dự án, lớp học phần liên quan, thời gian thực hiện và trạng thái dự án. |
-| 3 | Tìm kiếm dự án | Cho phép tìm kiếm dự án theo tên hoặc từ khóa liên quan. |
-| 4 | Lọc dự án | Hỗ trợ lọc dự án theo lớp học phần và trạng thái dự án. |
-| 5 | Xem chi tiết dự án | Hiển thị mô tả vấn đề, mục tiêu học tập, yêu cầu sản phẩm, tiêu chí nghiệm thu, thời hạn, quy mô nhóm và rubric. |
-| 6 | Xem dự án dành cho sinh viên | Cho phép sinh viên đã ghi danh vào lớp học phần xem các dự án đã được công bố cho lớp mình. |
-| 7 | Xem thời hạn và yêu cầu | Hiển thị thời hạn hoàn thành, yêu cầu sản phẩm và các tiêu chí đánh giá để sinh viên nắm rõ nhiệm vụ. |
+**Thông tin đề bài dự án:**
 
-### 1.3. Cập nhật thông tin dự án
+| Trường | Bắt buộc | Ý nghĩa / kiểm tra |
+|---|---|---|
+| `title` | Có | Tên dự án, không được để trống. |
+| `description` | Có | Mô tả vấn đề cần giải quyết và bối cảnh thực hiện dự án. |
+| `objectives` | Có | Mục tiêu học tập mà sinh viên cần đạt được. |
+| `requirements` | Có | Các yêu cầu đối với sản phẩm đầu ra. |
+| `acceptance_criteria` | Có | Tiêu chí dùng để xem xét sản phẩm có đáp ứng yêu cầu hay không. |
+| `class_id` | Có | Lớp học phần mà dự án trực thuộc; giảng viên phải có quyền quản lý lớp. |
+| `start_date` | Có | Ngày bắt đầu thực hiện dự án. |
+| `due_date` | Có | Hạn cuối của dự án; không được trước ngày bắt đầu. |
+| `min_group_size` | Theo cấu hình | Số thành viên tối thiểu trong một nhóm, nếu dự án có quy định. |
+| `max_group_size` | Theo cấu hình | Số thành viên tối đa trong một nhóm, phải phù hợp với số lượng tối thiểu. |
+| `rubric` | Theo cấu hình | Bộ tiêu chí và thang điểm dùng để đánh giá dự án. |
 
-| STT | Chức năng | Mô tả chi tiết |
-|---:|---|---|
-| 1 | Chỉnh sửa bản nháp | Cho phép giảng viên phụ trách cập nhật thông tin dự án khi dự án còn ở trạng thái `Draft`. |
-| 2 | Cập nhật mô tả và mục tiêu | Chỉnh sửa mô tả vấn đề, mục tiêu học tập, phạm vi và nội dung dự án. |
-| 3 | Cập nhật yêu cầu sản phẩm | Điều chỉnh yêu cầu, kết quả đầu ra và tiêu chí nghiệm thu của dự án. |
-| 4 | Cập nhật thời gian | Điều chỉnh ngày bắt đầu và hạn cuối hoàn thành theo quy định của hệ thống. |
-| 5 | Cập nhật quy mô nhóm | Điều chỉnh số lượng sinh viên tối thiểu hoặc tối đa trong nhóm nếu trạng thái dự án cho phép. |
-| 6 | Cập nhật rubric | Chỉnh sửa tiêu chí đánh giá trước khi rubric được khóa theo quy trình của hệ thống. |
-| 7 | Kiểm tra dữ liệu | Kiểm tra tính đầy đủ và hợp lệ của thông tin sau khi chỉnh sửa. |
-| 8 | Lưu thay đổi | Lưu thông tin mới sau khi kiểm tra hợp lệ. Việc chỉnh sửa dự án đã công bố phải tuân theo quyền hạn và quy định của hệ thống. |
+**Quy trình tạo dự án:**
 
-### 1.4. Công bố dự án
+1. Giảng viên mở chức năng quản lý dự án và chọn tạo dự án mới.
+2. Hệ thống hiển thị biểu mẫu nhập thông tin đề bài.
+3. Giảng viên nhập thông tin dự án và chọn lớp học phần.
+4. Hệ thống kiểm tra các trường bắt buộc, thời hạn, quy mô nhóm và quyền truy cập.
+5. Nếu dữ liệu hợp lệ, hệ thống lưu dự án ở trạng thái `Draft`.
+6. Nếu dữ liệu không hợp lệ, hệ thống hiển thị lỗi tại trường tương ứng để giảng viên chỉnh sửa.
 
-| STT | Chức năng | Mô tả chi tiết |
-|---:|---|---|
-| 1 | Kiểm tra trước khi công bố | Kiểm tra các thông tin bắt buộc gồm mô tả dự án, mục tiêu, yêu cầu sản phẩm, thời gian, quy mô nhóm và rubric theo cấu hình của hệ thống. |
-| 2 | Công bố dự án | Cho phép giảng viên phụ trách công bố dự án cho lớp học phần đã được liên kết. |
-| 3 | Cập nhật trạng thái | Chuyển trạng thái dự án từ `Draft` sang `Published` khi công bố thành công. |
-| 4 | Hiển thị dự án cho sinh viên | Cho phép sinh viên đã ghi danh vào lớp học phần xem đề bài, yêu cầu và thời hạn của dự án. |
-| 5 | Kiểm soát quyền công bố | Chỉ giảng viên phụ trách hoặc người được cấp quyền phù hợp mới được công bố dự án. |
-| 6 | Kiểm tra kết quả | Thông báo kết quả công bố và hiển thị trạng thái mới của dự án. |
+1.2 — Xem danh sách và chi tiết dự án
 
-### 1.5. Đánh dấu hoàn thành dự án
+Giảng viên xem danh sách các dự án thuộc phạm vi mình được phép quản lý. Sinh viên xem các dự án đã công bố trong lớp học phần mà mình đã ghi danh và được phép truy cập.
 
-| STT | Chức năng | Mô tả chi tiết |
-|---:|---|---|
-| 1 | Kiểm tra tình trạng dự án | Cho phép giảng viên xem thông tin và tình trạng hiện tại trước khi đánh dấu hoàn thành. |
-| 2 | Đánh dấu hoàn thành | Cho phép giảng viên phụ trách chuyển dự án sang trạng thái `Completed` khi dự án đã hoàn tất theo quy trình. |
-| 3 | Cập nhật trạng thái | Lưu trạng thái hoàn thành để phân biệt với dự án đang được triển khai. |
-| 4 | Kiểm soát thao tác | Chỉ người dùng có quyền phù hợp mới được đánh dấu hoàn thành dự án. |
+**Thông tin hiển thị trong danh sách:**
 
-### 1.6. Lưu trữ dự án
+| Trường | Ý nghĩa |
+|---|---|
+| `title` | Tên dự án. |
+| `class_id` | Lớp học phần được liên kết với dự án. |
+| `start_date` | Ngày bắt đầu. |
+| `due_date` | Hạn cuối thực hiện dự án. |
+| `status` | Trạng thái hiện tại của dự án. |
 
-| STT | Chức năng | Mô tả chi tiết |
-|---:|---|---|
-| 1 | Lưu trữ dự án | Cho phép giảng viên phụ trách lưu trữ dự án khi không còn cần sử dụng trong hoạt động thường xuyên. |
-| 2 | Cập nhật trạng thái | Chuyển dự án sang trạng thái `Archived` sau khi lưu trữ thành công. |
-| 3 | Xem dự án đã lưu trữ | Cho phép người dùng có quyền xem lại thông tin dự án đã lưu trữ. |
-| 4 | Kiểm soát quyền lưu trữ | Chỉ giảng viên phụ trách hoặc người được cấp quyền phù hợp mới được lưu trữ dự án. |
+**Thông tin trong trang chi tiết:**
 
+- Mô tả vấn đề cần giải quyết.
+- Mục tiêu học tập.
+- Yêu cầu sản phẩm đầu ra.
+- Tiêu chí nghiệm thu.
+- Thời gian thực hiện và hạn cuối.
+- Quy mô nhóm theo cấu hình.
+- Rubric đánh giá nếu được phép xem.
+
+**Quy trình xem dự án:**
+
+1. Người dùng mở danh sách dự án.
+2. Hệ thống kiểm tra quyền và phạm vi dữ liệu được phép truy cập.
+3. Người dùng chọn một dự án để xem chi tiết.
+4. Hệ thống hiển thị thông tin phù hợp với quyền của người dùng.
+5. Nếu người dùng không có quyền truy cập, hệ thống từ chối yêu cầu.
+
+1.3 — Cập nhật đề bài dự án
+
+Giảng viên phụ trách có thể cập nhật thông tin dự án theo quyền được cấp. Việc chỉnh sửa phải bảo đảm không làm mất các thông tin cần thiết để theo dõi quá trình thực hiện và kết quả dự án.
+
+**Các thông tin có thể cập nhật:**
+
+- Tên và mô tả dự án.
+- Mục tiêu học tập.
+- Yêu cầu sản phẩm và tiêu chí nghiệm thu.
+- Ngày bắt đầu và hạn cuối.
+- Quy mô nhóm.
+- Rubric đánh giá.
+
+**Quy trình cập nhật:**
+
+1. Giảng viên chọn dự án cần chỉnh sửa.
+2. Hệ thống kiểm tra quyền cập nhật.
+3. Giảng viên thay đổi các thông tin cần thiết.
+4. Hệ thống kiểm tra tính hợp lệ của dữ liệu.
+5. Nếu hợp lệ, hệ thống lưu thông tin mới.
+6. Nếu không hợp lệ hoặc người dùng không có quyền, hệ thống từ chối cập nhật và thông báo nguyên nhân.
+
+Sinh viên không được chỉnh sửa đề bài chính thức hoặc rubric đã khóa. Việc chỉnh sửa dự án đã công bố phải tuân theo quy tắc và quyền được thống nhất khi triển khai.
+
+1.4 — Công bố đề bài dự án
+
+Sau khi hoàn thiện đề bài, giảng viên công bố dự án cho lớp học phần đã liên kết. Khi công bố thành công, sinh viên thuộc lớp được phép xem đề bài và thời hạn thực hiện.
+
+**Điều kiện công bố:**
+
+- Dự án có tên và mô tả hợp lệ.
+- Mục tiêu học tập và yêu cầu sản phẩm đã được thiết lập.
+- Lớp học phần tồn tại và thuộc phạm vi giảng viên được phân công.
+- Ngày bắt đầu và hạn cuối hợp lệ.
+- Các thông tin bắt buộc theo cấu hình dự án đã được cung cấp.
+
+**Quy trình công bố:**
+
+1. Giảng viên chọn chức năng công bố dự án.
+2. Hệ thống kiểm tra thông tin đề bài và quyền công bố.
+3. Nếu dữ liệu hợp lệ, hệ thống chuyển trạng thái dự án sang `Published`.
+4. Dự án được hiển thị cho sinh viên thuộc lớp học phần được phép truy cập.
+5. Nếu dữ liệu chưa hợp lệ, hệ thống thông báo lỗi và yêu cầu giảng viên chỉnh sửa.
+
+1.5 — Theo dõi trạng thái và đánh dấu hoàn thành dự án
+
+Giảng viên theo dõi trạng thái dự án trong quá trình thực hiện và có thể đánh dấu dự án hoàn thành sau khi xem xét kết quả. Việc quản lý milestone, checkpoint, nhiệm vụ, sản phẩm bàn giao và chấm điểm chi tiết được phối hợp với FE06, FE08 và FE10.
+
+**Các trạng thái dự án:**
+
+| Trạng thái | Ý nghĩa |
+|---|---|
+| `Draft` | Bản nháp, chỉ giảng viên phụ trách được phép xem và chỉnh sửa. |
+| `Published` | Đã công bố cho lớp học phần theo quyền truy cập. |
+| `InProgress` | Dự án đang được thực hiện. |
+| `Completed` | Dự án đã hoàn thành; không nhận sản phẩm mới trừ khi được mở lại. |
+| `Archived` | Dự án đã lưu trữ; quyền xem phụ thuộc vào phân quyền. |
+
+**Tiêu chí hoàn thành dự án đề xuất:**
+
+- Sản phẩm bắt buộc đã được nộp.
+- Sản phẩm đáp ứng các yêu cầu và tiêu chí nghiệm thu đã thống nhất.
+- Các milestone hoặc checkpoint bắt buộc đã được hoàn thành và xem xét.
+- Kết quả đánh giá theo rubric đã được giảng viên tổng kết.
+- Giảng viên phụ trách xác nhận dự án đủ điều kiện kết thúc.
+
+**Quy trình xác nhận hoàn thành:**
+
+1. Nhóm sinh viên nộp sản phẩm theo yêu cầu dự án.
+2. Giảng viên xem xét sản phẩm và các kết quả bàn giao.
+3. Nếu chưa đạt, giảng viên phản hồi và yêu cầu chỉnh sửa theo quy trình hiện có.
+4. Nếu đạt, giảng viên hoàn tất đánh giá theo rubric.
+5. Giảng viên xác nhận hoàn thành dự án.
+6. Hệ thống chuyển trạng thái sang `Completed` và lưu thông tin xác nhận.
+
+Các tiêu chí trên là đề xuất làm rõ nghiệp vụ. Nhóm cần thống nhất những điều kiện nào bắt buộc và cách hệ thống kiểm tra trước khi triển khai.
+
+1.6 — Lưu trữ dự án
+
+Giảng viên có quyền lưu trữ dự án khi cần kết thúc việc quản lý thông thường. Hệ thống cập nhật trạng thái dự án sang `Archived` và giữ lại dữ liệu cần thiết để tra cứu theo quyền.
+
+**Quy trình lưu trữ:**
+
+1. Giảng viên chọn dự án cần lưu trữ.
+2. Hệ thống kiểm tra quyền lưu trữ.
+3. Hệ thống yêu cầu xác nhận thao tác nếu cần.
+4. Sau khi xác nhận, hệ thống cập nhật trạng thái sang `Archived`.
+5. Dự án không còn xuất hiện trong danh sách đang hoạt động mặc định.
+6. Người dùng có quyền vẫn có thể xem thông tin dự án đã lưu trữ.
+
+Hệ thống phải bảo toàn thông tin đề bài, trạng thái và kết quả đã lưu. Việc lưu trữ không được tự ý xóa dữ liệu sản phẩm hoặc kết quả đánh giá của dự án.
 ## 2. Quy tắc nghiệp vụ
 
 | Mã quy tắc | Nội dung |
