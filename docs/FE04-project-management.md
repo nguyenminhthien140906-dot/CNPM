@@ -4,7 +4,7 @@
 
 ## 1. Chức năng chi tiết
 
-1.1 — Tạo đề bài dự án
+**1.1 — Tạo đề bài dự án**
 
 Giảng viên tạo đề bài dự án PBL gắn với lớp học phần mình phụ trách. Hệ thống cung cấp biểu mẫu để giảng viên nhập thông tin, kiểm tra dữ liệu và lưu dự án dưới dạng bản nháp.
 
@@ -33,7 +33,7 @@ Giảng viên tạo đề bài dự án PBL gắn với lớp học phần mình
 5. Nếu dữ liệu hợp lệ, hệ thống lưu dự án ở trạng thái `Draft`.
 6. Nếu dữ liệu không hợp lệ, hệ thống hiển thị lỗi tại trường tương ứng để giảng viên chỉnh sửa.
 
-1.2 — Xem danh sách và chi tiết dự án
+**1.2 — Xem danh sách và chi tiết dự án**
 
 Giảng viên xem danh sách các dự án thuộc phạm vi mình được phép quản lý. Sinh viên xem các dự án đã công bố trong lớp học phần mà mình đã ghi danh và được phép truy cập.
 
@@ -65,7 +65,7 @@ Giảng viên xem danh sách các dự án thuộc phạm vi mình được phé
 4. Hệ thống hiển thị thông tin phù hợp với quyền của người dùng.
 5. Nếu người dùng không có quyền truy cập, hệ thống từ chối yêu cầu.
 
-1.3 — Cập nhật đề bài dự án
+**1.3 — Cập nhật đề bài dự án**
 
 Giảng viên phụ trách có thể cập nhật thông tin dự án theo quyền được cấp. Việc chỉnh sửa phải bảo đảm không làm mất các thông tin cần thiết để theo dõi quá trình thực hiện và kết quả dự án.
 
@@ -89,7 +89,7 @@ Giảng viên phụ trách có thể cập nhật thông tin dự án theo quy�
 
 Sinh viên không được chỉnh sửa đề bài chính thức hoặc rubric đã khóa. Việc chỉnh sửa dự án đã công bố phải tuân theo quy tắc và quyền được thống nhất khi triển khai.
 
-1.4 — Công bố đề bài dự án
+**1.4 — Công bố đề bài dự án**
 
 Sau khi hoàn thiện đề bài, giảng viên công bố dự án cho lớp học phần đã liên kết. Khi công bố thành công, sinh viên thuộc lớp được phép xem đề bài và thời hạn thực hiện.
 
@@ -109,7 +109,7 @@ Sau khi hoàn thiện đề bài, giảng viên công bố dự án cho lớp h�
 4. Dự án được hiển thị cho sinh viên thuộc lớp học phần được phép truy cập.
 5. Nếu dữ liệu chưa hợp lệ, hệ thống thông báo lỗi và yêu cầu giảng viên chỉnh sửa.
 
-1.5 — Theo dõi trạng thái và đánh dấu hoàn thành dự án
+**1.5 — Theo dõi trạng thái và đánh dấu hoàn thành dự án**
 
 Giảng viên theo dõi trạng thái dự án trong quá trình thực hiện và có thể đánh dấu dự án hoàn thành sau khi xem xét kết quả. Việc quản lý milestone, checkpoint, nhiệm vụ, sản phẩm bàn giao và chấm điểm chi tiết được phối hợp với FE06, FE08 và FE10.
 
@@ -142,7 +142,7 @@ Giảng viên theo dõi trạng thái dự án trong quá trình thực hiện v
 
 Các tiêu chí trên là đề xuất làm rõ nghiệp vụ. Nhóm cần thống nhất những điều kiện nào bắt buộc và cách hệ thống kiểm tra trước khi triển khai.
 
-1.6 — Lưu trữ dự án
+**1.6 — Lưu trữ dự án**
 
 Giảng viên có quyền lưu trữ dự án khi cần kết thúc việc quản lý thông thường. Hệ thống cập nhật trạng thái dự án sang `Archived` và giữ lại dữ liệu cần thiết để tra cứu theo quyền.
 
