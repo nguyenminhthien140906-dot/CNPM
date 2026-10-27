@@ -54,3 +54,19 @@ Lecturer, Leader, Student
     }
   ]
 }
+flowchart TD
+    A[Người dùng bắt đầu] --> B{Có quyền thực hiện?}
+    B -- Không --> C[Trả về lỗi quyền truy cập]
+    B -- Có --> D[Kiểm tra dữ liệu đầu vào]
+    D --> E{Dữ liệu hợp lệ?}
+    E -- Không --> F[Thông báo lỗi và yêu cầu chỉnh sửa]
+    E -- Có --> G[Thực hiện nghiệp vụ FE5]
+    G --> H[Lưu kết quả và phản hồi]
+7. Tiêu chí nghiệm thu
+Người dùng có quyền thực hiện được các thao tác được mô tả trong tài liệu.
+
+Người dùng không có quyền bị từ chối truy cập hoặc thao tác.
+
+Dữ liệu không hợp lệ được báo lỗi rõ ràng và không làm sai lệch dữ liệu đã lưu.
+
+Kết quả thao tác được trả về để giao diện hiển thị cho người dùng.
