@@ -42,13 +42,14 @@ GIANG_VIEN, SINH_VIEN
 
 ```mermaid
 flowchart TD
-    A[Người dùng bắt đầu] --> B{Có quyền thực hiện?}
-    B -- Không --> C[Trả về lỗi quyền truy cập]
-    B -- Có --> D[Kiểm tra dữ liệu đầu vào]
-    D --> E{Dữ liệu hợp lệ?}
-    E -- Không --> F[Thông báo lỗi và yêu cầu chỉnh sửa]
-    E -- Có --> G[Thực hiện nghiệp vụ FE6]
-    G --> H[Lưu kết quả và phản hồi]
+    A[Sinh viên bắt đầu nộp bài] --> B{Kiểm tra quyền thuộc Nhóm/Dự án}
+    B -- Không thuộc nhóm --> C[Từ chối thao tác]
+    B -- Đúng nhóm --> D[Tải tệp tin sản phẩm & Nhập phiên bản]
+    D --> E{Kiểm tra Hạn nộp bài HanNop}
+    E -- Quá hạn --> F[Báo lỗi trễ hạn nộp bài]
+    E -- Hợp lệ --> G[Lưu bài nộp vào bảng SAN_PHAM]
+    G --> H[Giảng viên xem bài, nhập PHAN_HOI & DANH_GIA]
+    H --> I[Ghi nhận điểm số & Hoàn tất]
 ```
 ## 7. Tiêu chí nghiệm thu
   Người dùng có quyền thực hiện được các thao tác được mô tả trong tài liệu.
