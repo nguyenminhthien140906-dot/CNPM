@@ -30,6 +30,7 @@ Lecturer, Leader, Student
 | PATCH | `/api/cards/{id}` | Cập nhật trạng thái Card, Task, Subtask, Checklist |
 
 ### Ví dụ dữ liệu JSON
+```json
 {
   "cardTitle": "Thiết kế cơ sở dữ liệu",
   "assigneeId": "SV12345",
@@ -52,10 +53,8 @@ Lecturer, Leader, Student
     }
   ]
 }
-
-## 6. Sơ đồ luồng chức năng
-
-```mermaid
+6. Sơ đồ luồng chức năng
+Đoạn mã
 flowchart TD
     A[Người dùng bắt đầu] --> B{Có quyền thực hiện?}
     B -- Không --> C[Trả về lỗi quyền truy cập]
