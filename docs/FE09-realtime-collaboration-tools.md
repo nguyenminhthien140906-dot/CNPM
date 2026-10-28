@@ -37,5 +37,31 @@ Lecturer, Student
 | `WS` | `/ws/collab/{id}` | Kết nối đồng bộ thời gian thực |
   editorContainer: { height: '100%', backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }
 };
+## 6. Sơ đồ luồng chức năng
+
+```mermaid
+flowchart TD
+    A[Người dùng mở không gian cộng tác] --> B{Có quyền truy cập?}
+    B -- Không --> C[Trả về lỗi quyền truy cập]
+    B -- Có --> D[Tải nội dung và thiết lập kết nối thời gian thực]
+    D --> E[Thành viên chỉnh sửa nội dung]
+    E --> F{Có quyền chỉnh sửa?}
+    F -- Không --> G[Từ chối thao tác và giữ nguyên nội dung]
+    F -- Có --> H[Gửi thay đổi lên máy chủ]
+    H --> I{Có xung đột chỉnh sửa?}
+    I -- Có --> J[Hợp nhất thay đổi]
+    I -- Không --> K[Áp dụng thay đổi]
+    J --> L[Lưu nội dung và đồng bộ tới thành viên khác]
+    K --> L
+    L --> M[Hiển thị nội dung mới cho mọi thành viên]
+```
+
+## 7. Tiêu chí nghiệm thu
+
+- Thành viên có quyền chỉnh sửa thao tác được trên bảng trắng, sơ đồ và văn bản cộng tác.
+- Thay đổi của một thành viên được hiển thị cho các thành viên khác đang trực tuyến trong thời gian thực.
+- Người không có quyền bị từ chối truy cập; người chỉ có quyền xem không chỉnh sửa được nội dung.
+- Khi nhiều người cùng chỉnh sửa, nội dung được hợp nhất và không làm mất dữ liệu đã lưu.
+- Sau khi mất kết nối và kết nối lại, nội dung được đồng bộ lại chính xác.
 
 export default CollaborationWorkspace;
