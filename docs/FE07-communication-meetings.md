@@ -36,6 +36,7 @@ flowchart TD
     E -- Không --> F[Thông báo lỗi và yêu cầu chỉnh sửa]
     E -- Có --> G[Thực hiện nghiệp vụ FE7]
     G --> H[Lưu kết quả và phản hồi]
+```
 ## 7. Tiêu chí nghiệm thu
 Người dùng có quyền thực hiện được các thao tác được mô tả trong tài liệu (chat, tạo cuộc họp, tham gia họp, chia sẻ màn hình).
 Người dùng không thuộc dự án hoặc không có quyền bị từ chối truy cập hoặc thao tác.
