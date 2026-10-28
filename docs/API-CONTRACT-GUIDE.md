@@ -29,7 +29,7 @@
 
 ## Quy trình tích hợp
 
-1. Nhóm thống nhất endpoint, request, response và role được phép.
+1. Thống nhất endpoint, request, response và role được phép.
 2. Backend triển khai và kiểm thử API.
 3. Frontend tích hợp theo hợp đồng đã thống nhất.
 4. Cập nhật tài liệu nếu nhóm thay đổi hợp đồng API.
