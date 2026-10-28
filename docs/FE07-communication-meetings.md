@@ -1,1001 +1,421 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CollabSphere - FE03 Quản Lý Lớp Học</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .animate-fade-in { animation: fadeIn 0.2s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
-</head>
-<body class="bg-slate-100 font-sans text-slate-800 h-screen overflow-hidden flex flex-col">
-
-    <!-- TOP NAVIGATION & ROLE SWITCHER -->
-    <header class="bg-slate-900 text-white px-6 py-3 flex flex-wrap justify-between items-center shadow-md shrink-0 gap-3">
-        <div class="flex items-center gap-3">
-            <div class="bg-indigo-600 p-2 rounded-lg"><i data-lucide="book-open" class="w-6 h-6 text-white"></i></div>
-            <div>
-                <h1 class="font-bold text-lg leading-tight">CollabSphere - PBL System</h1>
-                <p class="text-xs text-slate-400">Chức năng FE03: Quản lý Lớp học</p>
-            </div>
-        </div>
-        
-        <!-- Role Swapper for Simulation (BR03.01 Validation) -->
-        <div class="flex items-center gap-3 bg-slate-800 px-3.5 py-1.5 rounded-lg border border-slate-700">
-            <i data-lucide="shield-alert" class="w-4 h-4 text-amber-400"></i>
-            <span class="text-xs text-slate-300 font-medium">Vai trò truy cập:</span>
-            <select id="userRoleSelect" onchange="switchUserRole(this.value)" class="bg-slate-900 text-slate-200 text-sm font-semibold rounded px-2.5 py-1 outline-none border border-slate-700 cursor-pointer focus:ring-2 focus:ring-indigo-500">
-                <option value="STAFF">Staff (Nhân viên Quản lý - Toàn quyền)</option>
-                <option value="LECTURER">Lecturer (Giảng viên - Chỉ xem lớp phụ trách)</option>
-                <option value="STUDENT">Student (Sinh viên - Chỉ xem)</option>
-            </select>
-        </div>
-    </header>
-
-    <!-- NOTIFICATION TOAST -->
-    <div id="toastContainer" class="fixed top-16 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
-
-    <!-- MAIN APP CONTAINER -->
-    <div class="flex flex-1 overflow-hidden">
-        
-        <!-- LEFT SIDEBAR: CLASS LIST & FILTERS -->
-        <aside class="w-80 bg-white border-r border-slate-200 flex flex-col shrink-0">
-            <!-- Action Toolbar & Search -->
-            <div class="p-4 border-b border-slate-200 space-y-3">
-                <div class="flex justify-between items-center">
-                    <h2 class="font-bold text-slate-800 text-sm uppercase tracking-wide flex items-center gap-2">
-                        <i data-lucide="list" class="w-4 h-4 text-indigo-600"></i> Danh Sách Lớp (<span id="classCount">0</span>)
-                    </h2>
-                    <div class="flex gap-1">
-                        <button onclick="openImportModal()" id="btnImportCsv" title="Nhập CSV (FE03.01)" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition border border-slate-200">
-                            <i data-lucide="file-up" class="w-4 h-4"></i>
-                        </button>
-                        <button onclick="openClassModal()" id="btnCreateClass" title="Tạo lớp mới (FE03.02)" class="p-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition shadow-sm">
-                            <i data-lucide="plus" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Search Input -->
-                <div class="relative">
-                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
-                    <input type="text" id="searchInput" oninput="filterClasses()" placeholder="Tìm mã lớp, tên lớp, môn..." class="w-full pl-9 pr-3 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded-lg outline-none focus:bg-white focus:border-indigo-500 transition">
-                </div>
-
-                <!-- Filters -->
-                <div class="grid grid-cols-2 gap-2 text-xs">
-                    <select id="semesterFilter" onchange="filterClasses()" class="bg-slate-50 border border-slate-200 rounded p-1.5 text-slate-700 font-medium outline-none">
-                        <option value="">Tất cả học kỳ</option>
-                        <option value="HK1">Học kỳ 1</option>
-                        <option value="HK2">Học kỳ 2</option>
-                        <option value="HK3">Học kỳ 3</option>
-                    </select>
-                    <select id="statusFilter" onchange="filterClasses()" class="bg-slate-50 border border-slate-200 rounded p-1.5 text-slate-700 font-medium outline-none">
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="ACTIVE">Hoạt động (ACTIVE)</option>
-                        <option value="INACTIVE">Ngừng (INACTIVE)</option>
-                        <option value="ARCHIVED">Lưu trữ (ARCHIVED)</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Class Cards Container -->
-            <div id="classListContainer" class="flex-1 overflow-y-auto p-3 space-y-2 custom-scroll">
-                <!-- Classes rendered dynamically -->
-            </div>
-        </aside>
-
-        <!-- RIGHT CONTENT AREA: DETAILED VIEW & TABS -->
-        <main class="flex-1 flex flex-col bg-slate-50 overflow-hidden relative" id="mainContentView">
-            <!-- Selected Class Details Header -->
-            <div id="classHeaderView" class="bg-white border-b border-slate-200 p-6 flex justify-between items-start shadow-sm shrink-0">
-                <div>
-                    <div class="flex items-center gap-3 mb-1">
-                        <span id="detailClassCode" class="font-mono text-lg font-bold bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-md border border-indigo-200">IT001</span>
-                        <h2 id="detailClassName" class="text-xl font-bold text-slate-800">Lập trình C++ - Nhóm 1</h2>
-                        <span id="detailStatusBadge" class="text-xs px-2.5 py-1 rounded-full font-semibold bg-emerald-100 text-emerald-800">ACTIVE</span>
-                    </div>
-                    <p class="text-sm text-slate-500 flex items-center gap-4 mt-2">
-                        <span><i data-lucide="book" class="w-4 h-4 inline mr-1 text-slate-400"></i>Môn: <strong id="detailSubject" class="text-slate-700">IT101 - Lập trình C++</strong></span>
-                        <span><i data-lucide="calendar" class="w-4 h-4 inline mr-1 text-slate-400"></i>Học kỳ: <strong id="detailSemester" class="text-slate-700">HK1 (2026-2027)</strong></span>
-                        <span><i data-lucide="clock" class="w-4 h-4 inline mr-1 text-slate-400"></i>Lịch: <strong id="detailSchedule" class="text-slate-700">Thứ 2, Tiết 1-3 (A101)</strong></span>
-                    </p>
-                </div>
-
-                <!-- Action Controls -->
-                <div id="classActionButtons" class="flex items-center gap-2">
-                    <button onclick="openEditClassModal()" class="btn-staff-only px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition border border-slate-200 flex items-center gap-1.5">
-                        <i data-lucide="edit-3" class="w-4 h-4"></i> Cập nhật
-                    </button>
-                    <button onclick="toggleClassStatus()" class="btn-staff-only px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-sm font-medium rounded-lg transition flex items-center gap-1.5">
-                        <i data-lucide="power" class="w-4 h-4"></i> Đổi trạng thái
-                    </button>
-                </div>
-            </div>
-
-            <!-- Tab Navigation Header -->
-            <div class="bg-white border-b border-slate-200 px-6 flex gap-6 text-sm font-semibold shrink-0">
-                <button onclick="switchMainTab('students')" id="tabStudentsBtn" class="py-3 text-indigo-600 border-b-2 border-indigo-600 flex items-center gap-2">
-                    <i data-lucide="users" class="w-4 h-4"></i> Danh sách Sinh viên (<span id="tabStudentCount">0</span>/<span id="detailCapacity">40</span>)
-                </button>
-                <button onclick="switchMainTab('lecturers')" id="tabLecturersBtn" class="py-3 text-slate-500 hover:text-slate-700 flex items-center gap-2">
-                    <i data-lucide="user-check" class="w-4 h-4"></i> Giảng viên phụ trách (<span id="tabLecturerCount">0</span>)
-                </button>
-            </div>
-
-            <!-- TAB 1: STUDENT MANAGEMENT (FE03.03) -->
-            <div id="tabStudentsView" class="flex-1 overflow-y-auto p-6 space-y-4 custom-scroll">
-                <!-- Student Toolbar -->
-                <div class="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                    <div class="flex items-center gap-3">
-                        <h3 class="font-bold text-slate-800 text-sm">Thành viên sinh viên trong lớp</h3>
-                        <div class="w-48 bg-slate-200 h-2 rounded-full overflow-hidden">
-                            <div id="capacityBar" class="bg-indigo-600 h-full transition-all" style="width: 0%;"></div>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="openAddStudentModal()" class="btn-staff-only px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1">
-                            <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Thêm Sinh Viên
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Student Table -->
-                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 text-xs uppercase font-bold text-slate-500 border-b border-slate-200">
-                                <th class="py-3 px-4">Mã SV</th>
-                                <th class="py-3 px-4">Họ và Tên</th>
-                                <th class="py-3 px-4">Email</th>
-                                <th class="py-3 px-4">Chuyên ngành</th>
-                                <th class="py-3 px-4 text-center">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody id="studentTableBody" class="divide-y divide-slate-100 text-sm">
-                            <!-- Student rows dynamically added -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- TAB 2: LECTURER ASSIGNMENT (FE03.04) -->
-            <div id="tabLecturersView" class="flex-1 overflow-y-auto p-6 space-y-4 hidden custom-scroll">
-                <div class="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                    <div>
-                        <h3 class="font-bold text-slate-800 text-sm">Giảng viên được phân công</h3>
-                        <p class="text-xs text-slate-500">Phân định Giảng viên Chính (Primary) và Giảng viên Hỗ trợ (Assistant)</p>
-                    </div>
-                    <button onclick="openAssignLecturerModal()" class="btn-staff-only px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1">
-                        <i data-lucide="user-check" class="w-3.5 h-3.5"></i> Phân công Giảng viên
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="lecturerCardsContainer">
-                    <!-- Lecturer Cards rendered dynamically -->
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- MODAL 1: CREATE / EDIT CLASS (FE03.02) -->
-    <div id="classModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl animate-fade-in">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="classModalTitle" class="font-bold text-slate-800 text-lg">Tạo mới Lớp Học</h3>
-                <button onclick="closeClassModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            <form onsubmit="handleSaveClass(event)" class="space-y-3">
-                <input type="hidden" id="editClassId">
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Mã lớp * (BR03.02)</label>
-                        <input type="text" id="formClassCode" required placeholder="Ví dụ: IT003" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-600">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Mã môn học * (BR03.03)</label>
-                        <select id="formSubjectCode" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-600 bg-white">
-                            <option value="IT101">IT101 - Lập trình C++</option>
-                            <option value="IT102">IT102 - Cấu trúc dữ liệu & Giải thuật</option>
-                            <option value="SE201">SE201 - Phân tích & Thiết kế Phần mềm</option>
-                        </select>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Tên lớp học *</label>
-                    <input type="text" id="formClassName" required placeholder="Ví dụ: Lập trình C++ - Nhóm 3" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-600">
-                </div>
-                <div class="grid grid-cols-3 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Học kỳ *</label>
-                        <select id="formSemester" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-600 bg-white">
-                            <option value="HK1">HK1</option>
-                            <option value="HK2">HK2</option>
-                            <option value="HK3">HK3</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Năm học *</label>
-                        <input type="text" id="formAcademicYear" required value="2026-2027" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-600">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Sĩ số tối đa *</label>
-                        <input type="number" id="formCapacity" required min="1" max="150" value="40" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-600">
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Lịch học</label>
-                        <input type="text" id="formSchedule" placeholder="Thứ 3, Tiết 4-6" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-600">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Phòng học</label>
-                        <input type="text" id="formRoom" placeholder="Phòng B202" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-600">
-                    </div>
-                </div>
-                <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
-                    <button type="button" onclick="closeClassModal()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg">Hủy</button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-sm">Lưu thông tin</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 2: CSV IMPORT PREVIEW & VALIDATION (FE03.01) -->
-    <div id="importModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-2xl w-full max-w-3xl p-6 shadow-2xl animate-fade-in flex flex-col max-h-[90vh]">
-            <div class="flex justify-between items-center mb-3 shrink-0">
-                <div>
-                    <h3 class="font-bold text-slate-800 text-lg">Nhập dữ liệu lớp học từ tệp CSV</h3>
-                    <p class="text-xs text-slate-500">Kiểm tra định dạng dữ liệu và cảnh báo dòng lỗi trước khi ghi vào cơ sở dữ liệu (BR03.07, BR03.08)</p>
-                </div>
-                <button onclick="closeImportModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-
-            <!-- Upload Area / Sample Loader -->
-            <div class="p-4 bg-slate-50 rounded-xl border-2 border-dashed border-slate-300 text-center mb-4 shrink-0">
-                <i data-lucide="file-spreadsheet" class="w-8 h-8 text-indigo-500 mx-auto mb-1"></i>
-                <p class="text-xs text-slate-600 font-medium mb-2">Chọn tệp CSV từ máy tính hoặc tải mẫu kiểm thử bên dưới</p>
-                <div class="flex justify-center gap-2">
-                    <button onclick="loadSampleCsv('valid')" class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-semibold rounded hover:bg-emerald-200">Nạp mẫu hợp lệ (3 lớp)</button>
-                    <button onclick="loadSampleCsv('invalid')" class="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-semibold rounded hover:bg-amber-200">Nạp mẫu có LỖI (Mã trùng/Thiếu trường)</button>
-                </div>
-            </div>
-
-            <!-- CSV Preview Table -->
-            <div id="csvPreviewContainer" class="flex-1 overflow-y-auto border border-slate-200 rounded-xl custom-scroll mb-4 hidden">
-                <table class="w-full text-left border-collapse text-xs">
-                    <thead class="bg-slate-100 text-slate-600 font-bold sticky top-0 border-b border-slate-200">
-                        <tr>
-                            <th class="p-2.5">Dòng</th>
-                            <th class="p-2.5">Mã Lớp</th>
-                            <th class="p-2.5">Tên Lớp</th>
-                            <th class="p-2.5">Mã Môn</th>
-                            <th class="p-2.5">Học Kỳ</th>
-                            <th class="p-2.5">Sĩ Số</th>
-                            <th class="p-2.5">Trạng thái Validation</th>
-                        </tr>
-                    </thead>
-                    <tbody id="csvPreviewTableBody" class="divide-y divide-slate-100">
-                        <!-- Rendered dynamically -->
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="flex justify-between items-center shrink-0 pt-2 border-t border-slate-100">
-                <span id="csvSummaryText" class="text-xs font-medium text-slate-500">Chưa chọn tệp dữ liệu</span>
-                <div class="flex gap-2">
-                    <button type="button" onclick="closeImportModal()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg">Hủy</button>
-                    <button type="button" id="btnConfirmImport" onclick="confirmCsvImport()" disabled class="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">Xác nhận nhập dữ liệu</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 3: ADD STUDENT TO CLASS (FE03.03) -->
-    <div id="addStudentModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-fade-in">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="font-bold text-slate-800 text-lg">Thêm Sinh Viên Vào Lớp</h3>
-                <button onclick="closeAddStudentModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            <form onsubmit="handleAddStudentSubmit(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Chọn sinh viên khả dụng trong hệ thống</label>
-                    <select id="selectStudentToAdd" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-600 bg-white">
-                        <!-- Options filled dynamically -->
-                    </select>
-                </div>
-                <div class="p-3 bg-indigo-50 rounded-lg border border-indigo-100 text-xs text-indigo-800 space-y-1">
-                    <p class="font-semibold flex items-center gap-1"><i data-lucide="info" class="w-4 h-4"></i> Quy tắc nghiệp vụ kiểm tra:</p>
-                    <p>• BR03.04: Tài khoản sinh viên phải hợp lệ.</p>
-                    <p>• BR03.05: Không cho phép trùng lặp sinh viên.</p>
-                    <p>• BR03.06: Không vượt quá sĩ số tối đa của lớp.</p>
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeAddStudentModal()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg">Hủy</button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-sm">Xác nhận thêm</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 4: ASSIGN LECTURER (FE03.04) -->
-    <div id="assignLecturerModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-fade-in">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="font-bold text-slate-800 text-lg">Phân công Giảng viên</h3>
-                <button onclick="closeAssignLecturerModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            <form onsubmit="handleAssignLecturerSubmit(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Chọn Giảng viên</label>
-                    <select id="selectLecturerToAssign" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-600 bg-white">
-                        <!-- Options filled dynamically -->
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Vai trò phân công</label>
-                    <select id="selectAssignmentRole" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-600 bg-white">
-                        <option value="primary">Giảng viên chính (Primary Lecturer)</option>
-                        <option value="assistant">Giảng viên hỗ trợ (Assistant Lecturer)</option>
-                    </select>
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeAssignLecturerModal()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg">Hủy</button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-sm">Xác nhận phân công</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- APPLICATION LOGIC & STATE ENGINE -->
-    <script>
-        // System State
-        let currentUserRole = "STAFF"; // STAFF, LECTURER, STUDENT
-        let selectedClassId = 1;
-        let activeTab = "students";
-        let parsedImportData = [];
-
-        // Master Mock Database
-        let dbSubjects = [
-            { code: "IT101", name: "Lập trình C++" },
-            { code: "IT102", name: "Cấu trúc dữ liệu & Giải thuật" },
-            { code: "SE201", name: "Phân tích & Thiết kế Phần mềm" }
-        ];
-
-        let dbUsers = [
-            // Students
-            { id: 101, name: "Nguyễn Văn A", email: "anguyen@student.edu.vn", role: "STUDENT", major: "Khoa học Máy tính" },
-            { id: 102, name: "Trần Thị B", email: "btran@student.edu.vn", role: "STUDENT", major: "Kỹ thuật Phần mềm" },
-            { id: 103, name: "Lê Hoàng C", email: "cle@student.edu.vn", role: "STUDENT", major: "Hệ thống Thông tin" },
-            { id: 104, name: "Phạm Minh D", email: "dpham@student.edu.vn", role: "STUDENT", major: "Kỹ thuật Phần mềm" },
-            { id: 105, name: "Vũ Thanh E", email: "evu@student.edu.vn", role: "STUDENT", major: "Khoa học Máy tính" },
-            // Lecturers
-            { id: 12, name: "TS. Lê Hoàng", email: "hoang.le@collabsphere.edu.vn", role: "LECTURER", dept: "Bộ môn Công nghệ Phần mềm" },
-            { id: 13, name: "ThS. Nguyễn Thị Mai", email: "mai.nguyen@collabsphere.edu.vn", role: "LECTURER", dept: "Bộ môn Khoa học Máy tính" }
-        ];
-
-        let dbClasses = [
-            {
-                id: 1,
-                class_code: "IT001",
-                class_name: "Lập trình C++ - Nhóm 1",
-                subject_code: "IT101",
-                semester: "HK1",
-                academic_year: "2026-2027",
-                capacity: 40,
-                schedule: "Thứ 2, tiết 1-3",
-                room: "A101",
-                status: "ACTIVE",
-                student_ids: [101, 102, 103],
-                lecturers: [
-                    { lecturer_id: 12, assignment_role: "primary" },
-                    { lecturer_id: 13, assignment_role: "assistant" }
-                ]
-            },
-            {
-                id: 2,
-                class_code: "IT002",
-                class_name: "Cấu trúc dữ liệu & GT - Nhóm 2",
-                subject_code: "IT102",
-                semester: "HK1",
-                academic_year: "2026-2027",
-                capacity: 35,
-                schedule: "Thứ 4, tiết 7-9",
-                room: "B204",
-                status: "ACTIVE",
-                student_ids: [104],
-                lecturers: [
-                    { lecturer_id: 13, assignment_role: "primary" }
-                ]
-            }
-        ];
-
-        // Initialization
-        window.addEventListener('DOMContentLoaded', () => {
-            renderClassList();
-            renderSelectedClassDetails();
-            applyAuthorizationRules();
-            lucide.createIcons();
-        });
-
-        // 1. Authorization Controls (BR03.01)
-        function switchUserRole(role) {
-            currentUserRole = role;
-            applyAuthorizationRules();
-            showToast(`Đã chuyển sang vai trò: ${role}`, "info");
-        }
-
-        function applyAuthorizationRules() {
-            const isStaff = currentUserRole === "STAFF";
-            
-            // Toggle Visibility of Staff-only mutation actions
-            document.querySelectorAll('.btn-staff-only').forEach(el => {
-                if (isStaff) {
-                    el.classList.remove('hidden');
-                } else {
-                    el.classList.add('hidden');
-                }
-            });
-
-            document.getElementById('btnImportCsv').style.display = isStaff ? 'inline-flex' : 'none';
-            document.getElementById('btnCreateClass').style.display = isStaff ? 'inline-flex' : 'none';
-        }
-
-        // Toast Notification System
-        function showToast(message, type = "success") {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            
-            const bgColor = type === "success" ? "bg-emerald-600" : type === "error" ? "bg-rose-600" : "bg-indigo-600";
-            const iconName = type === "success" ? "check-circle" : type === "error" ? "alert-circle" : "info";
-
-            toast.className = `${bgColor} text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-2.5 text-sm animate-fade-in pointer-events-auto`;
-            toast.innerHTML = `<i data-lucide="${iconName}" class="w-4 h-4"></i> <span>${message}</span>`;
-            
-            container.appendChild(toast);
-            lucide.createIcons();
-
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transition = 'opacity 0.3s ease';
-                setTimeout(() => toast.remove(), 300);
-            }, 3500);
-        }
-
-        // 2. Class List Rendering & Filtering (FE03.02)
-        function renderClassList() {
-            const container = document.getElementById('classListContainer');
-            const searchVal = document.getElementById('searchInput').value.toLowerCase();
-            const semesterVal = document.getElementById('semesterFilter').value;
-            const statusVal = document.getElementById('statusFilter').value;
-
-            container.innerHTML = '';
-
-            let filtered = dbClasses.filter(c => {
-                const matchSearch = c.class_code.toLowerCase().includes(searchVal) ||
-                                    c.class_name.toLowerCase().includes(searchVal) ||
-                                    c.subject_code.toLowerCase().includes(searchVal);
-                const matchSemester = !semesterVal || c.semester === semesterVal;
-                const matchStatus = !statusVal || c.status === statusVal;
-                
-                // Lecturer view filter restriction
-                if (currentUserRole === "LECTURER") {
-                    const isAssigned = c.lecturers.some(l => l.lecturer_id === 12);
-                    return matchSearch && matchSemester && matchStatus && isAssigned;
-                }
-
-                return matchSearch && matchSemester && matchStatus;
-            });
-
-            document.getElementById('classCount').textContent = filtered.length;
-
-            if (filtered.length === 0) {
-                container.innerHTML = `<div class="p-6 text-center text-xs text-slate-400">Không tìm thấy lớp học phù hợp</div>`;
-                return;
-            }
-
-            filtered.forEach(c => {
-                const isSelected = c.id === selectedClassId;
-                const card = document.createElement('div');
-                card.onclick = () => selectClass(c.id);
-
-                const statusBg = c.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' :
-                                 c.status === 'INACTIVE' ? 'bg-amber-100 text-amber-800' : 'bg-slate-200 text-slate-700';
-
-                card.className = `p-3.5 rounded-xl cursor-pointer border transition-all ${
-                    isSelected ? 'bg-indigo-50/80 border-indigo-500 shadow-sm' : 'bg-white border-slate-200 hover:border-slate-300'
-                }`;
-
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-1.5">
-                        <span class="font-mono text-xs font-bold px-2 py-0.5 rounded ${isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700'}">${c.class_code}</span>
-                        <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${statusBg}">${c.status}</span>
-                    </div>
-                    <h4 class="font-bold text-sm text-slate-800 leading-tight mb-1">${c.class_name}</h4>
-                    <div class="flex justify-between items-center text-xs text-slate-500 mt-2">
-                        <span>${c.subject_code} • ${c.semester}</span>
-                        <span class="font-medium text-slate-600 flex items-center gap-1"><i data-lucide="users" class="w-3 h-3"></i> ${c.student_ids.length}/${c.capacity}</span>
-                    </div>
-                `;
-
-                container.appendChild(card);
-            });
-
-            lucide.createIcons();
-        }
-
-        function filterClasses() {
-            renderClassList();
-        }
-
-        function selectClass(id) {
-            selectedClassId = id;
-            renderClassList();
-            renderSelectedClassDetails();
-        }
-
-        // 3. Render Class Detail View
-        function renderSelectedClassDetails() {
-            const currentClass = dbClasses.find(c => c.id === selectedClassId);
-            if (!currentClass) return;
-
-            document.getElementById('detailClassCode').textContent = currentClass.class_code;
-            document.getElementById('detailClassName').textContent = currentClass.class_name;
-            document.getElementById('detailSubject').textContent = `${currentClass.subject_code} - ${getSubjectName(currentClass.subject_code)}`;
-            document.getElementById('detailSemester').textContent = `${currentClass.semester} (${currentClass.academic_year})`;
-            document.getElementById('detailSchedule').textContent = `${currentClass.schedule} (${currentClass.room})`;
-
-            const statusBadge = document.getElementById('detailStatusBadge');
-            statusBadge.textContent = currentClass.status;
-            statusBadge.className = `text-xs px-2.5 py-1 rounded-full font-semibold ${
-                currentClass.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' :
-                currentClass.status === 'INACTIVE' ? 'bg-amber-100 text-amber-800' : 'bg-slate-200 text-slate-700'
-            }`;
-
-            // Render Tabs
-            document.getElementById('tabStudentCount').textContent = currentClass.student_ids.length;
-            document.getElementById('detailCapacity').textContent = currentClass.capacity;
-            document.getElementById('tabLecturerCount').textContent = currentClass.lecturers.length;
-
-            const capPercent = Math.min(100, (currentClass.student_ids.length / currentClass.capacity) * 100);
-            const capBar = document.getElementById('capacityBar');
-            capBar.style.width = `${capPercent}%`;
-            capBar.className = capPercent >= 100 ? 'bg-rose-600 h-full transition-all' : capPercent >= 80 ? 'bg-amber-500 h-full transition-all' : 'bg-indigo-600 h-full transition-all';
-
-            renderStudentsTab();
-            renderLecturersTab();
-            applyAuthorizationRules();
-        }
-
-        function getSubjectName(code) {
-            const subj = dbSubjects.find(s => s.code === code);
-            return subj ? subj.name : code;
-        }
-
-        // Main Tab Switcher
-        function switchMainTab(tab) {
-            activeTab = tab;
-            const btnSt = document.getElementById('tabStudentsBtn');
-            const btnLec = document.getElementById('tabLecturersBtn');
-            const viewSt = document.getElementById('tabStudentsView');
-            const viewLec = document.getElementById('tabLecturersView');
-
-            if (tab === 'students') {
-                btnSt.className = "py-3 text-indigo-600 border-b-2 border-indigo-600 flex items-center gap-2";
-                btnLec.className = "py-3 text-slate-500 hover:text-slate-700 flex items-center gap-2";
-                viewSt.classList.remove('hidden');
-                viewLec.classList.add('hidden');
-            } else {
-                btnLec.className = "py-3 text-indigo-600 border-b-2 border-indigo-600 flex items-center gap-2";
-                btnSt.className = "py-3 text-slate-500 hover:text-slate-700 flex items-center gap-2";
-                viewLec.classList.remove('hidden');
-                viewSt.classList.add('hidden');
-            }
-        }
-
-        // 4. Student Management Tab (FE03.03)
-        function renderStudentsTab() {
-            const currentClass = dbClasses.find(c => c.id === selectedClassId);
-            const tbody = document.getElementById('studentTableBody');
-            tbody.innerHTML = '';
-
-            if (currentClass.student_ids.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 text-xs">Chưa có sinh viên nào trong lớp học này.</td></tr>`;
-                return;
-            }
-
-            currentClass.student_ids.forEach(stId => {
-                const student = dbUsers.find(u => u.id === stId);
-                if (!student) return;
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/80 transition";
-                tr.innerHTML = `
-                    <td class="py-3 px-4 font-mono text-xs font-bold text-slate-700">${student.id}</td>
-                    <td class="py-3 px-4 font-semibold text-slate-800">${student.name}</td>
-                    <td class="py-3 px-4 text-slate-600 text-xs">${student.email}</td>
-                    <td class="py-3 px-4 text-slate-600 text-xs">${student.major}</td>
-                    <td class="py-3 px-4 text-center">
-                        <button onclick="removeStudentFromClass(${student.id})" class="btn-staff-only p-1 text-rose-600 hover:bg-rose-50 rounded transition" title="Xóa sinh viên khỏi lớp">
-                            <i data-lucide="user-x" class="w-4 h-4"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            lucide.createIcons();
-        }
-
-        function openAddStudentModal() {
-            if (currentUserRole !== "STAFF") {
-                showToast("Bạn không có quyền thực hiện thao tác này (BR03.01)", "error");
-                return;
-            }
-
-            const currentClass = dbClasses.find(c => c.id === selectedClassId);
-            
-            // Check Capacity Rule (BR03.06)
-            if (currentClass.student_ids.length >= currentClass.capacity) {
-                showToast(`Lớp đã đạt sĩ số tối đa (${currentClass.capacity} SV). Không thể thêm mới! (BR03.06)`, "error");
-                return;
-            }
-
-            const select = document.getElementById('selectStudentToAdd');
-            select.innerHTML = '';
-
-            // Filter available students (not already in class - BR03.05)
-            const availableStudents = dbUsers.filter(u => u.role === "STUDENT" && !currentClass.student_ids.includes(u.id));
-
-            if (availableStudents.length === 0) {
-                select.innerHTML = `<option value="">Tất cả sinh viên đã có mặt trong lớp</option>`;
-            } else {
-                availableStudents.forEach(st => {
-                    select.innerHTML += `<option value="${st.id}">${st.id} - ${st.name} (${st.major})</option>`;
-                });
-            }
-
-            document.getElementById('addStudentModal').classList.remove('hidden');
-        }
-
-        function closeAddStudentModal() {
-            document.getElementById('addStudentModal').classList.add('hidden');
-        }
-
-        function handleAddStudentSubmit(e) {
-            e.preventDefault();
-            const stId = parseInt(document.getElementById('selectStudentToAdd').value);
-            if (!stId) return;
-
-            const currentClass = dbClasses.find(c => c.id === selectedClassId);
-
-            // Double check BR03.05 Duplicate check
-            if (currentClass.student_ids.includes(stId)) {
-                showToast("Sinh viên này đã thuộc lớp học! (BR03.05)", "error");
-                return;
-            }
-
-            currentClass.student_ids.push(stId);
-            renderSelectedClassDetails();
-            renderClassList();
-            closeAddStudentModal();
-            showToast("Thêm sinh viên vào lớp thành công!");
-        }
-
-        function removeStudentFromClass(stId) {
-            if (currentUserRole !== "STAFF") {
-                showToast("Bạn không có quyền xóa sinh viên (BR03.01)", "error");
-                return;
-            }
-
-            const currentClass = dbClasses.find(c => c.id === selectedClassId);
-            currentClass.student_ids = currentClass.student_ids.filter(id => id !== stId);
-            
-            renderSelectedClassDetails();
-            renderClassList();
-            showToast("Đã xóa sinh viên khỏi danh sách lớp!");
-        }
-
-        // 5. Lecturer Assignment Tab (FE03.04)
-        function renderLecturersTab() {
-            const currentClass = dbClasses.find(c => c.id === selectedClassId);
-            const container = document.getElementById('lecturerCardsContainer');
-            container.innerHTML = '';
-
-            if (currentClass.lecturers.length === 0) {
-                container.innerHTML = `<div class="col-span-2 p-6 text-center text-slate-400 text-xs bg-white rounded-xl border border-slate-200">Chưa phân công giảng viên nào cho lớp này.</div>`;
-                return;
-            }
-
-            currentClass.lecturers.forEach(lecRef => {
-                const lecturer = dbUsers.find(u => u.id === lecRef.lecturer_id);
-                if (!lecturer) return;
-
-                const isPrimary = lecRef.assignment_role === 'primary';
-                const card = document.createElement('div');
-                card.className = "bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center";
-
-                card.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full ${isPrimary ? 'bg-indigo-600' : 'bg-slate-700'} text-white flex items-center justify-center font-bold text-sm">
-                            ${lecturer.name.charAt(0)}
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <h4 class="font-bold text-slate-800 text-sm">${lecturer.name}</h4>
-                                <span class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${isPrimary ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' : 'bg-slate-100 text-slate-600'}">
-                                    ${isPrimary ? 'Giảng viên chính' : 'Giảng viên hỗ trợ'}
-                                </span>
-                            </div>
-                            <p class="text-xs text-slate-500">${lecturer.email} • ${lecturer.dept}</p>
-                        </div>
-                    </div>
-                    <button onclick="removeLecturerFromClass(${lecturer.id})" class="btn-staff-only p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Hủy phân công">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    </button>
-                `;
-                container.appendChild(card);
-            });
-
-            lucide.createIcons();
-        }
-
-        function openAssignLecturerModal() {
-            if (currentUserRole !== "STAFF") {
-                showToast("Bạn không có quyền phân công giảng viên (BR03.01)", "error");
-                return;
-            }
-
-            const currentClass = dbClasses.find(c => c.id === selectedClassId);
-            const select = document.getElementById('selectLecturerToAssign');
-            select.innerHTML = '';
-
-            const assignedIds = currentClass.lecturers.map(l => l.lecturer_id);
-            const availableLecturers = dbUsers.filter(u => u.role === "LECTURER" && !assignedIds.includes(u.id));
-
-            if (availableLecturers.length === 0) {
-                select.innerHTML = `<option value="">Tất cả giảng viên đã được phân công</option>`;
-            } else {
-                availableLecturers.forEach(l => {
-                    select.innerHTML += `<option value="${l.id}">${l.name} (${l.dept})</option>`;
-                });
-            }
-
-            document.getElementById('assignLecturerModal').classList.remove('hidden');
-        }
-
-        function closeAssignLecturerModal() {
-            document.getElementById('assignLecturerModal').classList.add('hidden');
-        }
-
-        function handleAssignLecturerSubmit(e) {
-            e.preventDefault();
-            const lecId = parseInt(document.getElementById('selectLecturerToAssign').value);
-            const role = document.getElementById('selectAssignmentRole').value;
-            if (!lecId) return;
-
-            const currentClass = dbClasses.find(c => c.id === selectedClassId);
-            currentClass.lecturers.push({ lecturer_id: lecId, assignment_role: role });
-
-            renderSelectedClassDetails();
-            closeAssignLecturerModal();
-            showToast("Phân công giảng viên thành công!");
-        }
-
-        function removeLecturerFromClass(lecId) {
-            if (currentUserRole !== "STAFF") {
-                showToast("Bạn không có quyền thao tác (BR03.01)", "error");
-                return;
-            }
-
-            const currentClass = dbClasses.find(c => c.id === selectedClassId);
-            currentClass.lecturers = currentClass.lecturers.filter(l => l.lecturer_id !== lecId);
-
-            renderSelectedClassDetails();
-            showToast("Đã hủy phân công giảng viên!");
-        }
-
-        // 6. Manual Class Creation / Editing (FE03.02)
-        function openClassModal(editData = null) {
-            if (currentUserRole !== "STAFF") {
-                showToast("Chỉ Nhân viên Quản lý mới có quyền tạo/sửa lớp (BR03.01)", "error");
-                return;
-            }
-
-            document.getElementById('classModalTitle').textContent = editData ? "Cập Nhật Thông Tin Lớp Học" : "Tạo Mới Lớp Học";
-            document.getElementById('editClassId').value = editData ? editData.id : "";
-            document.getElementById('formClassCode').value = editData ? editData.class_code : "";
-            document.getElementById('formClassCode').disabled = !!editData; // Code is unique & key
-            document.getElementById('formClassName').value = editData ? editData.class_name : "";
-            document.getElementById('formSubjectCode').value = editData ? editData.subject_code : "IT101";
-            document.getElementById('formSemester').value = editData ? editData.semester : "HK1";
-            document.getElementById('formAcademicYear').value = editData ? editData.academic_year : "2026-2027";
-            document.getElementById('formCapacity').value = editData ? editData.capacity : 40;
-            document.getElementById('formSchedule').value = editData ? editData.schedule : "";
-            document.getElementById('formRoom').value = editData ? editData.room : "";
-
-            document.getElementById('classModal').classList.remove('hidden');
-        }
-
-        function openEditClassModal() {
-            const currentClass = dbClasses.find(c => c.id === selectedClassId);
-            openClassModal(currentClass);
-        }
-
-        function closeClassModal() {
-            document.getElementById('classModal').classList.add('hidden');
-        }
-
-        function handleSaveClass(e) {
-            e.preventDefault();
-            const editId = document.getElementById('editClassId').value;
-            const code = document.getElementById('formClassCode').value.trim();
-
-            // Unique Check for class_code (BR03.02)
-            if (!editId) {
-                const isDuplicate = dbClasses.some(c => c.class_code.toLowerCase() === code.toLowerCase());
-                if (isDuplicate) {
-                    showToast(`Mã lớp '${code}' đã tồn tại trong hệ thống! (BR03.02)`, "error");
-                    return;
-                }
-            }
-
-            if (editId) {
-                // Update
-                const current = dbClasses.find(c => c.id === parseInt(editId));
-                current.class_name = document.getElementById('formClassName').value;
-                current.subject_code = document.getElementById('formSubjectCode').value;
-                current.semester = document.getElementById('formSemester').value;
-                current.academic_year = document.getElementById('formAcademicYear').value;
-                current.capacity = parseInt(document.getElementById('formCapacity').value);
-                current.schedule = document.getElementById('formSchedule').value;
-                current.room = document.getElementById('formRoom').value;
-                showToast("Cập nhật thông tin lớp học thành công!");
-            } else {
-                // Insert
-                const newClass = {
-                    id: Date.now(),
-                    class_code: code,
-                    class_name: document.getElementById('formClassName').value,
-                    subject_code: document.getElementById('formSubjectCode').value,
-                    semester: document.getElementById('formSemester').value,
-                    academic_year: document.getElementById('formAcademicYear').value,
-                    capacity: parseInt(document.getElementById('formCapacity').value),
-                    schedule: document.getElementById('formSchedule').value,
-                    room: document.getElementById('formRoom').value,
-                    status: "ACTIVE",
-                    student_ids: [],
-                    lecturers: []
-                };
-                dbClasses.unshift(newClass);
-                selectedClassId = newClass.id;
-                showToast("Tạo lớp học mới thành công!");
-            }
-
-            renderClassList();
-            renderSelectedClassDetails();
-            closeClassModal();
-        }
-
-        function toggleClassStatus() {
-            if (currentUserRole !== "STAFF") {
-                showToast("Bạn không có quyền đổi trạng thái lớp (BR03.01)", "error");
-                return;
-            }
-
-            const currentClass = dbClasses.find(c => c.id === selectedClassId);
-            if (currentClass.status === "ACTIVE") currentClass.status = "INACTIVE";
-            else if (currentClass.status === "INACTIVE") currentClass.status = "ARCHIVED";
-            else currentClass.status = "ACTIVE";
-
-            renderSelectedClassDetails();
-            renderClassList();
-            showToast(`Đã đổi trạng thái lớp sang: ${currentClass.status}`);
-        }
-
-        // 7. CSV File Import Preview & Validation (FE03.01)
-        function openImportModal() {
-            if (currentUserRole !== "STAFF") {
-                showToast("Chỉ Staff mới có quyền nhập dữ liệu từ CSV (BR03.01)", "error");
-                return;
-            }
-            parsedImportData = [];
-            document.getElementById('csvPreviewContainer').classList.add('hidden');
-            document.getElementById('btnConfirmImport').disabled = true;
-            document.getElementById('csvSummaryText').textContent = "Chưa chọn tệp dữ liệu";
-            document.getElementById('importModal').classList.remove('hidden');
-        }
-
-        function closeImportModal() {
-            document.getElementById('importModal').classList.add('hidden');
-        }
-
-        function loadSampleCsv(type) {
-            let sampleRows = [];
-            if (type === 'valid') {
-                sampleRows = [
-                    { row: 1, class_code: "IT003", class_name: "Lập trình C++ - Nhóm 3", subject_code: "IT101", semester: "HK1", capacity: 40 },
-                    { row: 2, class_code: "IT004", class_name: "Cấu trúc dữ liệu - Nhóm 1", subject_code: "IT102", semester: "HK1", capacity: 45 },
-                    { row: 3, class_code: "SE001", class_name: "Phân tích phần mềm - Nhóm 1", subject_code: "SE201", semester: "HK2", capacity: 30 }
-                ];
-            } else {
-                // Invalid data samples triggering BR03.02, BR03.03, etc.
-                sampleRows = [
-                    { row: 1, class_code: "IT001", class_name: "Lớp Trùng Mã", subject_code: "IT101", semester: "HK1", capacity: 40 }, // Duplicate class_code
-                    { row: 2, class_code: "IT005", class_name: "Lớp Mã Môn Lỗi", subject_code: "INVALID_SUBJ", semester: "HK1", capacity: 40 }, // Invalid Subject
-                    { row: 3, class_code: "", class_name: "Lớp Thiếu Mã Lớp", subject_code: "IT102", semester: "HK1", capacity: 40 } // Missing Code
-                ];
-            }
-
-            validateAndPreviewCsvData(sampleRows);
-        }
-
-        function validateAndPreviewCsvData(rows) {
-            parsedImportData = [];
-            let validCount = 0;
-            let errorCount = 0;
-
-            const tbody = document.getElementById('csvPreviewTableBody');
-            tbody.innerHTML = '';
-
-            rows.forEach(r => {
-                let errors = [];
-
-                // Check required fields
-                if (!r.class_code) errors.push("Thiếu mã lớp");
-                if (!r.class_name) errors.push("Thiếu tên lớp");
-                
-                // Check duplicate code (BR03.02)
-                if (r.class_code && dbClasses.some(c => c.class_code.toLowerCase() === r.class_code.toLowerCase())) {
-                    errors.push("Mã lớp bị trùng trong hệ thống");
-                }
-
-                // Check subject code exists (BR03.03)
-                if (r.subject_code && !dbSubjects.some(s => s.code === r.subject_code)) {
-                    errors.push("Mã môn học không tồn tại");
-                }
-
-                const isValid = errors.length === 0;
-                if (isValid) validCount++; else errorCount++;
-
-                parsedImportData.push({ ...r, isValid, errors });
-
-                const tr = document.createElement('tr');
-                tr.className = isValid ? "bg-emerald-50/50 hover:bg-emerald-50" : "bg-rose-50/60 hover:bg-rose-50";
-                tr.innerHTML = `
-                    <td class="p-2.5 font-bold text-slate-500">${r.row}</td>
-                    <td class="p-2.5 font-mono font-bold">${r.class_code || '<span class="text-rose-500">N/A</span>'}</td>
-                    <td class="p-2.5 font-medium">${r.class_name}</td>
-                    <td class="p-2.5">${r.subject_code}</td>
-                    <td class="p-2.5">${r.semester}</td>
-                    <td class="p-2.5">${r.capacity}</td>
-                    <td class="p-2.5 font-medium">
-                        ${isValid 
-                            ? `<span class="text-emerald-700 flex items-center gap-1"><i data-lucide="check" class="w-3.5 h-3.5"></i> Hợp lệ</span>` 
-                            : `<span class="text-rose-700 font-semibold flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> Lỗi: ${errors.join(', ')}</span>`}
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            document.getElementById('csvPreviewContainer').classList.remove('hidden');
-            document.getElementById('csvSummaryText').innerHTML = `Tổng dòng: <strong>${rows.length}</strong> | Hợp lệ: <strong class="text-emerald-600">${validCount}</strong> | Lỗi: <strong class="text-rose-600">${errorCount}</strong>`;
-            
-            // Only enable import if valid items exist
-            document.getElementById('btnConfirmImport').disabled = validCount === 0;
-            lucide.createIcons();
-        }
-
-        function confirmCsvImport() {
-            const validRows = parsedImportData.filter(d => d.isValid);
-            if (validRows.length === 0) return;
-
+GIAO TIẾP VÀ HỌP TRỰC TUYẾN
+Mã chức năng: FE07
+Tên chức năng: Giao tiếp và họp trực tuyến
+Hệ thống: CollabSphere – Hệ thống hỗ trợ học tập theo phương pháp học tập dựa trên dự án (Project-Based Learning – PBL)
+Tác nhân chính: Giảng viên (Lecturer), Sinh viên (Student)
+1. Tổng quan chức năng
+1.1. Mục tiêu
+
+Chức năng Giao tiếp và họp trực tuyến cho phép giảng viên và sinh viên trao đổi thông tin, tổ chức các buổi họp trực tuyến, chia sẻ màn hình và lên lịch cuộc họp trong quá trình thực hiện dự án.
+
+Chức năng này giúp tăng cường khả năng cộng tác giữa các thành viên, hỗ trợ giảng viên hướng dẫn sinh viên, theo dõi tiến độ dự án và giải quyết các vấn đề phát sinh trong quá trình học tập.
+
+1.2. Phạm vi chức năng
+Mã chức năng	Tên chức năng	Mô tả
+FE07.01	Chat thời gian thực	Gửi và nhận tin nhắn cá nhân hoặc tin nhắn nhóm theo dự án
+FE07.02	Họp trực tuyến	Tạo phòng họp và tham gia cuộc họp bằng video/audio
+FE07.03	Chia sẻ màn hình	Chia sẻ màn hình hoặc cửa sổ ứng dụng trong cuộc họp
+FE07.04	Lên lịch cuộc họp	Tạo, xem, cập nhật và hủy lịch họp
+FE07.05	Quản lý người tham gia	Mời thành viên, kiểm soát quyền tham gia và theo dõi trạng thái tham gia
+FE07.06	Quản lý lịch sử và biên bản họp	Xem thông tin cuộc họp, kết luận và công việc cần thực hiện sau cuộc họp
+1.3. Đối tượng sử dụng
+Vai trò	Quyền hạn
+Student (Sinh viên)	Gửi tin nhắn, tham gia cuộc họp, chia sẻ màn hình khi được phép và xem lịch họp của dự án mình tham gia
+Lecturer (Giảng viên)	Trao đổi với sinh viên, tổ chức họp hướng dẫn, lên lịch họp và quản lý cuộc họp trong phạm vi được phân công
+Staff (Nhân viên quản lý)	Xem thông tin liên quan đến hoạt động học tập theo quyền hạn được cấp; không mặc nhiên có quyền đọc nội dung trao đổi riêng tư
+Admin (Quản trị viên)	Quản lý quyền truy cập, cấu hình hệ thống và hỗ trợ xử lý sự cố kỹ thuật
+2. Mô tả chi tiết chức năng
+2.1. Chat thời gian thực
+
+Mục đích: Hỗ trợ giảng viên và sinh viên trao đổi thông tin tức thời trong quá trình thực hiện dự án.
+
+Quy trình thực hiện:
+
+Người dùng đăng nhập vào hệ thống CollabSphere.
+Người dùng mở cuộc trò chuyện cá nhân hoặc nhóm dự án mà mình có quyền tham gia.
+Người dùng nhập nội dung tin nhắn và gửi đi.
+Hệ thống kiểm tra quyền truy cập và tính hợp lệ của nội dung.
+Hệ thống lưu tin nhắn và chuyển tin nhắn đến các thành viên liên quan.
+Hệ thống cập nhật giao diện người nhận và thông báo tin nhắn mới.
+
+Yêu cầu xử lý:
+
+Gửi và nhận tin nhắn theo thời gian thực.
+Hiển thị người gửi, nội dung và thời điểm gửi tin nhắn.
+Lưu lịch sử tin nhắn để người dùng có thể xem lại.
+Hỗ trợ trò chuyện cá nhân và nhóm dự án.
+Hiển thị trạng thái gửi tin nhắn và thông báo tin nhắn mới.
+Kiểm tra quyền truy cập trước khi đọc hoặc gửi tin nhắn.
+Xử lý lỗi kết nối và hỗ trợ đồng bộ tin nhắn khi kết nối được khôi phục.
+Kiểm tra loại và kích thước tệp đính kèm nếu hệ thống hỗ trợ gửi tệp.
+2.2. Họp trực tuyến qua video/audio
+
+Mục đích: Cho phép giảng viên và sinh viên tổ chức các buổi trao đổi trực tiếp mà không cần gặp mặt tại cùng một địa điểm.
+
+Các thao tác chính:
+
+Tạo phòng họp trực tuyến.
+Tham gia phòng họp bằng liên kết hoặc từ giao diện dự án.
+Bật/tắt micro và camera.
+Xem danh sách người tham gia.
+Rời cuộc họp hoặc kết thúc cuộc họp theo quyền hạn.
+Hiển thị trạng thái kết nối của người tham gia.
+Thông báo khi có thành viên tham gia hoặc rời phòng họp.
+
+Yêu cầu xử lý:
+
+Kiểm tra quyền tham gia phòng họp.
+Yêu cầu cấp quyền sử dụng micro và camera khi cần.
+Hiển thị thông báo nếu trình duyệt không hỗ trợ hoặc người dùng từ chối cấp quyền thiết bị.
+Xử lý tình trạng mất kết nối và cho phép người dùng thử kết nối lại.
+Kiểm soát quyền tạo, quản lý và kết thúc phòng họp.
+Không tự động ghi âm hoặc ghi hình khi chưa có cơ chế thông báo và cho phép phù hợp.
+2.3. Chia sẻ màn hình
+
+Mục đích: Hỗ trợ người dùng trình bày báo cáo, sản phẩm dự án, mã nguồn hoặc tài liệu trong các buổi họp trực tuyến.
+
+Các thao tác chính:
+
+Bắt đầu chia sẻ màn hình.
+Chọn toàn bộ màn hình, cửa sổ ứng dụng hoặc tab trình duyệt tùy khả năng của nền tảng.
+Dừng chia sẻ màn hình.
+Theo dõi nội dung được chia sẻ trong cuộc họp.
+Kiểm soát quyền chia sẻ màn hình theo vai trò hoặc thiết lập của người tổ chức.
+
+Yêu cầu xử lý:
+
+Chỉ bắt đầu chia sẻ sau khi người dùng chủ động lựa chọn nội dung và cấp quyền.
+Hiển thị trạng thái đang chia sẻ màn hình.
+Cho phép người chia sẻ dừng chia sẻ bất cứ lúc nào.
+Giải phóng tài nguyên chia sẻ khi cuộc họp kết thúc hoặc kết nối bị ngắt.
+Thông báo rõ ràng nếu trình duyệt hoặc thiết bị không hỗ trợ chức năng chia sẻ.
+2.4. Lên lịch và quản lý cuộc họp
+
+Mục đích: Giúp giảng viên và sinh viên chủ động sắp xếp thời gian trao đổi, hướng dẫn và đánh giá tiến độ dự án.
+
+Các thao tác chính:
+
+Tạo lịch họp với tiêu đề, thời gian và nội dung.
+Chọn dự án hoặc nhóm liên quan.
+Mời thành viên tham gia cuộc họp.
+Xem lịch họp sắp diễn ra và lịch sử các cuộc họp.
+Cập nhật thời gian, nội dung hoặc danh sách người tham gia.
+Hủy lịch họp.
+Gửi thông báo khi tạo, thay đổi hoặc hủy lịch họp.
+Gửi lời nhắc trước thời điểm bắt đầu cuộc họp.
+
+Thông tin cuộc họp bao gồm:
+
+Trường dữ liệu	Ý nghĩa
+meeting_id	Mã định danh cuộc họp
+title	Tiêu đề cuộc họp
+description	Nội dung hoặc mục đích cuộc họp
+project_id	Dự án liên quan, nếu có
+organizer_id	Người tổ chức cuộc họp
+start_time	Thời điểm bắt đầu
+end_time	Thời điểm kết thúc dự kiến
+meeting_link	Liên kết tham gia cuộc họp
+status	Trạng thái cuộc họp
+created_at	Thời điểm tạo cuộc họp
+2.5. Quản lý người tham gia
+
+Mục đích: Kiểm soát danh sách thành viên được mời và tham gia cuộc họp.
+
+Các thao tác chính:
+
+Mời giảng viên hoặc sinh viên tham gia.
+Xem danh sách người được mời.
+Theo dõi trạng thái lời mời nếu được hỗ trợ.
+Xem danh sách người đang tham gia cuộc họp.
+Cho phép người tổ chức hoặc người có quyền loại thành viên khỏi phòng họp.
+Kiểm tra quyền tham gia dựa trên dự án, nhóm và lời mời.
+
+Yêu cầu xử lý:
+
+Chỉ tài khoản hợp lệ mới được mời hoặc tham gia theo quy định của hệ thống.
+Không cho phép người không có quyền truy cập vào phòng họp riêng tư.
+Kiểm tra quyền quản lý người tham gia ở phía máy chủ.
+Ghi nhận thông tin tham gia và rời cuộc họp khi cần phục vụ quản lý hoạt động học tập.
+2.6. Quản lý lịch sử và biên bản họp
+
+Mục đích: Lưu lại thông tin cần thiết để giảng viên và sinh viên theo dõi các nội dung đã trao đổi và công việc sau cuộc họp.
+
+Các thao tác chính:
+
+Xem danh sách cuộc họp đã diễn ra.
+Xem thời gian, người tổ chức và danh sách người tham gia.
+Ghi nhận nội dung chính và kết luận cuộc họp.
+Ghi nhận nhiệm vụ cần thực hiện sau cuộc họp.
+Liên kết biên bản họp với dự án hoặc nhóm tương ứng.
+Cập nhật biên bản theo quyền hạn được cấp.
+
+Yêu cầu xử lý:
+
+Chỉ người dùng được cấp quyền mới được xem hoặc chỉnh sửa biên bản.
+Phân biệt trạng thái cuộc họp đã lên lịch, đang diễn ra, đã kết thúc hoặc đã hủy.
+Không mặc định lưu nội dung âm thanh, video hoặc bản ghi cuộc họp.
+Hỗ trợ liên kết các công việc sau cuộc họp với chức năng quản lý dự án nếu hệ thống có tích hợp.
+3. Quy trình nghiệp vụ
+mermaid
+flowchart TD
+    A([Bắt đầu]) --> B[Người dùng đăng nhập]
+    B --> C[Truy cập chức năng giao tiếp và họp trực tuyến]
+    C --> D{Chọn chức năng}
+    D -->|Chat| E[Mở cuộc trò chuyện]
+    E --> F[Nhập và gửi tin nhắn]
+    F --> G[Kiểm tra quyền và lưu tin nhắn]
+    G --> H[Chuyển tin nhắn đến người nhận]
+    D -->|Họp ngay| I[Tạo hoặc tham gia phòng họp]
+    I --> J[Kiểm tra quyền tham gia]
+    J --> K{Được phép tham gia?}
+    K -->|Không| L[Thông báo từ chối truy cập]
+    K -->|Có| M[Tham gia họp video/audio]
+    M --> N[Chia sẻ màn hình nếu cần]
+    N --> O[Kết thúc cuộc họp]
+    D -->|Lên lịch| P[Nhập thông tin cuộc họp]
+    P --> Q[Kiểm tra dữ liệu và quyền hạn]
+    Q --> R{Thông tin hợp lệ?}
+    R -->|Không| S[Thông báo lỗi]
+    S --> P
+    R -->|Có| T[Lưu lịch họp]
+    T --> U[Gửi lời mời và nhắc lịch]
+    O --> V[Ghi nhận lịch sử và biên bản]
+    V --> W([Kết thúc])
+    U --> W
+    H --> W
+    L --> W
+
+4. Quy tắc nghiệp vụ
+Mã quy tắc	Nội dung
+BR07.01	Chỉ người dùng đã xác thực mới được sử dụng chức năng giao tiếp và họp trực tuyến
+BR07.02	Người dùng chỉ được truy cập cuộc trò chuyện thuộc phạm vi quyền hạn của mình
+BR07.03	Tin nhắn phải được kiểm tra quyền gửi và quyền nhận trước khi xử lý
+BR07.04	Mỗi cuộc họp phải có người tổ chức hợp lệ
+BR07.05	Thời điểm kết thúc cuộc họp phải sau thời điểm bắt đầu
+BR07.06	Người dùng chỉ được tham gia phòng họp khi đáp ứng điều kiện truy cập
+BR07.07	Chức năng micro, camera và chia sẻ màn hình phải tuân thủ quyền cấp thiết bị của người dùng
+BR07.08	Chỉ người có quyền mới được thay đổi lịch họp hoặc kết thúc cuộc họp theo quy định
+BR07.09	Khi lịch họp thay đổi hoặc bị hủy, hệ thống phải thông báo cho những người liên quan
+BR07.10	Không tạo nhiều bản ghi thành viên trùng lặp cho cùng một cuộc họp
+BR07.11	Tin nhắn, lịch họp và biên bản phải được bảo vệ theo quyền truy cập tương ứng
+BR07.12	Hệ thống không mặc định ghi âm, ghi hình hoặc lưu màn hình khi chưa có cơ chế thông báo và cho phép phù hợp
+BR07.13	Thời gian họp phải được lưu trữ nhất quán và hiển thị theo múi giờ phù hợp
+BR07.14	Hệ thống phải xử lý lỗi kết nối và thông báo rõ nguyên nhân khi thao tác thất bại
+5. Giao diện lập trình ứng dụng (API) đề xuất
+Lưu ý: Các đường dẫn API dưới đây là thiết kế đề xuất cho chức năng FE07. Cần đối chiếu với mã nguồn phía máy chủ và kiến trúc hiện tại trước khi triển khai.
+Phương thức	Đường dẫn API	Chức năng
+GET	/api/conversations	Lấy danh sách cuộc trò chuyện của người dùng
+POST	/api/conversations	Tạo cuộc trò chuyện
+GET	/api/conversations/{conversationId}/messages	Lấy lịch sử tin nhắn
+POST	/api/conversations/{conversationId}/messages	Gửi tin nhắn
+POST	/api/conversations/{conversationId}/attachments	Tải tệp đính kèm lên cuộc trò chuyện
+POST	/api/meetings	Tạo cuộc họp hoặc lịch họp
+GET	/api/meetings	Lấy danh sách cuộc họp
+GET	/api/meetings/{meetingId}	Xem chi tiết cuộc họp
+PATCH	/api/meetings/{meetingId}	Cập nhật thông tin cuộc họp
+DELETE	/api/meetings/{meetingId}	Hủy cuộc họp theo quyền hạn
+POST	/api/meetings/{meetingId}/join	Kiểm tra quyền và yêu cầu tham gia cuộc họp
+POST	/api/meetings/{meetingId}/leave	Ghi nhận người dùng rời cuộc họp
+GET	/api/meetings/{meetingId}/participants	Lấy danh sách người tham gia
+POST	/api/meetings/{meetingId}/participants	Mời thành viên tham gia
+DELETE	/api/meetings/{meetingId}/participants/{userId}	Hủy lời mời hoặc loại thành viên theo quyền
+GET	/api/meetings/{meetingId}/minutes	Xem biên bản cuộc họp
+PUT	/api/meetings/{meetingId}/minutes	Tạo hoặc cập nhật biên bản cuộc họp
+5.1. Ví dụ dữ liệu tạo cuộc họp
+json
+{
+  "title": "Hop nhom du an PBL",
+  "description": "Thao luan tien do va phan cong cong viec",
+  "project_id": 15,
+  "start_time": "2026-11-02T09:00:00+07:00",
+  "end_time": "2026-11-02T10:00:00+07:00",
+  "participant_ids": [101, 102, 103]
+}
+
+
+Trong đó:
+
+title: Tiêu đề cuộc họp.
+description: Nội dung cuộc họp.
+project_id: Dự án liên quan.
+start_time, end_time: Thời gian bắt đầu và kết thúc.
+participant_ids: Danh sách tài khoản được mời.
+5.2. Ví dụ dữ liệu gửi tin nhắn
+json
+{
+  "content": "Nhom da hoan thanh phan phan tich yeu cau.",
+  "message_type": "text"
+}
+
+
+Trong đó, message_type xác định loại tin nhắn. Nếu hỗ trợ tệp đính kèm, thông tin tệp cần được xử lý và kiểm tra theo quy định riêng.
+
+5.3. Ví dụ dữ liệu biên bản họp
+json
+{
+  "summary": "Thong nhat pham vi va tien do du an.",
+  "decisions": [
+    "Hoan thanh thiet ke giao dien",
+    "Cap nhat tien do truoc buoi hop tiep theo"
+  ],
+  "action_items": [
+    {
+      "title": "Hoan thien giao dien",
+      "assignee_id": 101,
+      "due_date": "2026-11-05"
+    }
+  ]
+}
+
+
+Lưu ý triển khai: Các API báo hiệu kết nối WebRTC, truyền media và chia sẻ màn hình có thể cần dịch vụ signaling hoặc nền tảng họp trực tuyến chuyên dụng. Những hoạt động media không nên được xử lý như các yêu cầu REST thông thường.
+
+6. Mô hình dữ liệu đề xuất
+
+Các bảng dưới đây là phương án thiết kế đề xuất. Cần đối chiếu với sơ đồ ERD và tệp database/schema.sql của dự án trước khi triển khai.
+
+Tên bảng	Chức năng
+users	Lưu thông tin tài khoản người dùng hiện có
+conversations	Lưu thông tin cuộc trò chuyện
+conversation_members	Liên kết người dùng với cuộc trò chuyện
+messages	Lưu nội dung tin nhắn
+message_attachments	Lưu metadata của tệp đính kèm, nếu hỗ trợ
+meetings	Lưu thông tin cuộc họp và lịch họp
+meeting_participants	Lưu danh sách người được mời và người tham gia
+meeting_minutes	Lưu biên bản và kết luận cuộc họp
+meeting_action_items	Lưu các công việc phát sinh sau cuộc họp, nếu cần
+6.1. Sơ đồ quan hệ dữ liệu đề xuất
+mermaid
+erDiagram
+    USERS ||--o{ CONVERSATION_MEMBERS : joins
+    CONVERSATIONS ||--o{ CONVERSATION_MEMBERS : includes
+    CONVERSATIONS ||--o{ MESSAGES : contains
+    USERS ||--o{ MESSAGES : sends
+    MESSAGES ||--o{ MESSAGE_ATTACHMENTS : has
+    USERS ||--o{ MEETINGS : organizes
+    MEETINGS ||--o{ MEETING_PARTICIPANTS : includes
+    USERS ||--o{ MEETING_PARTICIPANTS : participates
+    MEETINGS ||--o{ MEETING_MINUTES : records
+    MEETING_MINUTES ||--o{ MEETING_ACTION_ITEMS : contains
+
+    USERS {
+        int id PK
+        string role
+        string status
+    }
+
+    CONVERSATIONS {
+        int id PK
+        string conversation_type
+        int project_id
+        datetime created_at
+    }
+
+    CONVERSATION_MEMBERS {
+        int conversation_id PK, FK
+        int user_id PK, FK
+        datetime joined_at
+    }
+
+    MESSAGES {
+        int id PK
+        int conversation_id FK
+        int sender_id FK
+        text content
+        string message_type
+        datetime sent_at
+    }
+
+    MEETINGS {
+        int id PK
+        int organizer_id FK
+        int project_id
+        string title
+        datetime start_time
+        datetime end_time
+        string meeting_link
+        string status
+    }
+
+    MEETING_PARTICIPANTS {
+        int meeting_id PK, FK
+        int user_id PK, FK
+        string invitation_status
+        datetime joined_at
+        datetime left_at
+    }
+
+    MEETING_MINUTES {
+        int id PK
+        int meeting_id FK
+        int author_id FK
+        text summary
+        datetime updated_at
+    }
+
+    MEETING_ACTION_ITEMS {
+        int id PK
+        int minutes_id FK
+        string title
+        int assignee_id FK
+        date due_date
+        string status
+    }
+
+6.2. Một số ràng buộc dữ liệu quan trọng
+conversation_members: Không cho phép một người dùng được thêm nhiều lần vào cùng một cuộc trò chuyện.
+meeting_participants: Không cho phép trùng người tham gia trong cùng một cuộc họp.
+messages: Người gửi phải là thành viên có quyền gửi tin nhắn trong cuộc trò chuyện.
+meetings: end_time phải lớn hơn start_time.
+meeting_minutes: Chỉ người có quyền mới được tạo hoặc chỉnh sửa biên bản.
+Các khóa ngoại phải tham chiếu đến tài khoản và thực thể hợp lệ trong hệ thống.
+Nếu sử dụng dịch vụ họp bên ngoài, thông tin định danh phòng họp và liên kết tham gia cần được quản lý an toàn.
+7. Tiêu chí nghiệm thu
+Người dùng đăng nhập có thể truy cập chức năng giao tiếp theo quyền hạn.
+Người dùng có thể gửi và nhận tin nhắn trong cuộc trò chuyện được phép.
+Tin nhắn được lưu và có thể xem lại theo quyền truy cập.
+Người dùng có thể tạo hoặc tham gia cuộc họp hợp lệ.
+Người tham gia có thể bật/tắt micro và camera khi thiết bị, trình duyệt và quyền truy cập cho phép.
+Người có quyền có thể chia sẻ và dừng chia sẻ màn hình.
+Người dùng có thể tạo, xem, cập nhật và hủy lịch họp theo quyền hạn.
+Hệ thống gửi thông báo khi lịch họp được tạo, thay đổi hoặc hủy.
+Hệ thống kiểm tra quyền tham gia và quyền quản lý phòng họp.
+Danh sách người tham gia không phát sinh bản ghi trùng.
+Người dùng có quyền có thể xem và cập nhật biên bản cuộc họp.
+Hệ thống xử lý lỗi kết nối và hiển thị thông báo phù hợp.
+Hệ thống bảo vệ tin nhắn, liên kết phòng họp và biên bản khỏi truy cập trái phép.
+Chức năng video/audio và chia sẻ màn hình hoạt động trong môi trường trình duyệt được hỗ trợ.
+8. Kịch bản kiểm thử
+Mã kiểm thử	Trường hợp kiểm thử	Kết quả mong đợi
+TC07.01	Gửi tin nhắn trong cuộc trò chuyện hợp lệ	Tin nhắn được gửi và hiển thị cho người nhận
+TC07.02	Người không thuộc cuộc trò chuyện yêu cầu đọc tin nhắn	Hệ thống từ chối truy cập
+TC07.03	Gửi tin nhắn khi mất kết nối	Hệ thống thông báo trạng thái gửi thất bại hoặc chờ đồng bộ
+TC07.04	Tạo cuộc họp với dữ liệu hợp lệ	Cuộc họp được tạo thành công
+TC07.05	Tạo cuộc họp có thời gian kết thúc trước thời gian bắt đầu	Hệ thống từ chối và thông báo lỗi
+TC07.06	Người không có quyền tham gia mở liên kết phòng họp	Hệ thống từ chối hoặc yêu cầu xác thực quyền
+TC07.07	Người tham gia bật/tắt micro và camera	Trạng thái thiết bị được cập nhật phù hợp
+TC07.08	Chia sẻ màn hình khi trình duyệt cho phép	Nội dung được chia sẻ trong cuộc họp
+TC07.09	Người dùng từ chối quyền chia sẻ màn hình	Hệ thống thông báo và không bắt đầu chia sẻ
+TC07.10	Cập nhật lịch họp	Thông tin mới được lưu và người liên quan được thông báo
+TC07.11	Hủy lịch họp	Cuộc họp được chuyển sang trạng thái hủy và có thông báo
+TC07.12	Mời trùng một người vào cùng cuộc họp	Không tạo bản ghi thành viên trùng
+TC07.13	Người không có quyền sửa biên bản	Hệ thống từ chối thao tác
+TC07.14	Người tham gia rời cuộc họp	Hệ thống cập nhật trạng thái tham gia phù hợp
+9. Kế hoạch triển khai
+Khảo sát mã nguồn, kiến trúc hiện tại và cơ sở dữ liệu của CollabSphere.
+Xây dựng giao diện danh sách cuộc trò chuyện và khung chat.
+Xây dựng cơ chế gửi/nhận tin nhắn thời gian thực.
+Xây dựng giao diện tạo lịch họp và danh sách cuộc họp.
+Tích hợp dịch vụ video/audio và signaling phù hợp.
+Xây dựng chức năng chia sẻ màn hình và quản lý người tham gia.
+Xây dựng chức năng lịch sử cuộc họp và biên bản họp.
+Kết nối API với cơ sở dữ liệu và dịch vụ thông báo.
+Kiểm tra phân quyền, bảo mật và xử lý lỗi kết nối.
+Kiểm thử các trường hợp thành công, thất bại và nhiều người tham gia đồng thời.
+10. Tài liệu liên quan
+FE01 – Quản lý tài khoản người dùng.
+FE03 – Quản lý lớp học.
+FE04 – Quản lý dự án.
+FE05 – Quản lý nhóm và thành viên.
+FE12 – Quản lý phân quyền.
+Lưu ý: Tên và mã các chức năng liên quan cần được đối chiếu với danh mục chức năng chính thức của dự án CollabSphere trước khi chốt tài liệu.
