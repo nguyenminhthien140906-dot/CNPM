@@ -1,7 +1,3 @@
-# Hướng dẫn thống nhất hợp đồng API
-
-Tài liệu này bổ sung quy ước để nhóm chuyển các tài liệu FE thành code.
-
 ## Quy ước đề xuất
 
 - API dùng tiền tố `/api`.
