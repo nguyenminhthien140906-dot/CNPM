@@ -33,7 +33,9 @@ Cập nhật trạng thái cuộc họp (PATCH /api/meetings/{id}/status):
 JSON{
   "status": "ONGOING"
 }
-## 6. Sơ đồ luồng chức năngĐoạn mãflowchart TD
+## 6. Sơ đồ luồng chức năng
+Đoạn mã
+flowchart TD
     A[Người dùng bắt đầu] --> B{Có quyền thực hiện?}
     B -- Không --> C[Trả về lỗi quyền truy cập]
     B -- Có --> D[Kiểm tra dữ liệu đầu vào]
