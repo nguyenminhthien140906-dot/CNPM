@@ -1,19 +1,18 @@
-#FE7. Giao tiếp và họp trực tuyến
+# FE7. Giao tiếp và họp trực tuyến
 ## 1. Mục tiêu
-Hỗ trợ giảng viên và sinh viên trao đổi, tương tác trực tiếp trong quá trình thực hiện dự án (DU_AN). Chức năng cung cấp công cụ trò chuyện thời gian thực (CHAT_MESSAGE), tổ chức cuộc họp video/audio trực tuyến (CUOC_HOP), chia sẻ màn hình và lên lịch danh sách cuộc họp để đảm bảo tiến độ công việc.
-# 2. Vai trò liên quan
-GIANG_VIEN, SINH_VIEN
-# 3. Luồng nghiệp vụ
-1. Người dùng truy cập vào không gian giao tiếp của dự án (DU_AN).
-2. Hệ thống kiểm tra quyền truy cập của người dùng đối với dự án.
-3. Người dùng có thể gửi/nhận tin nhắn thời gian thực, lên lịch cuộc họp hoặc tham gia phiên họp video/audio.
-4. Trong cuộc họp, người dùng có thể bật/tắt camera, mic và thực hiện chia sẻ màn hình.
-5. Hệ thống ghi nhận trạng thái cuộc họp, lịch sử tin nhắn và danh sách thành viên tham gia.
+Cung cấp công cụ giao tiếp thời gian thực bao gồm chat, họp trực tuyến qua video/audio, chia sẻ màn hình và lên lịch cuộc họp; hỗ trợ Giảng viên, Sinh viên và các thành viên trao đổi hiệu quả trong quá trình thực hiện dự án.
+## 2. Vai trò liên quan
+Admin, Head Department, Staff, Lecturer, Student
+## 3. Luồng nghiệp vụ
+Người dùng mở giao diện chat hoặc danh sách cuộc họp trong dự án.
+Hệ thống kiểm tra quyền truy cập và vai trò đối với dự án/phòng họp.
+Hệ thống trả về lịch sử tin nhắn, danh sách cuộc họp hoặc chi tiết phòng họp trực tuyến.
+Khi người dùng lên lịch họp, gửi tin nhắn hoặc bắt đầu/kết thúc cuộc họp, hệ thống cập nhật trạng thái và ghi nhận kết quả thời gian thực
 ## 4. Quy tắc nghiệp vụ
-- Chỉ thành viên (Giảng viên, Sinh viên) thuộc nhóm dự án mới có quyền truy cập kênh chat và tham gia/tạo cuộc họp trực tuyến của dự án đó.
-- Người tạo cuộc họp (hoặc Giảng viên) có quyền lên lịch (ThoiGianBatDau, ThoiGianKetThuc), chỉnh sửa hoặc hủy cuộc họp.
-- Thời gian bắt đầu cuộc họp khi lên lịch phải lớn hơn hoặc bằng thời gian hiện tại.
-- Tất cả tin nhắn chat (NoiDung, ThoiGianGui) và thông tin cuộc họp phải được lưu trữ và đồng bộ thời gian thực (Real-time) cho các thành viên trong dự án.
+Thành viên thuộc dự án (Lecturer, Student) mới có quyền truy cập vào phòng chat và cuộc họp của dự án đó.
+Chỉ Giảng viên (Lecturer) hoặc Trưởng nhóm/Thành viên được cấp quyền mới có thể lên lịch họp hoặc bắt đầu cuộc họp video/audio.
+Tính năng chia sẻ màn hình chỉ khả dụng khi người dùng đang tham gia vào cuộc họp video/audio hoạt động.
+Người không có quyền hoặc không thuộc dự án sẽ bị từ chối truy cập
 ## 5. API dự kiến
 > Đây là hợp đồng API đề xuất để nhóm thống nhất trước khi code, chưa xác nhận là đã được triển khai.
 |Phương thức  |   | Endpoint  |   | Mục đích  |
@@ -22,25 +21,27 @@ GIANG_VIEN, SINH_VIEN
 | GET |    | '/api/projects/{id}/meetings   |   |Lấy danh sách cuộc họp đã lên lịch của dự án                              |
 |POST |    | '/api/meetings                 |   |Tạo/Lên lịch cuộc họp trực tuyến mới (CUOC_HOP)                           |
 |POST |    | '/api/meetings/{id}/join       |   |Tham gia cuộc họp trực tuyến (lấy thông tin token/room)Ví dụ dữ liệu JSON |
-## 6. Sơ đồ luồng chức năng
-Đoạn mã
-flowchart TD
-    A[Người dùng bắt đầu truy cập Kênh giao tiếp] --> B{Kiểm tra quyền thuộc Nhóm/Dự án}
-    B -- Không thuộc nhóm --> C[Từ chối truy cập]
-    B -- Đúng nhóm --> D{Chọn hình thức giao tiếp}
-    
-    D -- Chat thời gian thực --> E[Gửi/Nhận tin nhắn CHAT_MESSAGE]
-    E --> F[Đồng bộ tin nhắn real-time cho các thành viên]
-    
-    D -- Họp trực tuyến --> G{Chọn thao tác họp}
-    G -- Lên lịch cuộc họp --> H{Kiểm tra thời gian hợp lệ}
-    H -- Không hợp lệ --> I[Báo lỗi thời gian]
-    H -- Hợp lệ --> J[Lưu thông tin CUOC_HOP & Thông báo]
-    
-    G -- Tham gia họp ngay --> K[Kết nối Video/Audio & Chia sẻ màn hình]
-    K --> L[Kết thúc cuộc họp & Cập nhật trạng thái]
+
+Tạo cuộc họp mới (POST /api/projects/{projectId}/meetings):
+JSON{
+  "title": "Họp tiến độ Dự án Tuần 4",
+  "startTime": "2026-11-01T09:00:00Z",
+  "durationMinutes": 60,
+  "isOnline": true
+}
+Cập nhật trạng thái cuộc họp (PATCH /api/meetings/{id}/status):JSON{
+  "status": "ONGOING"
+}
+## 6. Sơ đồ luồng chức năngĐoạn mãflowchart TD
+    A[Người dùng bắt đầu] --> B{Có quyền thực hiện?}
+    B -- Không --> C[Trả về lỗi quyền truy cập]
+    B -- Có --> D[Kiểm tra dữ liệu đầu vào]
+    D --> E{Dữ liệu hợp lệ?}
+    E -- Không --> F[Thông báo lỗi và yêu cầu chỉnh sửa]
+    E -- Có --> G[Thực hiện nghiệp vụ FE7]
+    G --> H[Lưu kết quả và phản hồi]
 ## 7. Tiêu chí nghiệm thu
-Người dùng có quyền thực hiện được các thao tác được mô tả trong tài liệu.
-Người dùng không có quyền bị từ chối truy cập hoặc thao tác.
-Dữ liệu không hợp lệ được báo lỗi rõ ràng và không làm sai lệch dữ liệu đã lưu.
-Kết quả thao tác được trả về để giao diện hiển thị cho người dùng.
+Người dùng có quyền thực hiện được các thao tác được mô tả trong tài liệu (chat, tạo cuộc họp, tham gia họp, chia sẻ màn hình).
+Người dùng không thuộc dự án hoặc không có quyền bị từ chối truy cập hoặc thao tác.
+Dữ liệu không hợp lệ (ví dụ: thời gian họp ở quá khứ, tiêu đề trống) được báo lỗi rõ ràng và không lưu trữ.
+Phản hồi và trạng thái cuộc họp/tin nhắn được cập nhật thời gian thực cho tất cả người dùng liên quan.
