@@ -24,7 +24,6 @@ Người không có quyền hoặc không thuộc dự án sẽ bị từ chối
 | `POST` | `/api/projects/{projectId}/meetings` | Lên lịch cuộc họp mới |
 | `PATCH` | `/api/meetings/{id}/status` | Cập nhật trạng thái cuộc họp (bắt đầu / kết thúc) |
 
-
 ## 6. Sơ đồ luồng chức năng
 
 ```mermaid
