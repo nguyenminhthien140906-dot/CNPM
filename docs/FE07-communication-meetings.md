@@ -26,14 +26,14 @@ Người không có quyền hoặc không thuộc dự án sẽ bị từ chối
 
 ### Ví dụ dữ liệu JSON
 ```json
-Tạo cuộc họp mới (POST /api/projects/{projectId}/meetings):
+5.1 Tạo cuộc họp mới (POST /api/projects/{projectId}/meetings):
 {
   "title": "Họp tiến độ Dự án Tuần 4",
   "startTime": "2026-11-01T09:00:00Z",
   "durationMinutes": 60,
   "isOnline": true
 }
-Cập nhật trạng thái cuộc họp (PATCH /api/meetings/{id}/status):
+5.2 Cập nhật trạng thái cuộc họp (PATCH /api/meetings/{id}/status):
 {
   "status": "ONGOING"
 }
