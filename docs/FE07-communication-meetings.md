@@ -16,13 +16,39 @@ Người không có quyền hoặc không thuộc dự án sẽ bị từ chối
 ## 5. API dự kiến
 > Đây là hợp đồng API đề xuất để nhóm thống nhất trước khi code, chưa xác nhận là đã được triển khai.
 
-| Phương thức | Endpoint | Mục đích |
-|---|---|---|
-| `GET` | `/api/projects/{projectId}/messages` | Lấy lịch sử tin nhắn chat |
-| `POST` | `/api/projects/{projectId}/messages` | Gửi tin nhắn mới |
-| `GET` | `/api/projects/{projectId}/meetings` | Xem danh sách cuộc họp |
-| `POST` | `/api/projects/{projectId}/meetings` | Lên lịch cuộc họp mới |
-| `PATCH` | `/api/meetings/{id}/status` | Cập nhật trạng thái cuộc họp (bắt đầu / kết thúc) |
+flowchart TD
+    Start([Người dùng / Thành viên dự án]) --> AccessProject[Truy cập giao diện Dự án]
+    
+   
+```mermaid
+flowchart TD
+    A([Người dùng bắt đầu]) --> B{Có quyền thực hiện?}
+
+    B -- Không --> C[Trả về lỗi quyền truy cập]
+    C --> Z([Kết thúc])
+
+    B -- Có --> D[Kiểm tra dữ liệu đầu vào]
+
+    D --> E{Dữ liệu hợp lệ?}
+
+    E -- Không --> F[Thông báo lỗi và yêu cầu chỉnh sửa]
+    F --> Z
+
+    E -- Có --> G[Thực hiện nghiệp vụ FE7]
+
+    G --> H[Lưu kết quả và phản hồi]
+    H --> Z
+
+    classDef startEnd fill:#D5E8D4,stroke:#82B366,color:#000
+    classDef process fill:#DAE8FC,stroke:#6C8EBF,color:#000
+    classDef decision fill:#FFF2CC,stroke:#D6B656,color:#000
+    classDef error fill:#F8CECC,stroke:#B85450,color:#000
+
+    class A,Z startEnd
+    class D,G,H process
+    class B,E decision
+    class C,F error
+```
 
 ### Ví dụ dữ liệu JSON
 ```json
