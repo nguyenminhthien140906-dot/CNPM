@@ -16,6 +16,7 @@ Người không có quyền hoặc không thuộc dự án sẽ bị từ chối
 ## 5. API dự kiến
 > Đây là hợp đồng API đề xuất để nhóm thống nhất trước khi code, chưa xác nhận là đã được triển khai.
 |Phương thức  |   | Endpoint  |   | Mục đích  |
+> | :--- | :--- | :--- |
 | GET |    | '/api/projects/{id}/messages   |   | Lấy lịch sử tin nhắn trò chuyện của dự án                                |
 |POST |    | ' /api/projects/{id}/messages  |   |Gửi tin nhắn mới trong kênh chat (CHAT_MESSAGE)                           |
 | GET |    | '/api/projects/{id}/meetings   |   |Lấy danh sách cuộc họp đã lên lịch của dự án                              |
