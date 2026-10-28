@@ -29,7 +29,8 @@ JSON{
   "durationMinutes": 60,
   "isOnline": true
 }
-Cập nhật trạng thái cuộc họp (PATCH /api/meetings/{id}/status):JSON{
+Cập nhật trạng thái cuộc họp (PATCH /api/meetings/{id}/status):
+JSON{
   "status": "ONGOING"
 }
 ## 6. Sơ đồ luồng chức năngĐoạn mãflowchart TD
