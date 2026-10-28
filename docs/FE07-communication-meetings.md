@@ -15,27 +15,19 @@ Tính năng chia sẻ màn hình chỉ khả dụng khi người dùng đang tha
 Người không có quyền hoặc không thuộc dự án sẽ bị từ chối truy cập
 ## 5. API dự kiến
 > Đây là hợp đồng API đề xuất để nhóm thống nhất trước khi code, chưa xác nhận là đã được triển khai.
-|Phương thức  |   | Endpoint  |   | Mục đích  |
-> | :--- | :--- | :--- |
-| GET |    | '/api/projects/{id}/messages   |   | Lấy lịch sử tin nhắn trò chuyện của dự án                                |
-|POST |    | ' /api/projects/{id}/messages  |   |Gửi tin nhắn mới trong kênh chat (CHAT_MESSAGE)                           |
-| GET |    | '/api/projects/{id}/meetings   |   |Lấy danh sách cuộc họp đã lên lịch của dự án                              |
-|POST |    | '/api/meetings                 |   |Tạo/Lên lịch cuộc họp trực tuyến mới (CUOC_HOP)                           |
-|POST |    | '/api/meetings/{id}/join       |   |Tham gia cuộc họp trực tuyến (lấy thông tin token/room)Ví dụ dữ liệu JSON |
 
-Tạo cuộc họp mới (POST /api/projects/{projectId}/meetings):
-JSON{
-  "title": "Họp tiến độ Dự án Tuần 4",
-  "startTime": "2026-11-01T09:00:00Z",
-  "durationMinutes": 60,
-  "isOnline": true
-}
-Cập nhật trạng thái cuộc họp (PATCH /api/meetings/{id}/status):
-JSON{
-  "status": "ONGOING"
-}
+| Phương thức | Endpoint | Mục đích |
+|---|---|---|
+| `GET` | `/api/projects/{projectId}/messages` | Lấy lịch sử tin nhắn chat |
+| `POST` | `/api/projects/{projectId}/messages` | Gửi tin nhắn mới |
+| `GET` | `/api/projects/{projectId}/meetings` | Xem danh sách cuộc họp |
+| `POST` | `/api/projects/{projectId}/meetings` | Lên lịch cuộc họp mới |
+| `PATCH` | `/api/meetings/{id}/status` | Cập nhật trạng thái cuộc họp (bắt đầu / kết thúc) |
+
+
 ## 6. Sơ đồ luồng chức năng
-Đoạn mã
+
+```mermaid
 flowchart TD
     A[Người dùng bắt đầu] --> B{Có quyền thực hiện?}
     B -- Không --> C[Trả về lỗi quyền truy cập]
