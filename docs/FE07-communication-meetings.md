@@ -1,69 +1,554 @@
-QUẢN LÝ GIAO TIẾP VÀ HỌP TRỰC TUYẾNMã chức năng: FE07Tên chức năng: Quản lý giao tiếp và họp trực tuyếnHệ thống: CollabSphere – Hệ thống hỗ trợ học tập theo phương pháp học tập dựa trên dự án (Project-Based Learning – PBL)Tác nhân chính: Giảng viên (Lecturer), Sinh viên (Student)1. Tổng quan chức năng1.1. Mục tiêuChức năng Quản lý giao tiếp và họp trực tuyến cung cấp môi trường tương tác thời gian thực cho giảng viên và sinh viên trong quá trình thực hiện dự án (PBL). Chức năng tích hợp trò chuyện văn bản, cuộc gọi video/audio, chia sẻ màn hình và lên lịch cuộc họp giúp tối ưu hóa việc trao đổi thông tin, phản hồi đồ án và theo dõi tiến độ nhóm.1.2. Phạm vi chức năngMã chức năngTên chức năngMô tảFE07.01Trò chuyện thời gian thựcChat nhóm dự án, chat riêng, chia sẻ tệp tin và emoji thời gian thựcFE07.02Lên lịch cuộc họpTạo, cập nhật, hủy và nhận thông báo lịch họp nhóm hoặc phản hồi với giảng viênFE07.03Họp Video/Audio trực tuyếnKhởi tạo và tham gia phòng họp trực tuyến truyền hình ảnh, âm thanh chất lượng caoFE07.04Chia sẻ màn hình & Tương tácChia sẻ màn hình làm việc, hỗ trợ trình chiếu báo cáo và ghi hình/tóm tắt cuộc họp1.3. Đối tượng sử dụngVai tròQuyền hạnSinh viên (Student)Tạo nhóm chat dự án, nhắn tin, lên lịch họp nhóm, khởi tạo/tham gia họp video, chia sẻ màn hìnhGiảng viên (Lecturer)Tham gia chat nhóm dự án, đặt lịch họp tư vấn/duyệt tiến độ, chủ trì phòng họp trực tuyếnNhân viên (Staff)Xem lịch sử/thống kê hoạt động giao tiếp khi có yêu cầu hỗ trợ hoặc kiểm traQuản trị viên (Admin)Cấu hình tích hợp dịch vụ (WebRTC/Media Server/Socket), phân quyền và khắc phục sự cố kết nối2. Mô tả chi tiết chức năng2.1. Trò chuyện thời gian thực (Real-time Chat)Mục đích: Tương tác, trao đổi công việc hằng ngày giữa các thành viên trong dự án và với giảng viên hướng dẫn.Quy trình thực hiện:Người dùng truy cập vào kênh chat của Dự án/Nhóm.Soạn tin nhắn văn bản, gắn đính kèm tệp (tài liệu, hình ảnh, mã nguồn) hoặc biểu cảm.Hệ thống truyền tải tin nhắn tức thời đến các thành viên đang hoạt động thông qua WebSocket.Lưu trữ lịch sử tin nhắn để tra cứu lại.Yêu cầu xử lý:Tự động tạo kênh chat riêng khi một Dự án (FE04) hoặc Nhóm (FE05) được khởi tạo.Hỗ trợ tải tệp đính kèm với giới hạn dung lượng theo quy định.Hiển thị trạng thái tin nhắn (đã gửi, đã xem) và trạng thái online/offline của người dùng.2.2. Lên lịch cuộc họp (Meeting Scheduling)Mục đích: Đặt lịch các buổi họp định kỳ của nhóm hoặc các buổi review đồ án với giảng viên.Các thao tác chính:Tạo lịch họp mới: Điền tiêu đề, mô tả, thời gian bắt đầu/kết thúc, liên kết phòng họp tự động sinh.Mời người tham gia (thành viên nhóm, giảng viên).Gửi thông báo nhắc nhở trước giờ họp (qua notification hệ thống hoặc email).Cập nhật hoặc hủy lịch họp đã tạo.2.3. Họp Video/Audio trực tuyến (Video/Audio Conferencing)Mục đích: Tổ chức các buổi báo cáo tiến độ, thảo luận dự án trực tiếp qua video và micro.Các thao tác chính:Tham gia phòng họp từ liên kết lịch họp hoặc khởi tạo cuộc gọi nhanh (Instant Meeting).Bật/Tắt Micro (Mute/Unmute) và Camera.Quản lý quyền trong phòng họp (Giảng viên/Trưởng nhóm có thể tắt tiếng người tham gia).Giơ tay phát biểu, danh sách thành viên tham dự trong phòng.2.4. Chia sẻ màn hình & Tương tác (Screen Sharing & Interaction)Mục đích: Hỗ trợ trình chiếu slide báo cáo, demo sản phẩm hoặc sửa lỗi mã nguồn trực tiếp.Các thao tác chính:Chia sẻ toàn bộ màn hình, cửa sổ ứng dụng hoặc thẻ trình duyệt.Trò chuyện văn bản song song trong phòng họp (In-meeting Chat).Ghi âm/ghi hình cuộc họp (Recording) và lưu vào kho lưu trữ dự án (nếu cấu hình).3. Quy tắc nghiệp vụ (Business Rules)Mã quy tắcNội dungBR07.01Chỉ thành viên thuộc Dự án/Nhóm hoặc Giảng viên phụ trách mới có quyền truy cập kênh chat và phòng họp của dự án đó.BR07.02Tin nhắn đã gửi chỉ được sửa hoặc xóa trong vòng 15 phút kể từ khi gửi.BR07.03Tệp đính kèm trong chat không vượt quá dung lượng tối đa quy định (ví dụ: 25MB/tệp) và phải qua kiểm tra loại tệp an toàn.BR07.04Lịch họp không được đặt trong quá khứ và thời gian kết thúc phải sau thời gian bắt đầu.BR07.05Người tạo cuộc họp hoặc Giảng viên có quyền Chủ trì (Host) để điều phối phòng họp (tắt mic, mời ra khỏi phòng).BR07.06Mọi kết nối Real-time (Chat/Video) phải được xác thực thông qua Access Token hợp lệ của hệ thống.BR07.07Khi cuộc họp kết thúc, hệ thống cần cập nhật trạng thái phòng và lưu nhật ký tham gia (khi có yêu cầu).4. Giao diện lập trình ứng dụng (API) đề xuấtLưu ý: Các đường dẫn API dưới đây là thiết kế đề xuất cho chức năng FE07. Cần đối chiếu với cấu trúc máy chủ WebSocket/Media Server trước khi triển khai.Phương thứcĐường dẫn APIChức năngGET/api/chat/channels/{channelId}/messagesLấy lịch sử tin nhắn của kênh chatPOST/api/chat/channels/{channelId}/messagesGửi tin nhắn mới (kèm tệp đính kèm)DELETE/api/chat/messages/{messageId}Xóa tin nhắnGET/api/meetingsLấy danh sách lịch họp của người dùng/dự ánPOST/api/meetingsTạo lịch họp mớiGET/api/meetings/{meetingId}Lấy thông tin chi tiết cuộc họpPATCH/api/meetings/{meetingId}Cập nhật thông tin lịch họpDELETE/api/meetings/{meetingId}Hủy lịch họpPOST/api/meetings/{meetingId}/join-tokenLấy Token/Credential để truy cập phòng họp (WebRTC/Third-party)4.1. Ví dụ dữ liệu tạo lịch họpJSON{
-  "project_id": 501,
-  "title": "Báo cáo tiến độ Sprint 2 - Nhóm 1",
-  "description": "Thảo luận về thiết kế giao diện và kết nối API FE07",
-  "start_time": "2026-11-05T09:00:00Z",
-  "end_time": "2026-11-05T10:30:00Z",
-  "participant_ids": [101, 102, 103, 12]
-}
-4.2. Ví dụ dữ liệu gửi tin nhắn chatJSON{
-  "channel_id": "proj-501-chat",
-  "content": "Chào thầy, nhóm em đã tải lên tài liệu SRS bản mới nhất ạ.",
-  "attachments": [
-    {
-      "file_name": "SRS_FE07_v1.pdf",
-      "file_url": "https://storage.collabsphere.edu.vn/files/SRS_FE07_v1.pdf",
-      "file_type": "application/pdf"
-    }
-  ]
-}
-5. Mô hình dữ liệu đề xuấtCác bảng dưới đây là phương án thiết kế đề xuất bổ sung vào schema cơ sở dữ liệu (database/schema.sql).Tên bảngChức năngchat_channelsLưu thông tin các kênh chat (theo dự án, nhóm hoặc hội thoại riêng)chat_messagesLưu nội dung tin nhắn, thời gian gửi và người gửichat_attachmentsLưu thông tin tệp đính kèm trong tin nhắnmeetingsLưu thông tin lịch họp và liên kết phòng họpmeeting_participantsLiên kết danh sách người tham gia cuộc họp5.1. Sơ đồ cơ sở dữ liệu SQL (Minh họa)SQL-- 1. Bảng Kênh Chat
-CREATE TABLE chat_channels (
-    id VARCHAR(100) PRIMARY KEY,
-    project_id BIGINT NULL,
-    channel_name VARCHAR(255) NOT NULL,
-    type ENUM('PROJECT', 'GROUP', 'DIRECT') DEFAULT 'PROJECT',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
-);
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CollabSphere - FE07 Giao tiếp & Họp trực tuyến</title>
+    <!-- Tailwind CSS & Lucide Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .chat-scroll::-webkit-scrollbar { width: 6px; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .animate-fade-in { animation: fadeIn 0.2s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 h-screen overflow-hidden flex flex-col">
 
--- 2. Bảng Tin Nhắn Chat
-CREATE TABLE chat_messages (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    channel_id VARCHAR(100) NOT NULL,
-    sender_id BIGINT NOT NULL,
-    content TEXT,
-    is_edited BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (channel_id) REFERENCES chat_channels(id) ON DELETE CASCADE,
-    FOREIGN KEY (sender_id) REFERENCES users(id)
-);
+    <!-- TOP HEADER -->
+    <header class="bg-slate-900 text-white px-6 py-3 flex justify-between items-center shadow-md shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="bg-indigo-600 p-2 rounded-lg"><i data-lucide="video" class="w-6 h-6 text-white"></i></div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight">CollabSphere - PBL System</h1>
+                <p class="text-xs text-slate-400">Chức năng FE07: Quản lý Giao tiếp & Họp trực tuyến</p>
+            </div>
+        </div>
+        
+        <!-- Role Swapper for Simulation -->
+        <div class="flex items-center gap-4 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
+            <span class="text-xs text-slate-400">Giả lập người dùng:</span>
+            <select id="userRoleSelect" onchange="switchUser(this.value)" class="bg-slate-900 text-slate-200 text-sm font-semibold rounded px-2 py-1 outline-none border border-slate-700 cursor-pointer">
+                <option value="student1">Sinh viên: Nguyễn Văn A (Leader)</option>
+                <option value="student2">Sinh viên: Trần Thị B (Thành viên)</option>
+                <option value="lecturer">Giảng viên: TS. Lê Hoàng (GVHD)</option>
+            </select>
+        </div>
+    </header>
 
--- 3. Bảng Lịch Họp
-CREATE TABLE meetings (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    project_id BIGINT NOT NULL,
-    created_by BIGINT NOT NULL,
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    start_time DATETIME NOT NULL,
-    end_time DATETIME NOT NULL,
-    room_code VARCHAR(100) NOT NULL UNIQUE,
-    status ENUM('SCHEDULED', 'ONGOING', 'COMPLETED', 'CANCELLED') DEFAULT 'SCHEDULED',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
-    FOREIGN KEY (created_by) REFERENCES users(id)
-);
+    <!-- MAIN CONTAINER -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- LEFT SIDEBAR: CHANNELS & MEETINGS -->
+        <aside class="w-80 bg-white border-r border-slate-200 flex flex-col shrink-0">
+            <!-- Tabs -->
+            <div class="flex border-b border-slate-200 bg-slate-50">
+                <button onclick="switchTab('chat')" id="tabChatBtn" class="flex-1 py-3 text-sm font-semibold text-indigo-600 border-b-2 border-indigo-600 flex justify-center items-center gap-2">
+                    <i data-lucide="message-square" class="w-4 h-4"></i> Trò chuyện
+                </button>
+                <button onclick="switchTab('meeting')" id="tabMeetingBtn" class="flex-1 py-3 text-sm font-semibold text-slate-500 hover:text-slate-700 flex justify-center items-center gap-2">
+                    <i data-lucide="calendar" class="w-4 h-4"></i> Lịch họp (<span id="meetingCount">2</span>)
+                </button>
+            </div>
 
--- 4. Bảng Người Tham Gia Cuộc Họp
-CREATE TABLE meeting_participants (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    meeting_id BIGINT NOT NULL,
-    user_id BIGINT NOT NULL,
-    status ENUM('PENDING', 'ACCEPTED', 'DECLINED') DEFAULT 'PENDING',
-    joined_at DATETIME NULL,
-    FOREIGN KEY (meeting_id) REFERENCES meetings(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    UNIQUE KEY uq_meeting_user (meeting_id, user_id)
-);
-6. Tiêu chí nghiệm thuSinh viên và Giảng viên trong cùng dự án gửi và nhận được tin nhắn thời gian thực mà không cần tải lại trang.Người dùng tải được tệp đính kèm trong kênh chat đúng dung lượng cho phép.Tạo được lịch họp mới và tự động gửi thông báo đến các thành viên được mời.Khởi tạo phòng họp video/audio hoạt động ổn định, mượt mà với âm thanh và hình ảnh rõ ràng.Giảng viên và sinh viên thực hiện chia sẻ màn hình thành công trong buổi họp.Người dùng không thuộc dự án không thể truy cập vào kênh chat hoặc phòng họp riêng tư.Hệ thống hiển thị thông báo rõ ràng khi kết nối mạng bị gián đoạn hoặc cuộc họp bị hủy.7. Kịch bản kiểm thửMã kiểm thửTrường hợp kiểm thửKết quả mong đợiTC07.01Gửi tin nhắn văn bản hợp lệTin nhắn xuất hiện lập tức trên màn hình người nhậnTC07.02Gửi tệp đính kèm vượt dung lượngHệ thống chặn gửi và thông báo lỗi vượt quá giới hạnTC07.03Tạo lịch họp hợp lệLịch họp được lưu, hiển thị trên lịch chung và gửi thông báoTC07.04Tạo lịch họp có thời gian bắt đầu trong quá khứHệ thống từ chối tạo và thông báo lỗi thời gian không hợp lệTC07.05Tham gia phòng họp bằng liên kết hợp lệKết nối thành công vào phòng video/audioTC07.06Chia sẻ màn hình trong phòng họpMàn hình được chia sẻ hiển thị rõ ràng cho tất cả người tham dựTC07.07Truy cập phòng họp khi không có quyềnTừ chối truy cập và thông báo không đủ quyền hạnTC07.08Bật/Tắt Micro và CameraTrạng thái thiết bị thay đổi chính xác và cập nhật cho các thành viên8. Kế hoạch triển khaiThiết kế giao diện Chat UI, Lịch họp và Phòng họp trực tuyến (Frontend).Xây dựng dịch vụ WebSocket / SignalR phục vụ truyền tải tin nhắn thời gian thực.Tích hợp giải pháp Media Server (WebRTC / LiveKit / Jitsi / Agora) cho họp video và chia sẻ màn hình.Xây dựng các API quản lý tin nhắn, tệp đính kèm và lịch họp.Kết nối dịch vụ thông báo (Notification Service) để nhắc lịch họp.Kiểm tra phân quyền truy cập theo Dự án (FE04) và Nhóm (FE05).Kiểm thử hiệu năng truyền tải dữ liệu real-time và khả năng chịu tải của phòng họp.Hoàn thiện tài liệu hướng dẫn và đóng gói chức năng.9. Tài liệu liên quanFE01 – Quản lý tài khoản người dùngFE04 – Quản lý dự ánFE05 – Quản lý nhóm và thành viênFE12 – Quản lý phân quyền
+            <!-- Chat Channels List -->
+            <div id="chatSidebar" class="flex-1 overflow-y-auto p-4 space-y-4">
+                <div>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Kênh Dự Án</h3>
+                    <div class="space-y-1">
+                        <button onclick="selectChannel('proj-501')" id="chan-proj-501" class="w-full text-left px-3 py-2.5 rounded-lg bg-indigo-50 text-indigo-700 font-semibold flex items-center justify-between">
+                            <span class="flex items-center gap-2 text-sm"><i data-lucide="hash" class="w-4 h-4"></i> Nhóm 1 - Project PBL</span>
+                            <span class="bg-indigo-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">Active</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Trò chuyện trực tiếp</h3>
+                    <div class="space-y-1">
+                        <button onclick="selectChannel('direct-lecturer')" id="chan-direct-lecturer" class="w-full text-left px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 flex items-center gap-2 text-sm">
+                            <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                            <span>TS. Lê Hoàng (GVHD)</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Meetings List Sidebar -->
+            <div id="meetingSidebar" class="flex-1 overflow-y-auto p-4 hidden space-y-3">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Danh sách buổi họp</h3>
+                    <button onclick="openScheduleModal()" class="text-xs bg-indigo-600 text-white font-medium px-2 py-1 rounded hover:bg-indigo-700 flex items-center gap-1">
+                        <i data-lucide="plus" class="w-3 h-3"></i> Đặt lịch
+                    </button>
+                </div>
+                <div id="meetingListContainer" class="space-y-2">
+                    <!-- Dynamic Meetings Rendered Here -->
+                </div>
+            </div>
+
+            <!-- Current User Card -->
+            <div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center gap-3">
+                <div id="userAvatar" class="w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">A</div>
+                <div class="overflow-hidden">
+                    <p id="userName" class="text-sm font-semibold text-slate-800 truncate">Nguyễn Văn A</p>
+                    <p id="userRole" class="text-xs text-slate-500 truncate">Sinh viên (Leader)</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CENTER DISPLAY: CHAT OR VIDEO CONFERENCING -->
+        <main class="flex-1 flex flex-col bg-slate-50 relative overflow-hidden">
+            
+            <!-- CHAT VIEW -->
+            <div id="chatView" class="flex-1 flex flex-col h-full">
+                <!-- Chat Header -->
+                <div class="bg-white px-6 py-3.5 border-b border-slate-200 flex justify-between items-center shadow-sm">
+                    <div>
+                        <h2 id="currentChannelTitle" class="font-bold text-slate-800 flex items-center gap-2">
+                            <i data-lucide="hash" class="w-5 h-5 text-indigo-600"></i> Nhóm 1 - Project PBL
+                        </h2>
+                        <p class="text-xs text-slate-500">Kênh trao đổi dự án & báo cáo tiến độ hàng tuần với GVHD</p>
+                    </div>
+                    <button onclick="startInstantCall()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm transition">
+                        <i data-lucide="video" class="w-4 h-4"></i> Họp Ngay (Instant Call)
+                    </button>
+                </div>
+
+                <!-- Messages Stream -->
+                <div id="messageStream" class="flex-1 overflow-y-auto p-6 space-y-4 chat-scroll">
+                    <!-- Messages will be injected here -->
+                </div>
+
+                <!-- Chat Input Area -->
+                <div class="p-4 bg-white border-t border-slate-200">
+                    <form id="chatForm" onsubmit="handleSendMessage(event)" class="flex items-center gap-2 bg-slate-100 rounded-xl px-4 py-2 border border-slate-200 focus-within:border-indigo-500 focus-within:bg-white transition">
+                        <label for="fileAttachment" class="cursor-pointer text-slate-400 hover:text-slate-600">
+                            <i data-lucide="paperclip" class="w-5 h-5"></i>
+                            <input type="file" id="fileAttachment" class="hidden" onchange="handleFileSelect(this)">
+                        </label>
+                        <input type="text" id="chatInput" autocomplete="off" placeholder="Nhập tin nhắn thảo luận nhóm (Nhấn Enter để gửi)..." class="flex-1 bg-transparent border-none outline-none text-sm text-slate-800 placeholder-slate-400">
+                        <span id="fileIndicator" class="hidden text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">Tệp đã chọn</span>
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-lg transition">
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- VIDEO CONFERENCE ROOM VIEW (Initially Hidden) -->
+            <div id="videoRoomView" class="flex-1 bg-slate-950 text-white flex-col hidden relative">
+                <!-- Video Header -->
+                <div class="p-4 bg-slate-900/80 backdrop-blur border-b border-slate-800 flex justify-between items-center z-10">
+                    <div>
+                        <h2 id="videoRoomTitle" class="font-bold text-white flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                            Đang trong phòng họp: Báo cáo Tiến độ Sprint 2
+                        </h2>
+                        <p class="text-xs text-slate-400">Mã phòng: <span id="roomCodeDisplay" class="font-mono text-indigo-400">CS-PBL-9082</span></p>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-slate-400">
+                        <i data-lucide="users" class="w-4 h-4"></i> 3 người đang tham gia
+                    </div>
+                </div>
+
+                <!-- Video Grid -->
+                <div class="flex-1 p-4 grid grid-cols-2 gap-4 items-center justify-center overflow-hidden">
+                    <!-- Local Stream Container -->
+                    <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex items-center justify-center h-full max-h-[380px]">
+                        <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                        <div id="localAvatarPlaceholder" class="absolute flex flex-col items-center justify-center hidden">
+                            <div class="w-20 h-20 rounded-full bg-indigo-600 text-white text-2xl font-bold flex items-center justify-center mb-2">You</div>
+                            <span id="localCamName" class="text-sm font-medium text-slate-300">Bạn (Camera đang tắt)</span>
+                        </div>
+                        <div class="absolute bottom-3 left-3 bg-slate-900/80 backdrop-blur px-3 py-1 rounded-full text-xs text-white font-medium flex items-center gap-1.5">
+                            <span id="localMicIcon" class="w-2 h-2 rounded-full bg-emerald-500"></span> Bạn (Chủ trì)
+                        </div>
+                    </div>
+
+                    <!-- Screen Share / Remote Stream Container -->
+                    <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex items-center justify-center h-full max-h-[380px]">
+                        <video id="screenVideo" autoplay playsinline class="w-full h-full object-cover hidden"></video>
+                        <div id="remotePlaceholder" class="flex flex-col items-center justify-center text-center p-6">
+                            <div class="w-20 h-20 rounded-full bg-emerald-700 text-white text-2xl font-bold flex items-center justify-center mb-3">LH</div>
+                            <h4 class="font-semibold text-sm text-slate-200">TS. Lê Hoàng (Giảng viên)</h4>
+                            <p class="text-xs text-slate-400 mt-1">Sẵn sàng lắng nghe & đặt câu hỏi phản biện</p>
+                        </div>
+                        <div class="absolute bottom-3 left-3 bg-slate-900/80 backdrop-blur px-3 py-1 rounded-full text-xs text-white font-medium">
+                            TS. Lê Hoàng
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Control Bar -->
+                <div class="p-4 bg-slate-900 border-t border-slate-800 flex justify-center items-center gap-4 z-10">
+                    <button id="toggleMicBtn" onclick="toggleMicrophone()" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-white transition">
+                        <i data-lucide="mic" id="micIcon" class="w-5 h-5"></i>
+                    </button>
+                    <button id="toggleCamBtn" onclick="toggleCamera()" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-white transition">
+                        <i data-lucide="video" id="camIcon" class="w-5 h-5"></i>
+                    </button>
+                    <button id="screenShareBtn" onclick="toggleScreenShare()" class="w-12 h-12 rounded-full bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center text-white transition" title="Chia sẻ màn hình">
+                        <i data-lucide="monitor" class="w-5 h-5"></i>
+                    </button>
+                    <button onclick="leaveMeeting()" class="px-6 h-12 rounded-full bg-red-600 hover:bg-red-700 font-semibold text-white flex items-center gap-2 transition">
+                        <i data-lucide="phone-off" class="w-5 h-5"></i> Rời phòng
+                    </button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- SCHEDULE MEETING MODAL -->
+    <div id="scheduleModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-slate-800 text-lg">Lên lịch cuộc họp mới</h3>
+                <button onclick="closeScheduleModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="handleScheduleMeeting(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Tiêu đề cuộc họp</label>
+                    <input type="text" id="meetTitle" required placeholder="Ví dụ: Báo cáo tiến độ Sprint 2" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-600">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Thời gian bắt đầu</label>
+                        <input type="datetime-local" id="meetStart" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Thời gian kết thúc</label>
+                        <input type="datetime-local" id="meetEnd" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-600">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Ghi chú / Nội dung cuộc họp</label>
+                    <textarea id="meetDesc" rows="2" placeholder="Nội dung thảo luận..." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-600"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeScheduleModal()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg">Hủy</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-sm">Xác nhận tạo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- APP ENGINE (JAVASCRIPT) -->
+    <script>
+        // State Management
+        let currentUser = { id: 101, name: "Nguyễn Văn A", role: "Student (Leader)", initials: "A" };
+        let activeChannel = "proj-501";
+        let activeTab = "chat";
+        let mediaStream = null;
+        let screenStream = null;
+        let isMicOn = true;
+        let isCamOn = true;
+
+        // Mock Data Database
+        const mockUsers = {
+            student1: { id: 101, name: "Nguyễn Văn A", role: "Student (Leader)", initials: "A" },
+            student2: { id: 102, name: "Trần Thị B", role: "Student (Thành viên)", initials: "B" },
+            lecturer: { id: 12, name: "TS. Lê Hoàng", role: "Lecturer (GVHD)", initials: "LH" }
+        };
+
+        let messagesStore = {
+            'proj-501': [
+                { senderId: 102, senderName: "Trần Thị B", text: "Chào mọi người, tuần này mình đã hoàn thành giao diện FE03 rồi nhé!", time: "09:15 AM", attachment: null },
+                { senderId: 12, senderName: "TS. Lê Hoàng", text: "Tốt lắm nhóm 1. Nhớ kiểm tra lại Business Rule về việc thêm sinh viên trùng nhé.", time: "09:30 AM", attachment: null },
+                { senderId: 101, senderName: "Nguyễn Văn A", text: "Vâng thưa thầy, bọn em sẽ tích hợp luôn cả mô-đun họp trực tuyến FE07 trong hôm nay ạ.", time: "09:42 AM", attachment: { name: "FE07_SRS_v1.pdf", type: "pdf" } }
+            ],
+            'direct-lecturer': [
+                { senderId: 101, senderName: "Nguyễn Văn A", text: "Em chào thầy ạ, thầy cho nhóm em xin thêm 1 buổi họp online phản biện bài tập tuần tới với ạ.", time: "Hôm qua", attachment: null }
+            ]
+        };
+
+        let meetingsStore = [
+            { id: 1, title: "Báo cáo Tiến độ Sprint 2", start: "2026-10-28T09:00", end: "2026-10-28T10:30", host: "Nguyễn Văn A", roomCode: "CS-PBL-9082", status: "SCHEDULED" },
+            { id: 2, title: "Duyệt Đồ án cuối kỳ với GVHD", start: "2026-11-02T14:00", end: "2026-11-02T15:30", host: "TS. Lê Hoàng", roomCode: "CS-PBL-1102", status: "SCHEDULED" }
+        ];
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            renderMessages();
+            renderMeetings();
+        });
+
+        // Switch User Role Simulation
+        function switchUser(roleKey) {
+            currentUser = mockUsers[roleKey];
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('userRole').textContent = currentUser.role;
+            document.getElementById('userAvatar').textContent = currentUser.initials;
+            renderMessages();
+        }
+
+        // Sidebar Tab Switching
+        function switchTab(tab) {
+            activeTab = tab;
+            const chatBtn = document.getElementById('tabChatBtn');
+            const meetBtn = document.getElementById('tabMeetingBtn');
+            const chatSide = document.getElementById('chatSidebar');
+            const meetSide = document.getElementById('meetingSidebar');
+
+            if(tab === 'chat') {
+                chatBtn.className = "flex-1 py-3 text-sm font-semibold text-indigo-600 border-b-2 border-indigo-600 flex justify-center items-center gap-2";
+                meetBtn.className = "flex-1 py-3 text-sm font-semibold text-slate-500 hover:text-slate-700 flex justify-center items-center gap-2";
+                chatSide.classList.remove('hidden');
+                meetSide.classList.add('hidden');
+            } else {
+                meetBtn.className = "flex-1 py-3 text-sm font-semibold text-indigo-600 border-b-2 border-indigo-600 flex justify-center items-center gap-2";
+                chatBtn.className = "flex-1 py-3 text-sm font-semibold text-slate-500 hover:text-slate-700 flex justify-center items-center gap-2";
+                meetSide.classList.remove('hidden');
+                chatSide.classList.add('hidden');
+            }
+        }
+
+        // Channel Selection
+        function selectChannel(chanId) {
+            activeChannel = chanId;
+            document.getElementById('currentChannelTitle').innerHTML = chanId === 'proj-501' 
+                ? `<i data-lucide="hash" class="w-5 h-5 text-indigo-600"></i> Nhóm 1 - Project PBL`
+                : `<i data-lucide="user" class="w-5 h-5 text-indigo-600"></i> TS. Lê Hoàng (GVHD)`;
+            
+            // Highlight active state
+            document.getElementById('chan-proj-501').className = chanId === 'proj-501' ? "w-full text-left px-3 py-2.5 rounded-lg bg-indigo-50 text-indigo-700 font-semibold flex items-center justify-between" : "w-full text-left px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 flex items-center gap-2 text-sm";
+            document.getElementById('chan-direct-lecturer').className = chanId === 'direct-lecturer' ? "w-full text-left px-3 py-2.5 rounded-lg bg-indigo-50 text-indigo-700 font-semibold flex items-center justify-between" : "w-full text-left px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 flex items-center gap-2 text-sm";
+            
+            lucide.createIcons();
+            renderMessages();
+        }
+
+        // Render Chat Messages
+        function renderMessages() {
+            const container = document.getElementById('messageStream');
+            container.innerHTML = '';
+            const msgs = messagesStore[activeChannel] || [];
+
+            msgs.forEach(m => {
+                const isMe = m.senderId === currentUser.id;
+                const msgEl = document.createElement('div');
+                msgEl.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} animate-fade-in`;
+                
+                msgEl.innerHTML = `
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-xs font-bold ${isMe ? 'text-indigo-600' : 'text-slate-700'}">${m.senderName}</span>
+                        <span class="text-[10px] text-slate-400">${m.time}</span>
+                    </div>
+                    <div class="max-w-md p-3 rounded-2xl text-sm ${isMe ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-sm'}">
+                        ${m.text}
+                        ${m.attachment ? `
+                            <div class="mt-2 p-2 rounded bg-slate-900/10 flex items-center gap-2 text-xs">
+                                <i data-lucide="file-text" class="w-4 h-4"></i>
+                                <span class="font-medium underline cursor-pointer">${m.attachment.name}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                container.appendChild(msgEl);
+            });
+            container.scrollTop = container.scrollHeight;
+            lucide.createIcons();
+        }
+
+        // Send Message Handler
+        function handleSendMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chatInput');
+            const fileInd = document.getElementById('fileIndicator');
+            const fileInput = document.getElementById('fileAttachment');
+            const text = input.value.trim();
+
+            if(!text && fileInput.files.length === 0) return;
+
+            let attachment = null;
+            if(fileInput.files.length > 0) {
+                attachment = { name: fileInput.files[0].name, type: 'file' };
+            }
+
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            messagesStore[activeChannel].push({
+                senderId: currentUser.id,
+                senderName: currentUser.name,
+                text: text,
+                time: timeStr,
+                attachment: attachment
+            });
+
+            input.value = '';
+            fileInput.value = '';
+            fileInd.classList.add('hidden');
+            renderMessages();
+        }
+
+        function handleFileSelect(input) {
+            const ind = document.getElementById('fileIndicator');
+            if(input.files.length > 0) ind.classList.remove('hidden');
+        }
+
+        // Render Meetings List
+        function renderMeetings() {
+            const container = document.getElementById('meetingListContainer');
+            container.innerHTML = '';
+            document.getElementById('meetingCount').textContent = meetingsStore.length;
+
+            meetingsStore.forEach(m => {
+                const el = document.createElement('div');
+                el.className = "p-3 bg-white rounded-xl border border-slate-200 shadow-sm space-y-2";
+                el.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <h4 class="font-bold text-sm text-slate-800 leading-tight">${m.title}</h4>
+                        <span class="text-[10px] bg-indigo-50 text-indigo-600 font-semibold px-2 py-0.5 rounded">${m.roomCode}</span>
+                    </div>
+                    <div class="text-xs text-slate-500 space-y-1">
+                        <p class="flex items-center gap-1"><i data-lucide="clock" class="w-3.5 h-3.5"></i> ${m.start.replace('T', ' ')}</p>
+                        <p class="flex items-center gap-1"><i data-lucide="user" class="w-3.5 h-3.5"></i> Chủ trì: ${m.host}</p>
+                    </div>
+                    <button onclick="joinMeeting('${m.title}', '${m.roomCode}')" class="w-full mt-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-1.5 rounded-lg flex justify-center items-center gap-1 transition">
+                        <i data-lucide="video" class="w-3.5 h-3.5"></i> Tham gia ngay
+                    </button>
+                `;
+                container.appendChild(el);
+            });
+            lucide.createIcons();
+        }
+
+        // Schedule Meeting Handlers
+        function openScheduleModal() { document.getElementById('scheduleModal').classList.remove('hidden'); }
+        function closeScheduleModal() { document.getElementById('scheduleModal').classList.add('hidden'); }
+
+        function handleScheduleMeeting(e) {
+            e.preventDefault();
+            const title = document.getElementById('meetTitle').value;
+            const start = document.getElementById('meetStart').value;
+            const end = document.getElementById('meetEnd').value;
+
+            const newMeet = {
+                id: Date.now(),
+                title: title,
+                start: start,
+                end: end,
+                host: currentUser.name,
+                roomCode: `CS-PBL-${Math.floor(1000 + Math.random() * 9000)}`,
+                status: "SCHEDULED"
+            };
+
+            meetingsStore.push(newMeet);
+            renderMeetings();
+            closeScheduleModal();
+            alert("Lên lịch cuộc họp thành công!");
+        }
+
+        // Real WebRTC Camera & Video Call Functionality
+        async function startInstantCall() {
+            joinMeeting("Cuộc họp nhanh (Instant Call)", `CS-PBL-${Math.floor(1000 + Math.random() * 9000)}`);
+        }
+
+        async function joinMeeting(title, code) {
+            document.getElementById('chatView').classList.add('hidden');
+            document.getElementById('videoRoomView').classList.remove('hidden');
+            document.getElementById('videoRoomView').classList.add('flex');
+            document.getElementById('videoRoomTitle').innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span> Đang họp: ${title}`;
+            document.getElementById('roomCodeDisplay').textContent = code;
+
+            try {
+                // Access Real WebRTC Media Stream
+                mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                const localVideo = document.getElementById('localVideo');
+                localVideo.srcObject = mediaStream;
+                localVideo.classList.remove('hidden');
+                document.getElementById('localAvatarPlaceholder').classList.add('hidden');
+            } catch (err) {
+                console.warn("Camera/Microphone permissions denied or not available:", err);
+                document.getElementById('localVideo').classList.add('hidden');
+                document.getElementById('localAvatarPlaceholder').classList.remove('hidden');
+            }
+        }
+
+        function leaveMeeting() {
+            if(mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+            }
+            if(screenStream) {
+                screenStream.getTracks().forEach(track => track.stop());
+            }
+
+            document.getElementById('videoRoomView').classList.add('hidden');
+            document.getElementById('videoRoomView').classList.remove('flex');
+            document.getElementById('chatView').classList.remove('hidden');
+        }
+
+        function toggleMicrophone() {
+            if (!mediaStream) return;
+            isMicOn = !isMicOn;
+            mediaStream.getAudioTracks().forEach(track => track.enabled = isMicOn);
+            const btn = document.getElementById('toggleMicBtn');
+            const icon = document.getElementById('localMicIcon');
+
+            if (isMicOn) {
+                btn.className = "w-12 h-12 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-white transition";
+                icon.className = "w-2 h-2 rounded-full bg-emerald-500";
+            } else {
+                btn.className = "w-12 h-12 rounded-full bg-red-600 hover:bg-red-700 flex items-center justify-center text-white transition";
+                icon.className = "w-2 h-2 rounded-full bg-red-500";
+            }
+        }
+
+        function toggleCamera() {
+            if (!mediaStream) return;
+            isCamOn = !isCamOn;
+            mediaStream.getVideoTracks().forEach(track => track.enabled = isCamOn);
+            const btn = document.getElementById('toggleCamBtn');
+            const video = document.getElementById('localVideo');
+            const placeholder = document.getElementById('localAvatarPlaceholder');
+
+            if (isCamOn) {
+                btn.className = "w-12 h-12 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-white transition";
+                video.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+            } else {
+                btn.className = "w-12 h-12 rounded-full bg-red-600 hover:bg-red-700 flex items-center justify-center text-white transition";
+                video.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+            }
+        }
+
+        // Real Screen Sharing using Display Media API
+        async function toggleScreenShare() {
+            try {
+                if(!screenStream) {
+                    screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                    const screenVideo = document.getElementById('screenVideo');
+                    screenVideo.srcObject = screenStream;
+                    screenVideo.classList.remove('hidden');
+                    document.getElementById('remotePlaceholder').classList.add('hidden');
+                    document.getElementById('screenShareBtn').className = "w-12 h-12 rounded-full bg-emerald-600 hover:bg-emerald-700 flex items-center justify-center text-white transition";
+
+                    screenStream.getVideoTracks()[0].onended = () => {
+                        stopScreenShare();
+                    };
+                } else {
+                    stopScreenShare();
+                }
+            } catch(err) {
+                console.warn("Screen share cancelled or failed:", err);
+            }
+        }
+
+        function stopScreenShare() {
+            if(screenStream) {
+                screenStream.getTracks().forEach(track => track.stop());
+                screenStream = null;
+            }
+            const screenVideo = document.getElementById('screenVideo');
+            screenVideo.classList.add('hidden');
+            document.getElementById('remotePlaceholder').classList.remove('hidden');
+            document.getElementById('screenShareBtn').className = "w-12 h-12 rounded-full bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center text-white transition";
+        }
+    </script>
+</body>
+</html>
