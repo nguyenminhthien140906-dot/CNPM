@@ -20,35 +20,15 @@ flowchart TD
     Start([Người dùng / Thành viên dự án]) --> AccessProject[Truy cập giao diện Dự án]
     
    
-```mermaid
-flowchart TD
-    A([Người dùng bắt đầu]) --> B{Có quyền thực hiện?}
-
-    B -- Không --> C[Trả về lỗi quyền truy cập]
-    C --> Z([Kết thúc])
-
-    B -- Có --> D[Kiểm tra dữ liệu đầu vào]
-
-    D --> E{Dữ liệu hợp lệ?}
-
-    E -- Không --> F[Thông báo lỗi và yêu cầu chỉnh sửa]
-    F --> Z
-
-    E -- Có --> G[Thực hiện nghiệp vụ FE7]
-
-    G --> H[Lưu kết quả và phản hồi]
-    H --> Z
-
-    classDef startEnd fill:#D5E8D4,stroke:#82B366,color:#000
-    classDef process fill:#DAE8FC,stroke:#6C8EBF,color:#000
-    classDef decision fill:#FFF2CC,stroke:#D6B656,color:#000
-    classDef error fill:#F8CECC,stroke:#B85450,color:#000
-
-    class A,Z startEnd
-    class D,G,H process
-    class B,E decision
-    class C,F error
-```
+| STT | Bước xử lý | Điều kiện / Kết quả | Hành động tiếp theo |
+|---:|---|---|---|
+| 1 | Người dùng bắt đầu | Khởi tạo quy trình | Kiểm tra quyền thực hiện |
+| 2 | Kiểm tra quyền thực hiện | Không có quyền | Trả về lỗi quyền truy cập và kết thúc |
+| 3 | Kiểm tra quyền thực hiện | Có quyền | Kiểm tra dữ liệu đầu vào |
+| 4 | Kiểm tra dữ liệu đầu vào | Dữ liệu không hợp lệ | Thông báo lỗi, yêu cầu chỉnh sửa và kết thúc bước xử lý |
+| 5 | Kiểm tra dữ liệu đầu vào | Dữ liệu hợp lệ | Thực hiện nghiệp vụ FE7 |
+| 6 | Thực hiện nghiệp vụ FE7 | Nghiệp vụ được thực hiện | Lưu kết quả và phản hồi |
+| 7 | Lưu kết quả và phản hồi | Hoàn tất | Kết thúc quy trình |
 
 ### Ví dụ dữ liệu JSON
 ```json
