@@ -1,0 +1,928 @@
+omnichannel-inventory-sales-management-system/
+│
+├── docs/
+│ ├── 00-project-overview/
+│ │ ├── project-proposal.md
+│ │ ├── problem-statement.md
+│ │ ├── project-objectives.md
+│ │ ├── project-scope.md
+│ │ ├── stakeholders.md
+│ │ ├── assumptions-and-constraints.md
+│ │ ├── glossary.md
+│ │ └── references.md
+│ │
+│ ├── 01-topic-specification/
+│ │ ├── topic-specification.md
+│ │ ├── business-context.md
+│ │ ├── proposed-solution.md
+│ │ ├── expected-results.md
+│ │ ├── expected-products.md
+│ │ └── acceptance-criteria.md
+│ │
+│ ├── 02-theoretical-foundation/
+│ │ ├── omnichannel-retail.md
+│ │ ├── inventory-management.md
+│ │ ├── inventory-ledger.md
+│ │ ├── weighted-average-cost.md
+│ │ ├── anti-oversell-mechanism.md
+│ │ ├── saas-multi-tenancy.md
+│ │ ├── clean-architecture.md
+│ │ ├── order-state-machine.md
+│ │ ├── progressive-web-app.md
+│ │ ├── real-time-communication.md
+│ │ ├── background-processing.md
+│ │ ├── concurrency-control.md
+│ │ ├── agile-scrum.md
+│ │ └── uml-2.0.md
+│ │
+│ ├── 03-business-analysis/
+│ │ ├── business-process-overview.md
+│ │ ├── current-process-as-is.md
+│ │ ├── proposed-process-to-be.md
+│ │ ├── business-rules.md
+│ │ ├── user-roles.md
+│ │ │
+│ │ ├── processes/
+│ │ │ ├── tenant-registration-process.md
+│ │ │ ├── product-management-process.md
+│ │ │ ├── goods-receipt-process.md
+│ │ │ ├── warehouse-transfer-process.md
+│ │ │ ├── stocktake-process.md
+│ │ │ ├── online-order-process.md
+│ │ │ ├── pos-sales-process.md
+│ │ │ ├── stock-reservation-process.md
+│ │ │ ├── order-cancellation-process.md
+│ │ │ ├── return-process.md
+│ │ │ └── reporting-process.md
+│ │ │
+│ │ └── business-flowcharts/
+│ │ ├── product-management-flow.drawio
+│ │ ├── goods-receipt-flow.drawio
+│ │ ├── order-processing-flow.drawio
+│ │ ├── stock-reservation-flow.drawio
+│ │ ├── pos-checkout-flow.drawio
+│ │ └── warehouse-transfer-flow.drawio
+│ │
+│ ├── 04-requirements/
+│ │ ├── URS-user-requirements-specification.md
+│ │ ├── SRS-software-requirements-specification.md
+│ │ ├── functional-requirements.md
+│ │ ├── non-functional-requirements.md
+│ │ ├── business-rules.md
+│ │ ├── data-requirements.md
+│ │ ├── user-stories.md
+│ │ ├── acceptance-criteria.md
+│ │ ├── requirement-traceability-matrix.xlsx
+│ │ └── product-backlog.xlsx
+│ │
+│ ├── 05-use-cases/
+│ │ ├── use-case-overview.md
+│ │ ├── actors.md
+│ │ ├── use-case-matrix.md
+│ │ │
+│ │ ├── specifications/
+│ │ │ ├── UC-AUTH-01-register-tenant.md
+│ │ │ ├── UC-AUTH-02-login.md
+│ │ │ ├── UC-AUTH-03-manage-users-and-roles.md
+│ │ │ ├── UC-AUTH-04-manage-branches.md
+│ │ │ ├── UC-PROD-01-manage-categories.md
+│ │ │ ├── UC-PROD-02-manage-products.md
+│ │ │ ├── UC-PROD-03-manage-skus.md
+│ │ │ ├── UC-PROD-04-manage-barcodes.md
+│ │ │ ├── UC-INV-01-create-goods-receipt.md
+│ │ │ ├── UC-INV-02-transfer-stock.md
+│ │ │ ├── UC-INV-03-perform-stocktake.md
+│ │ │ ├── UC-INV-04-view-inventory-ledger.md
+│ │ │ ├── UC-ORD-01-ingest-order.md
+│ │ │ ├── UC-ORD-02-reserve-stock.md
+│ │ │ ├── UC-ORD-03-confirm-order.md
+│ │ │ ├── UC-ORD-04-cancel-order.md
+│ │ │ ├── UC-POS-01-create-pos-sale.md
+│ │ │ ├── UC-POS-02-process-payment.md
+│ │ │ ├── UC-POS-03-print-receipt.md
+│ │ │ ├── UC-REP-01-view-sales-report.md
+│ │ │ └── UC-SIM-01-simulate-webhook.md
+│ │ │
+│ │ └── diagrams/
+│ │ ├── overall-use-case.drawio
+│ │ ├── authentication-use-case.drawio
+│ │ ├── product-use-case.drawio
+│ │ ├── inventory-use-case.drawio
+│ │ ├── order-use-case.drawio
+│ │ ├── pos-use-case.drawio
+│ │ └── reporting-use-case.drawio
+│ │
+│ ├── 06-system-design/
+│ │ ├── architecture/
+│ │ │ ├── architecture-overview.md
+│ │ │ ├── clean-architecture.md
+│ │ │ ├── multi-tenant-architecture.md
+│ │ │ ├── security-architecture.md
+│ │ │ ├── concurrency-architecture.md
+│ │ │ ├── caching-strategy.md
+│ │ │ ├── logging-and-monitoring.md
+│ │ │ └── deployment-architecture.md
+│ │ │
+│ │ ├── c4-model/
+│ │ │ ├── system-context.drawio
+│ │ │ ├── container-diagram.drawio
+│ │ │ ├── backend-component-diagram.drawio
+│ │ │ └── deployment-diagram.drawio
+│ │ │
+│ │ ├── uml/
+│ │ │ ├── class-diagram.drawio
+│ │ │ ├── package-diagram.drawio
+│ │ │ ├── component-diagram.drawio
+│ │ │ ├── deployment-diagram.drawio
+│ │ │ ├── order-state-machine.drawio
+│ │ │ ├── inventory-activity-diagram.drawio
+│ │ │ └── pos-activity-diagram.drawio
+│ │ │
+│ │ └── sequence-diagrams/
+│ │ ├── tenant-registration-sequence.drawio
+│ │ ├── login-sequence.drawio
+│ │ ├── goods-receipt-sequence.drawio
+│ │ ├── weighted-average-cost-sequence.drawio
+│ │ ├── stock-reservation-sequence.drawio
+│ │ ├── order-confirmation-sequence.drawio
+│ │ ├── order-cancellation-sequence.drawio
+│ │ ├── pos-checkout-sequence.drawio
+│ │ ├── concurrent-order-sequence.drawio
+│ │ └── webhook-ingestion-sequence.drawio
+│ │
+│ ├── 07-database-design/
+│ │ ├── database-overview.md
+│ │ ├── database-conventions.md
+│ │ ├── tenant-data-isolation.md
+│ │ ├── data-dictionary.md
+│ │ ├── table-specifications.md
+│ │ ├── indexing-strategy.md
+│ │ ├── transaction-and-locking-strategy.md
+│ │ ├── backup-and-restore.md
+│ │ ├── database-migration-guide.md
+│ │ ├── erd.drawio
+│ │ ├── erd.png
+│ │ └── database-schema.sql
+│ │
+│ ├── 08-ui-ux-design/
+│ │ ├── ui-requirements.md
+│ │ ├── design-system.md
+│ │ ├── responsive-guidelines.md
+│ │ ├── accessibility-guidelines.md
+│ │ │
+│ │ ├── admin-dashboard/
+│ │ │ ├── sitemap.md
+│ │ │ ├── wireframes.drawio
+│ │ │ ├── screen-flow.drawio
+│ │ │ └── screen-specifications.md
+│ │ │
+│ │ └── pos-pwa/
+│ │ ├── sitemap.md
+│ │ ├── wireframes.drawio
+│ │ ├── checkout-flow.drawio
+│ │ ├── receipt-template.md
+│ │ └── screen-specifications.md
+│ │
+│ ├── 09-api-documentation/
+│ │ ├── api-overview.md
+│ │ ├── authentication-api.md
+│ │ ├── tenant-api.md
+│ │ ├── product-api.md
+│ │ ├── inventory-api.md
+│ │ ├── order-api.md
+│ │ ├── pos-api.md
+│ │ ├── report-api.md
+│ │ ├── webhook-api.md
+│ │ ├── signalr-events.md
+│ │ ├── error-codes.md
+│ │ ├── openapi.json
+│ │ └── OISM.postman_collection.json
+│ │
+│ ├── 10-testing/
+│ │ ├── test-plan.md
+│ │ ├── test-strategy.md
+│ │ ├── test-environment.md
+│ │ ├── test-data-plan.md
+│ │ ├── unit-test-cases.md
+│ │ ├── integration-test-cases.md
+│ │ ├── api-test-cases.md
+│ │ ├── ui-test-cases.md
+│ │ ├── security-test-cases.md
+│ │ ├── performance-test-cases.md
+│ │ ├── concurrency-test-cases.md
+│ │ ├── user-acceptance-test.md
+│ │ ├── defect-report-template.md
+│ │ └── test-summary-report.md
+│ │
+│ ├── 11-deployment/
+│ │ ├── deployment-plan.md
+│ │ ├── installation-guide.md
+│ │ ├── docker-deployment-guide.md
+│ │ ├── ci-cd-guide.md
+│ │ ├── environment-configuration.md
+│ │ ├── production-checklist.md
+│ │ ├── rollback-plan.md
+│ │ ├── monitoring-guide.md
+│ │ └── troubleshooting.md
+│ │
+│ ├── 12-user-guides/
+│ │ ├── owner-user-guide.md
+│ │ ├── staff-user-guide.md
+│ │ ├── cashier-user-guide.md
+│ │ ├── admin-dashboard-guide.md
+│ │ ├── pos-user-guide.md
+│ │ ├── barcode-scanning-guide.md
+│ │ └── frequently-asked-questions.md
+│ │
+│ ├── 13-project-management/
+│ │ ├── project-plan.md
+│ │ ├── team-members.md
+│ │ ├── responsibility-assignment-matrix.md
+│ │ ├── work-breakdown-structure.md
+│ │ ├── sprint-plan.md
+│ │ ├── risk-management.md
+│ │ ├── meeting-minutes/
+│ │ │ └── README.md
+│ │ └── sprint-reviews/
+│ │ └── README.md
+│ │
+│ ├── 14-ai-reordering/
+│ │ ├── ai-scope.md
+│ │ ├── input-data.md
+│ │ ├── demand-forecasting-method.md
+│ │ ├── reorder-recommendation.md
+│ │ ├── model-evaluation.md
+│ │ └── ai-limitations.md
+│ │
+│ └── assets/
+│ ├── images/
+│ ├── diagrams/
+│ ├── screenshots/
+│ └── demo-data/
+│
+├── backend/
+│ ├── OISM.sln
+│ ├── Directory.Build.props
+│ ├── Directory.Packages.props
+│ ├── global.json
+│ ├── README.md
+│ ├── Dockerfile
+│ ├── .dockerignore
+│ │
+│ ├── src/
+│ │ ├── OISM.Domain/
+│ │ │ ├── OISM.Domain.csproj
+│ │ │ │
+│ │ │ ├── Common/
+│ │ │ │ ├── BaseEntity.cs
+│ │ │ │ ├── AggregateRoot.cs
+│ │ │ │ ├── AuditableEntity.cs
+│ │ │ │ ├── IDomainEvent.cs
+│ │ │ │ └── DomainException.cs
+│ │ │ │
+│ │ │ ├── Tenants/
+│ │ │ │ ├── Tenant.cs
+│ │ │ │ ├── Branch.cs
+│ │ │ │ └── Warehouse.cs
+│ │ │ │
+│ │ │ ├── Identity/
+│ │ │ │ ├── User.cs
+│ │ │ │ ├── Role.cs
+│ │ │ │ ├── Permission.cs
+│ │ │ │ └── RefreshToken.cs
+│ │ │ │
+│ │ │ ├── Catalog/
+│ │ │ │ ├── Product.cs
+│ │ │ │ ├── ProductVariant.cs
+│ │ │ │ ├── SKU.cs
+│ │ │ │ ├── Category.cs
+│ │ │ │ ├── Brand.cs
+│ │ │ │ ├── Barcode.cs
+│ │ │ │ └── ProductPrice.cs
+│ │ │ │
+│ │ │ ├── Inventory/
+│ │ │ │ ├── InventoryBalance.cs
+│ │ │ │ ├── InventoryTransaction.cs
+│ │ │ │ ├── StockReservation.cs
+│ │ │ │ ├── GoodsReceipt.cs
+│ │ │ │ ├── GoodsReceiptItem.cs
+│ │ │ │ ├── StockTransfer.cs
+│ │ │ │ ├── StockTransferItem.cs
+│ │ │ │ ├── StocktakeSession.cs
+│ │ │ │ ├── StocktakeItem.cs
+│ │ │ │ └── InventoryAdjustment.cs
+│ │ │ │
+│ │ │ ├── Orders/
+│ │ │ │ ├── Order.cs
+│ │ │ │ ├── OrderItem.cs
+│ │ │ │ ├── OrderPayment.cs
+│ │ │ │ ├── OrderStatusHistory.cs
+│ │ │ │ └── OrderStateMachine.cs
+│ │ │ │
+│ │ │ ├── Sales/
+│ │ │ │ ├── POSSale.cs
+│ │ │ │ ├── POSSaleItem.cs
+│ │ │ │ ├── Payment.cs
+│ │ │ │ └── Receipt.cs
+│ │ │ │
+│ │ │ ├── Suppliers/
+│ │ │ │ └── Supplier.cs
+│ │ │ │
+│ │ │ ├── Notifications/
+│ │ │ │ └── Notification.cs
+│ │ │ │
+│ │ │ ├── ValueObjects/
+│ │ │ │ ├── Money.cs
+│ │ │ │ ├── Quantity.cs
+│ │ │ │ ├── SKUCode.cs
+│ │ │ │ └── BarcodeValue.cs
+│ │ │ │
+│ │ │ ├── Enums/
+│ │ │ │ ├── OrderStatus.cs
+│ │ │ │ ├── OrderChannel.cs
+│ │ │ │ ├── InventoryTransactionType.cs
+│ │ │ │ ├── ReservationStatus.cs
+│ │ │ │ ├── PaymentMethod.cs
+│ │ │ │ └── UserRole.cs
+│ │ │ │
+│ │ │ ├── Rules/
+│ │ │ │ ├── StockAvailabilityRule.cs
+│ │ │ │ ├── OrderTransitionRule.cs
+│ │ │ │ └── WeightedAverageCostRule.cs
+│ │ │ │
+│ │ │ └── Events/
+│ │ │ ├── StockReservedDomainEvent.cs
+│ │ │ ├── StockDeductedDomainEvent.cs
+│ │ │ ├── OrderConfirmedDomainEvent.cs
+│ │ │ └── LowStockDetectedDomainEvent.cs
+│ │ │
+│ │ ├── OISM.Application/
+│ │ │ ├── OISM.Application.csproj
+│ │ │ │
+│ │ │ ├── Common/
+│ │ │ │ ├── Interfaces/
+│ │ │ │ │ ├── IApplicationDbContext.cs
+│ │ │ │ │ ├── ICurrentTenant.cs
+│ │ │ │ │ ├── ICurrentUser.cs
+│ │ │ │ │ ├── IJwtTokenService.cs
+│ │ │ │ │ ├── IPasswordHasher.cs
+│ │ │ │ │ ├── IInventoryService.cs
+│ │ │ │ │ ├── IOrderStateMachine.cs
+│ │ │ │ │ ├── INotificationService.cs
+│ │ │ │ │ └── IBackgroundJobService.cs
+│ │ │ │ │
+│ │ │ │ ├── Behaviors/
+│ │ │ │ │ ├── ValidationBehavior.cs
+│ │ │ │ │ ├── LoggingBehavior.cs
+│ │ │ │ │ ├── AuthorizationBehavior.cs
+│ │ │ │ │ └── TransactionBehavior.cs
+│ │ │ │ │
+│ │ │ │ ├── Exceptions/
+│ │ │ │ ├── Models/
+│ │ │ │ ├── Mappings/
+│ │ │ │ ├── Security/
+│ │ │ │ └── Validators/
+│ │ │ │
+│ │ │ ├── Features/
+│ │ │ │ ├── Authentication/
+│ │ │ │ │ ├── Commands/
+│ │ │ │ │ ├── Queries/
+│ │ │ │ │ ├── DTOs/
+│ │ │ │ │ └── Validators/
+│ │ │ │ │
+│ │ │ │ ├── Tenants/
+│ │ │ │ ├── Users/
+│ │ │ │ ├── Branches/
+│ │ │ │ ├── Categories/
+│ │ │ │ ├── Brands/
+│ │ │ │ ├── Products/
+│ │ │ │ ├── SKUs/
+│ │ │ │ ├── Suppliers/
+│ │ │ │ ├── GoodsReceipts/
+│ │ │ │ ├── InventoryLedger/
+│ │ │ │ ├── InventoryBalances/
+│ │ │ │ ├── StockReservations/
+│ │ │ │ ├── StockTransfers/
+│ │ │ │ ├── Stocktakes/
+│ │ │ │ ├── Orders/
+│ │ │ │ ├── POSSales/
+│ │ │ │ ├── Reports/
+│ │ │ │ ├── Notifications/
+│ │ │ │ └── WebhookSimulator/
+│ │ │ │
+│ │ │ └── DependencyInjection.cs
+│ │ │
+│ │ ├── OISM.Infrastructure/
+│ │ │ ├── OISM.Infrastructure.csproj
+│ │ │ │
+│ │ │ ├── Persistence/
+│ │ │ │ ├── OISMDbContext.cs
+│ │ │ │ ├── OISMDbContextFactory.cs
+│ │ │ │ │
+│ │ │ │ ├── Configurations/
+│ │ │ │ │ ├── TenantConfiguration.cs
+│ │ │ │ │ ├── UserConfiguration.cs
+│ │ │ │ │ ├── ProductConfiguration.cs
+│ │ │ │ │ ├── SKUConfiguration.cs
+│ │ │ │ │ ├── InventoryBalanceConfiguration.cs
+│ │ │ │ │ ├── InventoryTransactionConfiguration.cs
+│ │ │ │ │ ├── StockReservationConfiguration.cs
+│ │ │ │ │ ├── OrderConfiguration.cs
+│ │ │ │ │ └── OrderItemConfiguration.cs
+│ │ │ │ │
+│ │ │ │ ├── Interceptors/
+│ │ │ │ │ ├── AuditableEntityInterceptor.cs
+│ │ │ │ │ ├── TenantIsolationInterceptor.cs
+│ │ │ │ │ └── AppendOnlyLedgerInterceptor.cs
+│ │ │ │ │
+│ │ │ │ ├── Repositories/
+│ │ │ │ ├── Migrations/
+│ │ │ │ ├── Seed/
+│ │ │ │ │ ├── DefaultRolesSeeder.cs
+│ │ │ │ │ ├── DemoTenantSeeder.cs
+│ │ │ │ │ └── ProductSeeder.cs
+│ │ │ │ └── DatabaseInitializer.cs
+│ │ │ │
+│ │ │ ├── Identity/
+│ │ │ │ ├── JwtTokenService.cs
+│ │ │ │ ├── PasswordHasher.cs
+│ │ │ │ └── CurrentUserService.cs
+│ │ │ │
+│ │ │ ├── MultiTenancy/
+│ │ │ │ ├── CurrentTenant.cs
+│ │ │ │ ├── TenantResolver.cs
+│ │ │ │ └── TenantQueryFilter.cs
+│ │ │ │
+│ │ │ ├── Inventory/
+│ │ │ │ ├── InventoryLedgerService.cs
+│ │ │ │ ├── StockReservationService.cs
+│ │ │ │ ├── InventoryLockService.cs
+│ │ │ │ └── WeightedAverageCostService.cs
+│ │ │ │
+│ │ │ ├── Orders/
+│ │ │ │ ├── OrderStateMachineService.cs
+│ │ │ │ ├── OrderIngestionService.cs
+│ │ │ │ └── CanonicalOrderMapper.cs
+│ │ │ │
+│ │ │ ├── Realtime/
+│ │ │ │ ├── OrderNotificationHub.cs
+│ │ │ │ └── SignalRNotificationService.cs
+│ │ │ │
+│ │ │ ├── BackgroundJobs/
+│ │ │ │ ├── ExpiredReservationJob.cs
+│ │ │ │ ├── DailyReportJob.cs
+│ │ │ │ └── BackgroundJobService.cs
+│ │ │ │
+│ │ │ ├── ExternalIntegrations/
+│ │ │ │ ├── Shopee/
+│ │ │ │ ├── TikTokShop/
+│ │ │ │ ├── Lazada/
+│ │ │ │ └── WebhookSimulator/
+│ │ │ │
+│ │ │ ├── Reporting/
+│ │ │ ├── Caching/
+│ │ │ ├── Logging/
+│ │ │ └── DependencyInjection.cs
+│ │ │
+│ │ └── OISM.WebAPI/
+│ │ ├── OISM.WebAPI.csproj
+│ │ ├── Program.cs
+│ │ ├── appsettings.json
+│ │ ├── appsettings.Development.json
+│ │ ├── appsettings.Testing.json
+│ │ │
+│ │ ├── Controllers/
+│ │ │ ├── AuthController.cs
+│ │ │ ├── TenantsController.cs
+│ │ │ ├── UsersController.cs
+│ │ │ ├── BranchesController.cs
+│ │ │ ├── ProductsController.cs
+│ │ │ ├── SKUsController.cs
+│ │ │ ├── InventoryController.cs
+│ │ │ ├── GoodsReceiptsController.cs
+│ │ │ ├── StockTransfersController.cs
+│ │ │ ├── StocktakesController.cs
+│ │ │ ├── OrdersController.cs
+│ │ │ ├── POSController.cs
+│ │ │ ├── ReportsController.cs
+│ │ │ └── WebhookSimulatorController.cs
+│ │ │
+│ │ ├── Hubs/
+│ │ │ └── OrderHub.cs
+│ │ │
+│ │ ├── Middleware/
+│ │ │ ├── ExceptionHandlingMiddleware.cs
+│ │ │ ├── TenantResolutionMiddleware.cs
+│ │ │ ├── CorrelationIdMiddleware.cs
+│ │ │ └── RequestLoggingMiddleware.cs
+│ │ │
+│ │ ├── Filters/
+│ │ ├── Extensions/
+│ │ ├── Authorization/
+│ │ ├── HealthChecks/
+│ │ └── Properties/
+│ │
+│ ├── tests/
+│ │ ├── OISM.Domain.UnitTests/
+│ │ │ ├── Inventory/
+│ │ │ ├── Orders/
+│ │ │ ├── Costing/
+│ │ │ └── Tenants/
+│ │ │
+│ │ ├── OISM.Application.UnitTests/
+│ │ │ ├── Authentication/
+│ │ │ ├── Products/
+│ │ │ ├── Inventory/
+│ │ │ ├── Orders/
+│ │ │ └── Reports/
+│ │ │
+│ │ ├── OISM.Infrastructure.IntegrationTests/
+│ │ │ ├── Persistence/
+│ │ │ ├── MultiTenancy/
+│ │ │ ├── InventoryLedger/
+│ │ │ ├── StockReservation/
+│ │ │ └── BackgroundJobs/
+│ │ │
+│ │ ├── OISM.WebAPI.IntegrationTests/
+│ │ │ ├── Authentication/
+│ │ │ ├── Products/
+│ │ │ ├── Inventory/
+│ │ │ ├── Orders/
+│ │ │ └── POS/
+│ │ │
+│ │ └── OISM.ConcurrencyTests/
+│ │ ├── FlashSaleTests.cs
+│ │ ├── ConcurrentReservationTests.cs
+│ │ ├── ConcurrentPOSCheckoutTests.cs
+│ │ └── TenantIsolationTests.cs
+│ │
+│ ├── scripts/
+│ │ ├── create-database.sql
+│ │ ├── seed-demo-data.sql
+│ │ ├── reset-database.sh
+│ │ ├── run-migrations.sh
+│ │ └── run-tests.sh
+│ │
+│ └── tools/
+│ ├── webhook-simulator/
+│ ├── concurrency-runner/
+│ └── data-generator/
+│
+├── frontend/
+│ ├── README.md
+│ ├── package.json
+│ ├── package-lock.json
+│ ├── eslint.config.js
+│ ├── prettier.config.js
+│ ├── tsconfig.base.json
+│ │
+│ ├── apps/
+│ │ ├── admin-dashboard/
+│ │ │ ├── Dockerfile
+│ │ │ ├── package.json
+│ │ │ ├── vite.config.ts
+│ │ │ ├── tsconfig.json
+│ │ │ ├── index.html
+│ │ │ ├── public/
+│ │ │ │ ├── favicon.ico
+│ │ │ │ └── images/
+│ │ │ │
+│ │ │ ├── src/
+│ │ │ │ ├── app/
+│ │ │ │ │ ├── App.tsx
+│ │ │ │ │ ├── router.tsx
+│ │ │ │ │ ├── store.ts
+│ │ │ │ │ └── providers.tsx
+│ │ │ │ │
+│ │ │ │ ├── pages/
+│ │ │ │ │ ├── auth/
+│ │ │ │ │ ├── dashboard/
+│ │ │ │ │ ├── tenants/
+│ │ │ │ │ ├── branches/
+│ │ │ │ │ ├── users/
+│ │ │ │ │ ├── categories/
+│ │ │ │ │ ├── brands/
+│ │ │ │ │ ├── products/
+│ │ │ │ │ ├── inventory/
+│ │ │ │ │ ├── goods-receipts/
+│ │ │ │ │ ├── stock-transfers/
+│ │ │ │ │ ├── stocktakes/
+│ │ │ │ │ ├── orders/
+│ │ │ │ │ ├── reports/
+│ │ │ │ │ ├── notifications/
+│ │ │ │ │ ├── webhook-simulator/
+│ │ │ │ │ └── settings/
+│ │ │ │ │
+│ │ │ │ ├── features/
+│ │ │ │ ├── components/
+│ │ │ │ ├── layouts/
+│ │ │ │ ├── services/
+│ │ │ │ ├── hooks/
+│ │ │ │ ├── types/
+│ │ │ │ ├── utils/
+│ │ │ │ ├── constants/
+│ │ │ │ ├── styles/
+│ │ │ │ └── tests/
+│ │ │ │
+│ │ │ └── e2e/
+│ │ │ ├── authentication.spec.ts
+│ │ │ ├── product-management.spec.ts
+│ │ │ ├── inventory-management.spec.ts
+│ │ │ └── order-processing.spec.ts
+│ │ │
+│ │ └── pos-pwa/
+│ │ ├── Dockerfile
+│ │ ├── package.json
+│ │ ├── vite.config.ts
+│ │ ├── tsconfig.json
+│ │ ├── index.html
+│ │ │
+│ │ ├── public/
+│ │ │ ├── manifest.webmanifest
+│ │ │ ├── icons/
+│ │ │ └── sounds/
+│ │ │
+│ │ ├── src/
+│ │ │ ├── app/
+│ │ │ │ ├── App.tsx
+│ │ │ │ ├── router.tsx
+│ │ │ │ ├── store.ts
+│ │ │ │ └── pwa.ts
+│ │ │ │
+│ │ │ ├── pages/
+│ │ │ │ ├── login/
+│ │ │ │ ├── sale/
+│ │ │ │ ├── payment/
+│ │ │ │ ├── receipt/
+│ │ │ │ ├── order-history/
+│ │ │ │ ├── held-orders/
+│ │ │ │ └── settings/
+│ │ │ │
+│ │ │ ├── features/
+│ │ │ │ ├── barcode-scanner/
+│ │ │ │ ├── product-search/
+│ │ │ │ ├── cart/
+│ │ │ │ ├── stock-check/
+│ │ │ │ ├── checkout/
+│ │ │ │ ├── qr-payment/
+│ │ │ │ ├── receipt-printing/
+│ │ │ │ └── realtime-notifications/
+│ │ │ │
+│ │ │ ├── components/
+│ │ │ ├── services/
+│ │ │ ├── hooks/
+│ │ │ ├── types/
+│ │ │ ├── utils/
+│ │ │ ├── styles/
+│ │ │ ├── workers/
+│ │ │ │ └── service-worker.ts
+│ │ │ └── tests/
+│ │ │
+│ │ └── e2e/
+│ │ ├── barcode-sale.spec.ts
+│ │ ├── pos-checkout.spec.ts
+│ │ ├── insufficient-stock.spec.ts
+│ │ └── receipt-printing.spec.ts
+│ │
+│ └── packages/
+│ ├── ui/
+│ │ ├── src/
+│ │ │ ├── components/
+│ │ │ ├── themes/
+│ │ │ └── index.ts
+│ │ └── package.json
+│ │
+│ ├── api-client/
+│ │ ├── src/
+│ │ │ ├── auth-api.ts
+│ │ │ ├── product-api.ts
+│ │ │ ├── inventory-api.ts
+│ │ │ ├── order-api.ts
+│ │ │ ├── report-api.ts
+│ │ │ └── signalr-client.ts
+│ │ └── package.json
+│ │
+│ ├── shared-types/
+│ │ ├── src/
+│ │ └── package.json
+│ │
+│ ├── shared-utils/
+│ │ ├── src/
+│ │ └── package.json
+│ │
+│ └── configuration/
+│ ├── eslint/
+│ ├── typescript/
+│ └── package.json
+│
+├── infrastructure/
+│ ├── docker/
+│ │ ├── postgres/
+│ │ │ ├── init.sql
+│ │ │ └── seed.sql
+│ │ ├── nginx/
+│ │ │ └── nginx.conf
+│ │ └── monitoring/
+│ │ ├── prometheus.yml
+│ │ └── grafana/
+│ │
+│ ├── scripts/
+│ │ ├── setup-development.sh
+│ │ ├── start-local.sh
+│ │ ├── stop-local.sh
+│ │ ├── backup-database.sh
+│ │ └── restore-database.sh
+│ │
+│ └── environments/
+│ ├── development.env.example
+│ ├── testing.env.example
+│ └── production.env.example
+│
+├── tests/
+│ ├── performance/
+│ │ ├── k6/
+│ │ │ ├── sku-search-test.js
+│ │ │ ├── order-creation-test.js
+│ │ │ └── report-performance-test.js
+│ │ └── README.md
+│ │
+│ ├── concurrency/
+│ │ ├── flash-sale-50-orders.js
+│ │ ├── concurrent-pos-online.js
+│ │ ├── reservation-cancellation.js
+│ │ └── README.md
+│ │
+│ ├── security/
+│ │ ├── tenant-isolation-test.md
+│ │ ├── authorization-test.md
+│ │ └── api-security-test.md
+│ │
+│ └── postman/
+│ ├── OISM.postman_collection.json
+│ └── OISM.local.postman_environment.json
+│
+├── Skills/
+│ ├── README.md
+│ ├── skill-matrix.md
+│ ├── learning-roadmap.md
+│ ├── team-skill-assignment.md
+│ │
+│ ├── 01-business-analysis/
+│ │ ├── README.md
+│ │ ├── requirements-analysis.md
+│ │ ├── business-process-modeling.md
+│ │ ├── user-story-writing.md
+│ │ ├── acceptance-criteria-writing.md
+│ │ ├── use-case-specification.md
+│ │ └── requirement-traceability.md
+│ │
+│ ├── 02-system-analysis-and-uml/
+│ │ ├── README.md
+│ │ ├── use-case-diagram.md
+│ │ ├── class-diagram.md
+│ │ ├── sequence-diagram.md
+│ │ ├── activity-diagram.md
+│ │ ├── state-machine-diagram.md
+│ │ ├── component-diagram.md
+│ │ └── deployment-diagram.md
+│ │
+│ ├── 03-backend-dotnet/
+│ │ ├── README.md
+│ │ ├── csharp-fundamentals.md
+│ │ ├── dotnet-web-api.md
+│ │ ├── clean-architecture.md
+│ │ ├── domain-driven-design.md
+│ │ ├── cqrs-and-mediatr.md
+│ │ ├── dependency-injection.md
+│ │ ├── validation.md
+│ │ ├── exception-handling.md
+│ │ └── logging.md
+│ │
+│ ├── 04-database/
+│ │ ├── README.md
+│ │ ├── postgresql.md
+│ │ ├── entity-framework-core.md
+│ │ ├── database-design.md
+│ │ ├── database-indexing.md
+│ │ ├── database-transactions.md
+│ │ ├── pessimistic-locking.md
+│ │ ├── optimistic-locking.md
+│ │ └── database-migrations.md
+│ │
+│ ├── 05-multi-tenancy-and-security/
+│ │ ├── README.md
+│ │ ├── saas-multi-tenancy.md
+│ │ ├── tenant-isolation.md
+│ │ ├── jwt-authentication.md
+│ │ ├── refresh-token.md
+│ │ ├── role-based-access-control.md
+│ │ ├── password-hashing.md
+│ │ └── web-api-security.md
+│ │
+│ ├── 06-inventory-and-order-domain/
+│ │ ├── README.md
+│ │ ├── inventory-ledger.md
+│ │ ├── append-only-data.md
+│ │ ├── stock-reservation.md
+│ │ ├── anti-oversell.md
+│ │ ├── weighted-average-cost.md
+│ │ ├── canonical-order-model.md
+│ │ └── order-state-machine.md
+│ │
+│ ├── 07-frontend-react/
+│ │ ├── README.md
+│ │ ├── typescript.md
+│ │ ├── reactjs.md
+│ │ ├── state-management.md
+│ │ ├── api-integration.md
+│ │ ├── form-validation.md
+│ │ ├── responsive-design.md
+│ │ └── frontend-testing.md
+│ │
+│ ├── 08-pwa-pos/
+│ │ ├── README.md
+│ │ ├── progressive-web-app.md
+│ │ ├── service-worker.md
+│ │ ├── barcode-scanning.md
+│ │ ├── keyboard-shortcuts.md
+│ │ ├── browser-printing.md
+│ │ ├── qr-payment-flow.md
+│ │ └── pos-usability.md
+│ │
+│ ├── 09-realtime-and-background-jobs/
+│ │ ├── README.md
+│ │ ├── signalr.md
+│ │ ├── hangfire.md
+│ │ ├── webhook-processing.md
+│ │ ├── idempotency.md
+│ │ └── retry-and-failure-handling.md
+│ │
+│ ├── 10-testing/
+│ │ ├── README.md
+│ │ ├── unit-testing.md
+│ │ ├── integration-testing.md
+│ │ ├── api-testing.md
+│ │ ├── ui-testing.md
+│ │ ├── concurrency-testing.md
+│ │ ├── performance-testing.md
+│ │ └── test-coverage.md
+│ │
+│ ├── 11-devops/
+│ │ ├── README.md
+│ │ ├── git-and-github.md
+│ │ ├── branching-strategy.md
+│ │ ├── code-review.md
+│ │ ├── docker.md
+│ │ ├── docker-compose.md
+│ │ ├── github-actions.md
+│ │ ├── environment-variables.md
+│ │ └── ci-cd.md
+│ │
+│ ├── 12-ai-demand-forecasting/
+│ │ ├── README.md
+│ │ ├── sales-data-preparation.md
+│ │ ├── demand-forecasting.md
+│ │ ├── reorder-point.md
+│ │ ├── model-evaluation.md
+│ │ └── ai-integration.md
+│ │
+│ └── 13-documentation-and-presentation/
+│ ├── README.md
+│ ├── technical-writing.md
+│ ├── api-documentation.md
+│ ├── user-guide-writing.md
+│ ├── drawio-diagrams.md
+│ ├── report-writing.md
+│ └── project-presentation.md
+│
+├── .github/
+│ ├── workflows/
+│ │ ├── backend-ci.yml
+│ │ ├── frontend-ci.yml
+│ │ ├── integration-tests.yml
+│ │ ├── concurrency-tests.yml
+│ │ ├── docker-build.yml
+│ │ └── deployment.yml
+│ │
+│ ├── ISSUE_TEMPLATE/
+│ │ ├── bug_report.md
+│ │ ├── feature_request.md
+│ │ ├── documentation_task.md
+│ │ └── test_task.md
+│ │
+│ ├── PULL_REQUEST_TEMPLATE.md
+│ ├── CODEOWNERS
+│ └── dependabot.yml
+│
+├── .editorconfig
+├── .env.example
+├── .gitignore
+├── .gitattributes
+├── docker-compose.yml
+├── docker-compose.override.yml
+├── LICENSE
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── CHANGELOG.md
+├── Checklist.md
+└── README.md
