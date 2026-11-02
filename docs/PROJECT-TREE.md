@@ -145,7 +145,6 @@ Cây thư mục chi tiết và tên tệp thực tế được trình bày trong
 ## 10. Tài liệu liên quan
 
 - [Danh mục tài liệu dự án](README.md)
-- [Cây thư mục dự án](PROJECT-TREE.md)
 - [Hướng dẫn quy ước API](API-CONTRACT-GUIDE.md)
 - [Thiết kế ERD](../database/01-erd.md)
 - [Database schema](../database/schema.sql)
