@@ -1,48 +1,70 @@
-# CollabSphere (COSRE) — Tài liệu chức năng
+# CollabSphere — Tài liệu dự án
 
-## 1. Mục đích
+## 1. Giới thiệu
 
-Thư mục `docs/` mô tả các chức năng chính của CollabSphere theo mục **6.1 — Major Features**. Tài liệu được chia thành FE1–FE12 để nhóm thống nhất yêu cầu trước khi triển khai frontend, backend và cơ sở dữ liệu.
+CollabSphere là hệ thống hỗ trợ việc học theo phương pháp Project-Based Learning (PBL). Phương pháp này giúp người học tiếp thu kiến thức thông qua quá trình thực hiện dự án, giải quyết vấn đề, làm việc nhóm và tạo ra sản phẩm học tập.
 
-## 2. Danh sách chức năng
+Hệ thống hướng đến việc hỗ trợ giảng viên tổ chức hoạt động học tập theo dự án và hỗ trợ sinh viên tham gia, cộng tác, theo dõi tiến độ và nộp kết quả. Các thông tin liên quan đến môn học, lớp học, dự án, nhóm, nhiệm vụ và đánh giá được tổ chức trên cùng một hệ thống.
 
-| Mã | Chức năng | Tài liệu |
-|---|---|---|
-| FE1 | Quản lý tài khoản và phân quyền | [`FE01-user-account-management.md`](FE01-user-account-management.md) |
-| FE2 | Quản lý môn học và đề cương | [`FE02-subject-syllabus-management.md`](FE02-subject-syllabus-management.md) |
-| FE3 | Quản lý lớp học | [`FE03-class-management.md`](FE03-class-management.md) |
-| FE4 | Quản lý dự án | [`FE04-project-management.md`](FE04-project-management.md) |
-| FE5 | Quản lý nhóm và không gian làm việc | [`FE05-team-workspace-management.md`](FE05-team-workspace-management.md) |
-| FE6 | Quản lý Milestone và Checkpoint | [`FE06-milestone-checkpoint-management.md`](FE06-milestone-checkpoint-management.md) |
-| FE7 | Giao tiếp và họp trực tuyến | [`FE07-communication-meetings.md`](FE07-communication-meetings.md) |
-| FE8 | Quản lý tài nguyên | [`FE08-resource-management.md`](FE08-resource-management.md) |
-| FE9 | Công cụ cộng tác thời gian thực | [`FE09-realtime-collaboration-tools.md`](FE09-realtime-collaboration-tools.md) |
-| FE10 | Đánh giá và phản hồi | [`FE10-assessment-feedback.md`](FE10-assessment-feedback.md) |
-| FE11 | Hỗ trợ bằng trí tuệ nhân tạo (AI) | [`FE11-ai-assistance.md`](FE11-ai-assistance.md) |
-| FE12 | Quản lý thông báo | [`FE12-notification-management.md`](FE12-notification-management.md) |
+Thư mục `docs/` lưu trữ tài liệu phân tích, thiết kế và mô tả chức năng của CollabSphere. Tài liệu giúp các thành viên trong nhóm thống nhất cách hiểu về yêu cầu trước khi triển khai giao diện, API và cơ sở dữ liệu.
 
-## 3. Cách đọc tài liệu
+## 2. Mục đích của thư mục docs
 
-Mỗi tài liệu chức năng gồm mục tiêu, vai trò, luồng nghiệp vụ, quy tắc chính, API dự kiến, ví dụ JSON và sơ đồ Mermaid. Các endpoint và payload trong tài liệu là **đề xuất hợp đồng API để nhóm thống nhất**, không khẳng định rằng chúng đã được cài đặt trong source code.
+Thư mục `docs/` được sử dụng để:
 
-## 4. Hiển thị và sử dụng trong VS Code/GitHub
+- Lưu trữ tài liệu tổng quan về dự án.
+- Mô tả các chức năng và yêu cầu nghiệp vụ của hệ thống.
+- Trình bày luồng xử lý chính của từng chức năng.
+- Làm rõ dữ liệu đầu vào, dữ liệu đầu ra và các quy tắc nghiệp vụ.
+- Làm cơ sở trao đổi giữa các thành viên phụ trách phân tích, thiết kế, frontend, backend và cơ sở dữ liệu.
+- Theo dõi và cập nhật tài liệu khi yêu cầu hoặc cách triển khai thay đổi.
 
-- Mở file `.md` trong VS Code và dùng **Markdown: Open Preview** (`Ctrl+Shift+V`) để xem định dạng.
-- Các khối `mermaid` hiển thị sơ đồ trong các nền tảng hỗ trợ Mermaid (GitHub hỗ trợ Mermaid trong Markdown).
-- Các khối `json`, `http` và `text` là ví dụ dữ liệu/hợp đồng để tham khảo khi viết code; Markdown tự nó không chạy backend hay frontend.
-- Trước khi code tích hợp, nhóm cần thống nhất tên endpoint, DTO, trạng thái và quyền truy cập.
+Tài liệu trong thư mục này không thay thế mã nguồn. Một chức năng chỉ được xem là đã triển khai khi có phần mã nguồn tương ứng và đã được kiểm tra theo yêu cầu.
 
-## 5. Phạm vi vai trò
+## 3. Danh mục tài liệu
 
-- **Admin:** xem tài khoản, vô hiệu hóa tài khoản, nhận báo cáo hệ thống.
-- **Staff:** quản lý môn học, syllabus, lớp và tài khoản Lecturer/Student; phân công người dùng vào lớp.
-- **Head Department:** xem project, duyệt/từ chối, cập nhật project đã duyệt và phân project cho lớp.
-- **Lecturer:** quản lý project, lớp/team được giao, milestone, checkpoint, tài nguyên, đánh giá, giao tiếp và công cụ cộng tác.
-- **Student:** tham gia team, làm task/checkpoint, quản lý tài nguyên, cộng tác, chat/họp và đánh giá đồng cấp theo quyền.
+| Tài liệu | Nội dung |
+|---|---|
+| `README.md` | Giới thiệu thư mục tài liệu và hướng dẫn tra cứu |
+| `PROJECT.md` | Tổng quan, mục tiêu, phạm vi và các thành phần của dự án |
+| `PROJECT-TREE.md` | Cây thư mục và vai trò của các thư mục, tệp chính |
+| `API-CONTRACT-GUIDE.md` | Quy ước mô tả API, request, response và lỗi |
+| Tài liệu FE01–FE12 | Mô tả yêu cầu và quy trình nghiệp vụ của các chức năng |
 
-## 6. Nguyên tắc
+Tên tệp và danh mục chức năng cần được cập nhật theo các tệp thực tế trong thư mục `docs/`.
 
-- Đọc tài liệu chức năng trước khi triển khai.
-- Không tự ý đổi tên entity/API sau khi nhóm đã thống nhất hợp đồng.
-- Không đưa mật khẩu, API key hoặc thông tin bí mật thật vào tài liệu hay Git.
-- Nếu một yêu cầu chưa được nêu trong đề tài, cần thống nhất với nhóm/giảng viên trước khi coi là yêu cầu chính thức.
+## 4. Cách tra cứu tài liệu
+
+Có thể tra cứu tài liệu theo nhu cầu:
+
+- Muốn tìm hiểu tổng quan dự án: đọc `PROJECT.md`.
+- Muốn xem cấu trúc thư mục: đọc `PROJECT-TREE.md`.
+- Muốn tìm hiểu một chức năng cụ thể: mở tài liệu FE tương ứng.
+- Muốn thống nhất cách mô tả API: đọc `API-CONTRACT-GUIDE.md`.
+- Muốn xem thiết kế dữ liệu: tham khảo tài liệu ERD và các tệp SQL trong thư mục `database/`.
+
+## 5. Quy ước khi cập nhật tài liệu
+
+Khi bổ sung hoặc chỉnh sửa tài liệu, cần tuân thủ các nguyên tắc sau:
+
+1. Sử dụng tên chức năng và thuật ngữ thống nhất trong toàn bộ dự án.
+2. Mô tả rõ mục tiêu, đối tượng sử dụng, dữ liệu đầu vào và kết quả đầu ra.
+3. Trình bày quy trình theo thứ tự xử lý thực tế.
+4. Nêu rõ các điều kiện hợp lệ, trường hợp lỗi và giới hạn của chức năng.
+5. Không ghi một chức năng là đã hoàn thành nếu chức năng đó mới chỉ có trong tài liệu.
+6. Khi thay đổi yêu cầu, cần cập nhật tài liệu liên quan để tránh mâu thuẫn.
+7. Đối với API, tên endpoint, phương thức HTTP và cấu trúc dữ liệu cần thống nhất với mã nguồn backend.
+8. Đối với cơ sở dữ liệu, tên bảng và cột trong tài liệu cần đối chiếu với ERD và schema SQL.
+
+## 6. Phạm vi tài liệu
+
+Tài liệu trong `docs/` tập trung vào yêu cầu và thiết kế hệ thống, bao gồm:
+
+- Mô tả bài toán và mục tiêu xây dựng hệ thống.
+- Đối tượng sử dụng và trách nhiệm của từng vai trò.
+- Các chức năng nghiệp vụ của hệ thống.
+- Quy trình xử lý chính và các trường hợp ngoại lệ.
+- Dữ liệu cần lưu trữ và mối quan hệ giữa các đối tượng.
+- Các quy tắc nghiệp vụ và yêu cầu bảo mật liên quan.
+
+Các hướng dẫn cài đặt, cấu hình và chạy ứng dụng cần được xây dựng dựa trên mã nguồn và cấu hình thực tế của từng thành phần.
