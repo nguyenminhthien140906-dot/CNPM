@@ -1,1 +1,21 @@
+from infrastructure.persistence import Persistence
 
+
+class UserRepository:
+    def __init__(self):
+        self.database = Persistence()
+
+    def create(self, username, email, role):
+        query = """
+            INSERT INTO users (username, email, role)
+            VALUES (?, ?, ?)
+        """
+
+        self.database.execute(
+            query, (username, email, role)
+        )
+
+        return "Thêm người dùng thành công!"
+
+    def get_all(self):
+        query = "SELECT * FROM users"
