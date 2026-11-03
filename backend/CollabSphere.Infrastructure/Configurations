@@ -1,1 +1,11 @@
-
+CollabSphere/
+│
+├── infrastructure/
+│   ├── __init__.py
+│   ├── configuration.py
+│   ├── migration.py
+│   ├── persistence.py
+│   ├── repository.py
+│   └── services.py
+│
+└── main.py
