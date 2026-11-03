@@ -1,11 +1,8 @@
-CollabSphere/
-│
-├── infrastructure/
-│   ├── __init__.py
-│   ├── configuration.py
-│   ├── migration.py
-│   ├── persistence.py
-│   ├── repository.py
-│   └── services.py
-│
-└── main.py
+class Configuration:
+    APP_NAME = "CollabSphere"
+    VERSION = "1.0.0"
+    DATABASE = "collabsphere.db"
+    DEBUG = True
+
+
+config = Configuration()
