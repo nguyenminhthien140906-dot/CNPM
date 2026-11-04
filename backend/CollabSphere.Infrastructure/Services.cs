@@ -1,31 +1,65 @@
-from infrastructure.repository import UserRepository
+using CollabSphere.Infrastructure.Entities;
+using CollabSphere.Infrastructure.Repositories;
 
+namespace CollabSphere.Infrastructure.Services;
 
-class UserService:
-    def __init__(self):
-        self.repository = UserRepository()
+public interface IUserService
+{
+    Task<IEnumerable<User>> GetAllUsersAsync();
 
-    def add_user(self, username, email, role):
-        if not username or not email:
-            return "Vui lòng nhập đầy đủ thông tin!"
+    Task<User?> GetUserByIdAsync(int id);
 
-        return self.repository.create(
-            username, email, role
-        )
+    Task CreateUserAsync(User user);
 
-    def show_users(self):
-        return self.repository.get_all()
+    Task UpdateUserAsync(User user);
 
-    def search_user(self, user_id):
-        return self.repository.get_by_id(user_id)
+    Task DeleteUserAsync(int id);
+}
 
-    def update_user(self, user_id, username, email, role):
-        if not username or not email:
-            return "Thông tin không được để trống!"
+public class UserService : IUserService
+{
+    private readonly IRepository<User> _repository;
 
-        return self.repository.update(
-            user_id, username, email, role
-        )
+    public UserService(IRepository<User> repository)
+    {
+        _repository = repository;
+    }
 
-    def delete_user(self, user_id):
-        return self.repository.delete(user_id)
+    public async Task<IEnumerable<User>> GetAllUsersAsync()
+    {
+        return await _repository.GetAllAsync();
+    }
+
+    public async Task<User?> GetUserByIdAsync(int id)
+    {
+        return await _repository.GetByIdAsync(id);
+    }
+
+    public async Task CreateUserAsync(User user)
+    {
+        await _repository.AddAsync(user);
+
+        await _repository.SaveChangesAsync();
+    }
+
+    public async Task UpdateUserAsync(User user)
+    {
+        _repository.Update(user);
+
+        await _repository.SaveChangesAsync();
+    }
+
+    public async Task DeleteUserAsync(int id)
+    {
+        var user = await _repository.GetByIdAsync(id);
+
+        if (user == null)
+        {
+            throw new Exception("Không tìm thấy người dùng!");
+        }
+
+        _repository.Delete(user);
+
+        await _repository.SaveChangesAsync();
+    }
+}
