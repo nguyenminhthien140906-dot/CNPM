@@ -115,6 +115,7 @@ erDiagram
     USERS ||--o{ DOCUMENT_VERSIONS : edits
 
     USERS ||--o{ EVALUATIONS : evaluates
+    SUBMISSIONS o|--o{ EVALUATIONS : receives
     PROJECTS o|--o{ EVALUATIONS : receives
     TEAMS o|--o{ EVALUATIONS : receives
     STUDENTS o|--o{ EVALUATIONS : receives
