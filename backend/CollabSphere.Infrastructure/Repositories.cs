@@ -1,46 +1,62 @@
-from infrastructure.persistence import Persistence
+using CollabSphere.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
+namespace CollabSphere.Infrastructure.Repositories;
 
-class UserRepository:
-    def __init__(self):
-        self.database = Persistence()
+public interface IRepository<T> where T : class
+{
+    Task<IEnumerable<T>> GetAllAsync();
 
-    def create(self, username, email, role):
-        query = """
-            INSERT INTO users (username, email, role)
-            VALUES (?, ?, ?)
-        """
+    Task<T?> GetByIdAsync(int id);
 
-        self.database.execute(
-            query, (username, email, role)
-        )
+    Task AddAsync(T entity);
 
-        return "Thêm người dùng thành công!"
+    void Update(T entity);
 
-    def get_all(self):
-        query = "SELECT * FROM users"
-        return self.database.execute(query)
+    void Delete(T entity);
 
-    def get_by_id(self, user_id):
-        query = "SELECT * FROM users WHERE id = ?"
-        return self.database.execute(query, (user_id,))
+    Task SaveChangesAsync();
+}
 
-    def update(self, user_id, username, email, role):
-        query = """
-            UPDATE users
-            SET username = ?, email = ?, role = ?
-            WHERE id = ?
-        """
+public class Repository<T> : IRepository<T> where T : class
+{
+    protected readonly ApplicationDbContext _context;
 
-        self.database.execute(
-            query, (username, email, role, user_id)
-        )
+    protected readonly DbSet<T> _dbSet;
 
-        return "Cập nhật người dùng thành công!"
+    public Repository(ApplicationDbContext context)
+    {
+        _context = context;
+        _dbSet = context.Set<T>();
+    }
 
-    def delete(self, user_id):
-        query = "DELETE FROM users WHERE id = ?"
+    public async Task<IEnumerable<T>> GetAllAsync()
+    {
+        return await _dbSet.ToListAsync();
+    }
 
-        self.database.execute(query, (user_id,))
+    public async Task<T?> GetByIdAsync(int id)
+    {
+        return await _dbSet.FindAsync(id);
+    }
 
-        return "Xóa người dùng thành công!"
+    public async Task AddAsync(T entity)
+    {
+        await _dbSet.AddAsync(entity);
+    }
+
+    public void Update(T entity)
+    {
+        _dbSet.Update(entity);
+    }
+
+    public void Delete(T entity)
+    {
+        _dbSet.Remove(entity);
+    }
+
+    public async Task SaveChangesAsync()
+    {
+        await _context.SaveChangesAsync();
+    }
+}
