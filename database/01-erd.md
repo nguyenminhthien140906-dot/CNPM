@@ -1,524 +1,622 @@
-# COLLABSPHERE - ENTITY RELATIONSHIP DIAGRAM (ERD)
+
+# 01. THIẾT KẾ CƠ SỞ DỮ LIỆU (ERD)
 
 ## 1. Giới thiệu
 
-CollabSphere là hệ thống hỗ trợ học tập theo phương pháp Project-Based Learning (PBL). Hệ thống cung cấp các chức năng quản lý môn học, lớp học, dự án, nhóm, công việc, tiến độ, trao đổi thông tin và đánh giá thành viên.
+CollabSphere là hệ thống hỗ trợ học tập theo phương pháp Project-Based Learning (PBL). Hệ thống cung cấp các chức năng quản lý tài khoản, môn học, lớp học, dự án, nhóm sinh viên, nhiệm vụ, tiến độ, nộp bài, trao đổi thông tin, không gian làm việc, đánh giá và hỗ trợ AI.
 
-Cơ sở dữ liệu được thiết kế bằng **MySQL 8.0**, sử dụng InnoDB để đảm bảo tính toàn vẹn dữ liệu và hỗ trợ các mối quan hệ giữa các bảng.
+Cơ sở dữ liệu sử dụng **MySQL 8.0** để lưu trữ và quản lý dữ liệu của hệ thống.
 
-## 2. Quy ước thiết kế
+Thiết kế cơ sở dữ liệu được chia thành các nhóm chức năng:
 
-| Ký hiệu | Ý nghĩa |
-|---|---|
-| PK | Primary Key - Khóa chính |
-| FK | Foreign Key - Khóa ngoại |
-| UK | Unique Key - Khóa duy nhất |
-| NN | Not Null - Không được để trống |
-| AI | Auto Increment - Tự động tăng |
+- Quản lý tài khoản và phân quyền.
+- Quản lý môn học và lớp học.
+- Quản lý dự án và nhóm.
+- Quản lý nhiệm vụ, tiến độ và bài nộp.
+- Quản lý không gian làm việc và trao đổi.
+- Quản lý cuộc họp và tài liệu.
+- Quản lý đánh giá, thông báo và AI.
 
-Các bảng sử dụng:
-- Character Set: `utf8mb4`
-- Collation: `utf8mb4_unicode_ci`
-- Storage Engine: `InnoDB`
-- Database: `collabsphere`
+---
 
-## 3. Danh sách thực thể và thuộc tính
+## 2. Danh sách các thực thể
 
-### 3.1. ROLES - Quản lý vai trò
+Cơ sở dữ liệu CollabSphere gồm 29 bảng:
 
-Lưu thông tin các vai trò trong hệ thống.
+| STT | Tên bảng | Chức năng |
+|---:|---|---|
+| 1 | roles | Lưu các vai trò trong hệ thống |
+| 2 | users | Lưu thông tin tài khoản người dùng |
+| 3 | students | Lưu thông tin riêng của sinh viên |
+| 4 | lecturers | Lưu thông tin riêng của giảng viên |
+| 5 | subjects | Quản lý môn học |
+| 6 | syllabi | Quản lý đề cương môn học |
+| 7 | study_classes | Quản lý lớp học |
+| 8 | class_students | Liên kết sinh viên với lớp học |
+| 9 | class_lecturers | Liên kết giảng viên với lớp học |
+| 10 | projects | Quản lý dự án PBL |
+| 11 | teams | Quản lý nhóm thực hiện dự án |
+| 12 | team_members | Quản lý thành viên trong nhóm |
+| 13 | milestones | Quản lý các mốc tiến độ |
+| 14 | checkpoints | Quản lý các điểm kiểm tra |
+| 15 | tasks | Quản lý nhiệm vụ |
+| 16 | task_assignees | Liên kết nhiệm vụ với người được giao |
+| 17 | submissions | Quản lý bài nộp |
+| 18 | resources | Quản lý tài liệu và tài nguyên |
+| 19 | meetings | Quản lý cuộc họp |
+| 20 | meeting_participants | Quản lý người tham gia cuộc họp |
+| 21 | messages | Quản lý tin nhắn trao đổi |
+| 22 | workspaces | Quản lý không gian làm việc nhóm |
+| 23 | whiteboard_snapshots | Lưu các bản chụp bảng trắng |
+| 24 | workspace_documents | Quản lý tài liệu trong không gian làm việc |
+| 25 | document_versions | Quản lý phiên bản tài liệu |
+| 26 | evaluations | Quản lý đánh giá |
+| 27 | notifications | Quản lý thông báo |
+| 28 | ai_conversations | Quản lý các cuộc hội thoại với AI |
+| 29 | ai_messages | Lưu nội dung tin nhắn trong hội thoại AI |
 
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
-|---|---|---|
-| role_id | BIGINT UNSIGNED | PK, AI |
-| role_code | VARCHAR(30) | UK, NN |
-| role_name | VARCHAR(100) | NN |
-| description | VARCHAR(255) | |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+---
 
-### 3.2. USERS - Quản lý tài khoản
+## 3. Sơ đồ ERD
 
-Lưu thông tin tài khoản của người dùng.
+```mermaid
+erDiagram
+    ROLES ||--o{ USERS : has
+    USERS ||--o| STUDENTS : profile
+    USERS ||--o| LECTURERS : profile
 
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
-|---|---|---|
-| user_id | BIGINT UNSIGNED | PK, AI |
-| role_id | BIGINT UNSIGNED | FK, NN |
-| username | VARCHAR(50) | UK, NN |
-| email | VARCHAR(150) | UK, NN |
-| password_hash | VARCHAR(255) | NN |
-| full_name | VARCHAR(150) | NN |
-| phone | VARCHAR(20) | |
-| avatar_url | VARCHAR(500) | |
-| is_active | BOOLEAN | DEFAULT TRUE |
-| last_login_at | DATETIME | |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
-| updated_at | TIMESTAMP | ON UPDATE CURRENT_TIMESTAMP |
+    SUBJECTS ||--o{ SYLLABI : has
+    SUBJECTS ||--o{ STUDY_CLASSES : has
 
-FK: `role_id` tham chiếu `roles(role_id)`.
+    STUDY_CLASSES ||--o{ CLASS_STUDENTS : includes
+    STUDENTS ||--o{ CLASS_STUDENTS : enrolls
 
-### 3.3. STUDENTS - Quản lý sinh viên
+    STUDY_CLASSES ||--o{ CLASS_LECTURERS : assigns
+    LECTURERS ||--o{ CLASS_LECTURERS : teaches
 
-Lưu thông tin bổ sung của sinh viên.
+    STUDY_CLASSES ||--o{ PROJECTS : contains
+    SYLLABI o|--o{ PROJECTS : guides
+    USERS ||--o{ PROJECTS : creates
+    USERS o|--o{ PROJECTS : approves
 
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
-|---|---|---|
-| student_id | BIGINT UNSIGNED | PK, AI |
-| user_id | BIGINT UNSIGNED | FK, UK, NN |
-| student_code | VARCHAR(30) | UK, NN |
-| department | VARCHAR(120) | |
-| cohort | VARCHAR(30) | |
+    PROJECTS ||--o{ TEAMS : has
+    STUDENTS o|--o{ TEAMS : leads
+    TEAMS ||--o{ TEAM_MEMBERS : includes
+    STUDENTS ||--o{ TEAM_MEMBERS : joins
 
-FK: `user_id` tham chiếu `users(user_id)`.
+    PROJECTS ||--o{ MILESTONES : has
+    MILESTONES ||--o{ CHECKPOINTS : contains
+    MILESTONES o|--o{ TASKS : organizes
 
-### 3.4. LECTURERS - Quản lý giảng viên
+    TEAMS ||--o{ TASKS : receives
+    TASKS ||--o{ TASK_ASSIGNEES : assigns
+    STUDENTS ||--o{ TASK_ASSIGNEES : receives
 
-Lưu thông tin bổ sung của giảng viên.
+    TASKS o|--o{ SUBMISSIONS : receives
+    CHECKPOINTS o|--o{ SUBMISSIONS : receives
+    STUDENTS ||--o{ SUBMISSIONS : submits
 
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
-|---|---|---|
-| lecturer_id | BIGINT UNSIGNED | PK, AI |
-| user_id | BIGINT UNSIGNED | FK, UK, NN |
-| lecturer_code | VARCHAR(30) | UK, NN |
-| department | VARCHAR(120) | |
-| academic_title | VARCHAR(80) | |
+    PROJECTS o|--o{ RESOURCES : contains
+    TEAMS o|--o{ RESOURCES : contains
+    USERS ||--o{ RESOURCES : uploads
 
-FK: `user_id` tham chiếu `users(user_id)`.
+    TEAMS ||--o{ MEETINGS : schedules
+    USERS ||--o{ MEETINGS : creates
+    MEETINGS ||--o{ MEETING_PARTICIPANTS : has
+    USERS ||--o{ MEETING_PARTICIPANTS : joins
 
-### 3.5. SUBJECTS - Quản lý môn học
+    TEAMS ||--o{ MESSAGES : has
+    USERS ||--o{ MESSAGES : sends
 
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
-|---|---|---|
-| subject_id | BIGINT UNSIGNED | PK, AI |
-| subject_code | VARCHAR(30) | UK, NN |
-| subject_name | VARCHAR(180) | NN |
-| description | TEXT | |
-| credit_count | TINYINT UNSIGNED | DEFAULT 0 |
-| is_active | BOOLEAN | DEFAULT TRUE |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+    TEAMS ||--o| WORKSPACES : owns
+    WORKSPACES ||--o{ WHITEBOARD_SNAPSHOTS : stores
+    WORKSPACES ||--o{ WORKSPACE_DOCUMENTS : contains
+    WORKSPACE_DOCUMENTS ||--o{ DOCUMENT_VERSIONS : has
+    USERS ||--o{ DOCUMENT_VERSIONS : edits
 
-### 3.6. SYLLABI - Quản lý đề cương môn học
+    USERS ||--o{ EVALUATIONS : evaluates
+    PROJECTS o|--o{ EVALUATIONS : receives
+    TEAMS o|--o{ EVALUATIONS : receives
+    STUDENTS o|--o{ EVALUATIONS : receives
 
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
-|---|---|---|
-| syllabus_id | BIGINT UNSIGNED | PK, AI |
-| subject_id | BIGINT UNSIGNED | FK, NN |
-| version | VARCHAR(30) | NN |
-| objectives | TEXT | |
-| content | LONGTEXT | |
-| learning_outcomes | TEXT | |
-| reference_materials | TEXT | |
-| file_url | VARCHAR(500) | |
-| created_by | BIGINT UNSIGNED | FK |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+    USERS ||--o{ NOTIFICATIONS : receives
 
-FK:
-- `subject_id` tham chiếu `subjects(subject_id)`.
-- `created_by` tham chiếu `users(user_id)`.
+    USERS ||--o{ AI_CONVERSATIONS : creates
+    AI_CONVERSATIONS ||--o{ AI_MESSAGES : contains
+```
 
-UK: `(subject_id, version)`.
+**Chú thích:**
 
-### 3.7. STUDY_CLASSES - Quản lý lớp học
+- `||`: Một bản ghi bắt buộc.
+- `o|`: Không hoặc một bản ghi.
+- `o{`: Không hoặc nhiều bản ghi.
+- `|{`: Một hoặc nhiều bản ghi.
+- Các bảng trung gian dùng để quản lý quan hệ nhiều - nhiều giữa các thực thể.
 
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
-|---|---|---|
-| class_id | BIGINT UNSIGNED | PK, AI |
-| subject_id | BIGINT UNSIGNED | FK, NN |
-| class_code | VARCHAR(40) | UK, NN |
-| class_name | VARCHAR(150) | NN |
-| semester | VARCHAR(30) | |
-| academic_year | VARCHAR(20) | |
-| capacity | SMALLINT UNSIGNED | |
-| schedule | VARCHAR(255) | |
-| room | VARCHAR(80) | |
-| status | ENUM | DEFAULT 'planned' |
-| created_by | BIGINT UNSIGNED | FK |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
-| updated_at | TIMESTAMP | ON UPDATE CURRENT_TIMESTAMP |
+---
 
-FK:
-- `subject_id` tham chiếu `subjects(subject_id)`.
-- `created_by` tham chiếu `users(user_id)`.
+## 4. Chi tiết các bảng và thuộc tính
 
-### 3.8. CLASS_STUDENTS - Sinh viên thuộc lớp học
+### 4.1. roles - Vai trò người dùng
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc |
 |---|---|---|
-| class_id | BIGINT UNSIGNED | PK, FK |
-| student_id | BIGINT UNSIGNED | PK, FK |
-| joined_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
-| status | ENUM | DEFAULT 'enrolled' |
+| role_id | BIGINT UNSIGNED | PK |
+| role_code | VARCHAR(30) | UNIQUE, NOT NULL |
+| role_name | VARCHAR(100) | NOT NULL |
+| description | TEXT | NULL |
+| created_at | TIMESTAMP | NOT NULL |
 
-FK:
-- `class_id` tham chiếu `study_classes(class_id)`.
-- `student_id` tham chiếu `students(student_id)`.
+Chức năng: Lưu các vai trò như Admin, Head, Staff, Lecturer và Student.
 
-PK kép: `(class_id, student_id)`.
-
-### 3.9. CLASS_LECTURERS - Giảng viên phụ trách lớp
+### 4.2. users - Tài khoản người dùng
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc |
 |---|---|---|
-| class_id | BIGINT UNSIGNED | PK, FK |
-| lecturer_id | BIGINT UNSIGNED | PK, FK |
-| is_primary | BOOLEAN | DEFAULT FALSE |
-| assigned_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+| user_id | BIGINT UNSIGNED | PK |
+| role_id | BIGINT UNSIGNED | FK → roles.role_id |
+| username | VARCHAR(50) | UNIQUE, NOT NULL |
+| email | VARCHAR(255) | UNIQUE, NOT NULL |
+| password_hash | VARCHAR(255) | NOT NULL |
+| full_name | VARCHAR(150) | NOT NULL |
+| avatar_url | VARCHAR(500) | NULL |
+| phone | VARCHAR(20) | NULL |
+| is_active | BOOLEAN | NOT NULL |
+| created_at | TIMESTAMP | NOT NULL |
+| updated_at | TIMESTAMP | NOT NULL |
 
-FK:
-- `class_id` tham chiếu `study_classes(class_id)`.
-- `lecturer_id` tham chiếu `lecturers(lecturer_id)`.
+Chức năng: Lưu thông tin tài khoản và liên kết tài khoản với vai trò tương ứng.
 
-### 3.10. PROJECTS - Quản lý dự án
-
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
-|---|---|---|
-| project_id | BIGINT UNSIGNED | PK, AI |
-| class_id | BIGINT UNSIGNED | FK, NN |
-| created_by | BIGINT UNSIGNED | FK, NN |
-| title | VARCHAR(200) | NN |
-| description | TEXT | NN |
-| objectives | TEXT | NN |
-| requirements | TEXT | |
-| acceptance_criteria | TEXT | |
-| start_date | DATE | NN |
-| due_date | DATE | NN |
-| min_group_size | TINYINT UNSIGNED | DEFAULT 1 |
-| max_group_size | TINYINT UNSIGNED | DEFAULT 6 |
-| status | ENUM | DEFAULT 'draft' |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
-| updated_at | TIMESTAMP | ON UPDATE CURRENT_TIMESTAMP |
-
-FK:
-- `class_id` tham chiếu `study_classes(class_id)`.
-- `created_by` tham chiếu `users(user_id)`.
-
-### 3.11. TEAMS - Quản lý nhóm
+### 4.3. students - Sinh viên
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc |
 |---|---|---|
-| team_id | BIGINT UNSIGNED | PK, AI |
-| project_id | BIGINT UNSIGNED | FK, NN |
-| team_name | VARCHAR(120) | NN |
-| team_code | VARCHAR(30) | |
-| leader_student_id | BIGINT UNSIGNED | FK |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+| student_id | BIGINT UNSIGNED | PK |
+| user_id | BIGINT UNSIGNED | FK → users.user_id, UNIQUE |
+| student_code | VARCHAR(30) | UNIQUE, NOT NULL |
 
-FK:
-- `project_id` tham chiếu `projects(project_id)`.
-- `leader_student_id` tham chiếu `students(student_id)`.
+Chức năng: Lưu thông tin riêng của sinh viên, liên kết với tài khoản người dùng.
 
-UK: `(project_id, team_name)`.
-
-### 3.12. TEAM_MEMBERS - Thành viên nhóm
+### 4.4. lecturers - Giảng viên
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc |
 |---|---|---|
-| team_id | BIGINT UNSIGNED | PK, FK |
-| student_id | BIGINT UNSIGNED | PK, FK |
-| member_role | ENUM | DEFAULT 'member' |
-| joined_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+| lecturer_id | BIGINT UNSIGNED | PK |
+| user_id | BIGINT UNSIGNED | FK → users.user_id, UNIQUE |
+| lecturer_code | VARCHAR(30) | UNIQUE, NOT NULL |
 
-FK:
-- `team_id` tham chiếu `teams(team_id)`.
-- `student_id` tham chiếu `students(student_id)`.
+Chức năng: Lưu thông tin riêng của giảng viên.
 
-### 3.13. MILESTONES - Các giai đoạn dự án
+### 4.5. subjects - Môn học
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc |
 |---|---|---|
-| milestone_id | BIGINT UNSIGNED | PK, AI |
-| project_id | BIGINT UNSIGNED | FK, NN |
-| title | VARCHAR(180) | NN |
-| description | TEXT | |
-| start_date | DATE | |
-| due_date | DATE | NN |
-| sequence_no | SMALLINT UNSIGNED | DEFAULT 1 |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+| subject_id | BIGINT UNSIGNED | PK |
+| subject_code | VARCHAR(30) | UNIQUE, NOT NULL |
+| subject_name | VARCHAR(150) | NOT NULL |
+| description | TEXT | NULL |
+| created_at | TIMESTAMP | NOT NULL |
 
-FK: `project_id` tham chiếu `projects(project_id)`.
+Chức năng: Quản lý danh sách môn học được tổ chức trong hệ thống.
 
-UK: `(project_id, sequence_no)`.
-
-### 3.14. CHECKPOINTS - Các mốc kiểm tra
+### 4.6. syllabi - Đề cương môn học
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc |
 |---|---|---|
-| checkpoint_id | BIGINT UNSIGNED | PK, AI |
-| milestone_id | BIGINT UNSIGNED | FK, NN |
-| title | VARCHAR(180) | NN |
-| instructions | TEXT | |
-| due_date | DATETIME | |
-| max_score | DECIMAL(5,2) | DEFAULT 10.00 |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+| syllabus_id | BIGINT UNSIGNED | PK |
+| subject_id | BIGINT UNSIGNED | FK → subjects.subject_id |
+| version | VARCHAR(30) | NOT NULL |
+| title | VARCHAR(200) | NOT NULL |
+| content | TEXT | NULL |
+| created_at | TIMESTAMP | NOT NULL |
 
-FK: `milestone_id` tham chiếu `milestones(milestone_id)`.
+Chức năng: Lưu nội dung và các phiên bản đề cương của môn học.
 
-### 3.15. TASKS - Quản lý công việc
+Ràng buộc: Cặp `subject_id` và `version` phải duy nhất.
 
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
-|---|---|---|
-| task_id | BIGINT UNSIGNED | PK, AI |
-| team_id | BIGINT UNSIGNED | FK, NN |
-| checkpoint_id | BIGINT UNSIGNED | FK |
-| created_by | BIGINT UNSIGNED | FK |
-| title | VARCHAR(180) | NN |
-| description | TEXT | |
-| status | ENUM | DEFAULT 'to_do' |
-| priority | ENUM | DEFAULT 'medium' |
-| start_date | DATETIME | |
-| deadline | DATETIME | |
-| completed_at | DATETIME | |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
-| updated_at | TIMESTAMP | ON UPDATE CURRENT_TIMESTAMP |
-
-FK:
-- `team_id` tham chiếu `teams(team_id)`.
-- `checkpoint_id` tham chiếu `checkpoints(checkpoint_id)`.
-- `created_by` tham chiếu `users(user_id)`.
-
-### 3.16. TASK_ASSIGNEES - Phân công công việc
+### 4.7. study_classes - Lớp học
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc |
 |---|---|---|
-| task_id | BIGINT UNSIGNED | PK, FK |
-| student_id | BIGINT UNSIGNED | PK, FK |
-| assigned_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+| class_id | BIGINT UNSIGNED | PK |
+| subject_id | BIGINT UNSIGNED | FK → subjects.subject_id |
+| class_code | VARCHAR(30) | UNIQUE, NOT NULL |
+| class_name | VARCHAR(150) | NOT NULL |
+| semester | VARCHAR(30) | NULL |
+| academic_year | VARCHAR(20) | NULL |
+| capacity | INT UNSIGNED | NULL |
+| status | ENUM | NOT NULL |
+| created_at | TIMESTAMP | NOT NULL |
 
-FK:
-- `task_id` tham chiếu `tasks(task_id)`.
-- `student_id` tham chiếu `students(student_id)`.
+Chức năng: Quản lý các lớp học thuộc từng môn học.
 
-### 3.17. SUBMISSIONS - Bài nộp
-
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
-|---|---|---|
-| submission_id | BIGINT UNSIGNED | PK, AI |
-| checkpoint_id | BIGINT UNSIGNED | FK, NN |
-| team_id | BIGINT UNSIGNED | FK, NN |
-| submitted_by | BIGINT UNSIGNED | FK, NN |
-| content | TEXT | |
-| file_url | VARCHAR(500) | |
-| submitted_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
-| status | ENUM | DEFAULT 'submitted' |
-| feedback | TEXT | |
-| score | DECIMAL(5,2) | |
-
-FK:
-- `checkpoint_id` tham chiếu `checkpoints(checkpoint_id)`.
-- `team_id` tham chiếu `teams(team_id)`.
-- `submitted_by` tham chiếu `users(user_id)`.
-
-### 3.18. RESOURCES - Tài nguyên dự án
+### 4.8. class_students - Sinh viên thuộc lớp
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc |
 |---|---|---|
-| resource_id | BIGINT UNSIGNED | PK, AI |
-| team_id | BIGINT UNSIGNED | FK |
-| project_id | BIGINT UNSIGNED | FK |
-| uploaded_by | BIGINT UNSIGNED | FK, NN |
-| resource_name | VARCHAR(180) | NN |
-| file_url | VARCHAR(500) | NN |
-| file_type | VARCHAR(80) | |
-| file_size | BIGINT UNSIGNED | |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+| class_id | BIGINT UNSIGNED | PK, FK → study_classes.class_id |
+| student_id | BIGINT UNSIGNED | PK, FK → students.student_id |
+| enrolled_at | TIMESTAMP | NOT NULL |
 
-### 3.19. MEETINGS - Quản lý cuộc họp
+Chức năng: Liên kết sinh viên với lớp học.
+
+Khóa chính kép gồm `class_id` và `student_id`, tránh việc một sinh viên được thêm trùng vào cùng một lớp.
+
+### 4.9. class_lecturers - Giảng viên phụ trách lớp
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc |
 |---|---|---|
-| meeting_id | BIGINT UNSIGNED | PK, AI |
-| team_id | BIGINT UNSIGNED | FK, NN |
-| created_by | BIGINT UNSIGNED | FK, NN |
-| title | VARCHAR(180) | NN |
-| meeting_url | VARCHAR(500) | |
-| start_at | DATETIME | NN |
-| end_at | DATETIME | |
-| status | ENUM | DEFAULT 'scheduled' |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+| class_id | BIGINT UNSIGNED | PK, FK → study_classes.class_id |
+| lecturer_id | BIGINT UNSIGNED | PK, FK → lecturers.lecturer_id |
+| assignment_role | VARCHAR(50) | NOT NULL |
+| assigned_at | TIMESTAMP | NOT NULL |
 
-### 3.20. MEETING_PARTICIPANTS - Người tham gia cuộc họp
+Chức năng: Quản lý giảng viên được phân công phụ trách các lớp học.
+
+### 4.10. projects - Dự án PBL
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc |
 |---|---|---|
-| meeting_id | BIGINT UNSIGNED | PK, FK |
-| user_id | BIGINT UNSIGNED | PK, FK |
-| joined_at | DATETIME | |
-| left_at | DATETIME | |
+| project_id | BIGINT UNSIGNED | PK |
+| class_id | BIGINT UNSIGNED | FK → study_classes.class_id |
+| syllabus_id | BIGINT UNSIGNED | FK → syllabi.syllabus_id, NULL |
+| created_by | BIGINT UNSIGNED | FK → users.user_id |
+| title | VARCHAR(200) | NOT NULL |
+| description | TEXT | NULL |
+| goals | TEXT | NULL |
+| expected_outputs | TEXT | NULL |
+| requirements | TEXT | NULL |
+| start_date | DATE | NULL |
+| due_date | DATE | NULL |
+| min_group_size | INT UNSIGNED | NOT NULL |
+| max_group_size | INT UNSIGNED | NOT NULL |
+| status | ENUM | NOT NULL |
+| approved_by | BIGINT UNSIGNED | FK → users.user_id, NULL |
+| approved_at | DATETIME | NULL |
+| created_at | TIMESTAMP | NOT NULL |
+| updated_at | TIMESTAMP | NOT NULL |
 
-### 3.21. MESSAGES - Tin nhắn nhóm
+Chức năng: Quản lý thông tin dự án PBL được tạo trong lớp học.
 
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
-|---|---|---|
-| message_id | BIGINT UNSIGNED | PK, AI |
-| team_id | BIGINT UNSIGNED | FK, NN |
-| sender_id | BIGINT UNSIGNED | FK, NN |
-| message_content | TEXT | NN |
-| sent_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
-| edited_at | DATETIME | |
-| is_deleted | BOOLEAN | DEFAULT FALSE |
-
-### 3.22. WORKSPACES - Không gian làm việc
-
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
-|---|---|---|
-| workspace_id | BIGINT UNSIGNED | PK, AI |
-| team_id | BIGINT UNSIGNED | FK, UK, NN |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
-| updated_at | TIMESTAMP | ON UPDATE CURRENT_TIMESTAMP |
-
-### 3.23. WHITEBOARD_SNAPSHOTS - Dữ liệu bảng trắng
+### 4.11. teams - Nhóm dự án
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc |
 |---|---|---|
-| snapshot_id | BIGINT UNSIGNED | PK, AI |
-| workspace_id | BIGINT UNSIGNED | FK, NN |
-| created_by | BIGINT UNSIGNED | FK |
-| snapshot_data | JSON | NN |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+| team_id | BIGINT UNSIGNED | PK |
+| project_id | BIGINT UNSIGNED | FK → projects.project_id |
+| team_name | VARCHAR(100) | NOT NULL |
+| leader_student_id | BIGINT UNSIGNED | FK → students.student_id, NULL |
+| description | TEXT | NULL |
+| created_at | TIMESTAMP | NOT NULL |
 
-### 3.24. WORKSPACE_DOCUMENTS - Tài liệu làm việc chung
+Chức năng: Quản lý các nhóm sinh viên tham gia thực hiện dự án.
 
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
-|---|---|---|
-| document_id | BIGINT UNSIGNED | PK, AI |
-| workspace_id | BIGINT UNSIGNED | FK, NN |
-| created_by | BIGINT UNSIGNED | FK |
-| title | VARCHAR(180) | NN |
-| content | LONGTEXT | |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
-| updated_at | TIMESTAMP | ON UPDATE CURRENT_TIMESTAMP |
-
-### 3.25. DOCUMENT_VERSIONS - Lịch sử tài liệu
+### 4.12. team_members - Thành viên nhóm
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc |
 |---|---|---|
-| version_id | BIGINT UNSIGNED | PK, AI |
-| document_id | BIGINT UNSIGNED | FK, NN |
-| edited_by | BIGINT UNSIGNED | FK |
-| content | LONGTEXT | NN |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+| team_id | BIGINT UNSIGNED | PK, FK → teams.team_id |
+| student_id | BIGINT UNSIGNED | PK, FK → students.student_id |
+| joined_at | TIMESTAMP | NOT NULL |
 
-### 3.26. EVALUATIONS - Đánh giá
+Chức năng: Quản lý danh sách sinh viên trong từng nhóm.
 
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
-|---|---|---|
-| evaluation_id | BIGINT UNSIGNED | PK, AI |
-| evaluator_id | BIGINT UNSIGNED | FK, NN |
-| target_student_id | BIGINT UNSIGNED | FK |
-| team_id | BIGINT UNSIGNED | FK |
-| project_id | BIGINT UNSIGNED | FK |
-| evaluation_type | ENUM | NN |
-| score | DECIMAL(4,2) | NN |
-| comment | TEXT | |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+Khóa chính kép gồm `team_id` và `student_id`.
 
-Điểm đánh giá phải nằm trong khoảng từ 0 đến 10.
-
-### 3.27. NOTIFICATIONS - Thông báo
+### 4.13. milestones - Mốc tiến độ
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc |
 |---|---|---|
-| notification_id | BIGINT UNSIGNED | PK, AI |
-| user_id | BIGINT UNSIGNED | FK, NN |
-| title | VARCHAR(180) | NN |
-| content | TEXT | NN |
-| notification_type | VARCHAR(50) | NN |
-| related_type | VARCHAR(50) | |
-| related_id | BIGINT UNSIGNED | |
-| is_read | BOOLEAN | DEFAULT FALSE |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+| milestone_id | BIGINT UNSIGNED | PK |
+| project_id | BIGINT UNSIGNED | FK → projects.project_id |
+| title | VARCHAR(200) | NOT NULL |
+| description | TEXT | NULL |
+| due_date | DATE | NULL |
+| sort_order | INT UNSIGNED | NOT NULL |
+| status | ENUM | NOT NULL |
+| created_at | TIMESTAMP | NOT NULL |
 
-### 3.28. AI_CONVERSATIONS - Cuộc trò chuyện AI
+Chức năng: Chia dự án thành các mốc tiến độ để giảng viên và sinh viên theo dõi quá trình thực hiện.
 
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
-|---|---|---|
-| conversation_id | BIGINT UNSIGNED | PK, AI |
-| user_id | BIGINT UNSIGNED | FK, NN |
-| title | VARCHAR(180) | |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
-
-### 3.29. AI_MESSAGES - Tin nhắn AI
+### 4.14. checkpoints - Điểm kiểm tra tiến độ
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc |
 |---|---|---|
-| ai_message_id | BIGINT UNSIGNED | PK, AI |
-| conversation_id | BIGINT UNSIGNED | FK, NN |
-| sender_type | ENUM | NN |
-| content | LONGTEXT | NN |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+| checkpoint_id | BIGINT UNSIGNED | PK |
+| milestone_id | BIGINT UNSIGNED | FK → milestones.milestone_id |
+| title | VARCHAR(200) | NOT NULL |
+| description | TEXT | NULL |
+| due_date | DATETIME | NULL |
+| max_score | DECIMAL(5,2) | NOT NULL |
+| status | ENUM | NOT NULL |
+| created_at | TIMESTAMP | NOT NULL |
 
-## 4. Mối quan hệ giữa các thực thể
+Chức năng: Quản lý các điểm kiểm tra hoặc yêu cầu nộp sản phẩm theo từng mốc tiến độ.
 
-| STT | Thực thể thứ nhất | Quan hệ | Thực thể thứ hai |
-|---|---|---|---|
-| 1 | roles | 1-N | users |
-| 2 | users | 1-0..1 | students |
-| 3 | users | 1-0..1 | lecturers |
-| 4 | subjects | 1-N | syllabi |
-| 5 | subjects | 1-N | study_classes |
-| 6 | study_classes | N-N | students |
-| 7 | study_classes | N-N | lecturers |
-| 8 | study_classes | 1-N | projects |
-| 9 | projects | 1-N | teams |
-| 10 | projects | 1-N | milestones |
-| 11 | teams | N-N | students |
-| 12 | milestones | 1-N | checkpoints |
-| 13 | teams | 1-N | tasks |
-| 14 | tasks | N-N | students |
-| 15 | checkpoints | 1-N | submissions |
-| 16 | teams | 1-N | submissions |
-| 17 | teams | 1-N | resources |
-| 18 | teams | 1-N | meetings |
-| 19 | meetings | N-N | users |
-| 20 | teams | 1-N | messages |
-| 21 | teams | 1-1 | workspaces |
-| 22 | workspaces | 1-N | whiteboard_snapshots |
-| 23 | workspaces | 1-N | workspace_documents |
-| 24 | workspace_documents | 1-N | document_versions |
-| 25 | users | 1-N | notifications |
-| 26 | users | 1-N | ai_conversations |
-| 27 | ai_conversations | 1-N | ai_messages |
+### 4.15. tasks - Nhiệm vụ
 
-## 5. Các ràng buộc dữ liệu
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
+|---|---|---|
+| task_id | BIGINT UNSIGNED | PK |
+| team_id | BIGINT UNSIGNED | FK → teams.team_id |
+| milestone_id | BIGINT UNSIGNED | FK → milestones.milestone_id, NULL |
+| title | VARCHAR(200) | NOT NULL |
+| description | TEXT | NULL |
+| deadline | DATETIME | NULL |
+| status | ENUM | NOT NULL |
+| priority | ENUM | NOT NULL |
+| created_at | TIMESTAMP | NOT NULL |
+| updated_at | TIMESTAMP | NOT NULL |
 
-### 5.1. Primary Key
-Mỗi bảng có khóa chính để xác định duy nhất từng bản ghi.
+Chức năng: Quản lý các công việc cần thực hiện trong từng nhóm.
 
-### 5.2. Foreign Key
-Các khóa ngoại đảm bảo dữ liệu giữa những bảng liên quan luôn nhất quán.
+### 4.16. task_assignees - Người được giao nhiệm vụ
 
-### 5.3. Unique
-Các trường cần duy nhất gồm:
-- users.username
-- users.email
-- students.student_code
-- lecturers.lecturer_code
-- subjects.subject_code
-- study_classes.class_code
-- teams (project_id, team_name)
-- syllabi (subject_id, version)
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
+|---|---|---|
+| task_id | BIGINT UNSIGNED | PK, FK → tasks.task_id |
+| student_id | BIGINT UNSIGNED | PK, FK → students.student_id |
+| assigned_at | TIMESTAMP | NOT NULL |
 
-### 5.4. Not Null
-Các thuộc tính quan trọng như tên người dùng, email, mật khẩu, tên dự án, tên nhóm và nội dung công việc không được để trống.
+Chức năng: Liên kết nhiệm vụ với một hoặc nhiều sinh viên được giao thực hiện.
 
-### 5.5. Check Constraint
-- Ngày kết thúc dự án phải lớn hơn hoặc bằng ngày bắt đầu.
-- Điểm đánh giá nằm trong khoảng 0 đến 10.
-- Điểm bài nộp không được âm.
+Khóa chính kép gồm `task_id` và `student_id`.
 
-## 6. Quy tắc xóa dữ liệu
+### 4.17. submissions - Bài nộp
 
-- Khi xóa tài khoản, hồ sơ sinh viên hoặc giảng viên tương ứng được xóa theo.
-- Khi xóa lớp học, các bản ghi sinh viên và giảng viên tham gia lớp được xóa theo.
-- Khi xóa dự án, nhóm và các giai đoạn của dự án được xóa theo.
-- Khi xóa nhóm, thành viên, công việc và workspace liên quan được xóa theo.
-- Khi xóa tài liệu, lịch sử phiên bản liên quan được xóa theo.
-- Các bản ghi có người tạo bị xóa sẽ được giữ lại với trường người tạo bằng NULL nếu có thiết kế ON DELETE SET NULL.
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
+|---|---|---|
+| submission_id | BIGINT UNSIGNED | PK |
+| task_id | BIGINT UNSIGNED | FK → tasks.task_id, NULL |
+| checkpoint_id | BIGINT UNSIGNED | FK → checkpoints.checkpoint_id, NULL |
+| team_id | BIGINT UNSIGNED | FK → teams.team_id |
+| submitted_by | BIGINT UNSIGNED | FK → students.student_id |
+| content | TEXT | NULL |
+| file_url | VARCHAR(1000) | NULL |
+| score | DECIMAL(5,2) | NULL |
+| feedback | TEXT | NULL |
+| submitted_at | TIMESTAMP | NOT NULL |
 
-## 7. Kết luận
+Chức năng: Lưu bài nộp của sinh viên hoặc nhóm cho nhiệm vụ và checkpoint.
 
-Cơ sở dữ liệu CollabSphere gồm 29 thực thể, đáp ứng các nghiệp vụ chính của hệ thống học tập theo Project-Based Learning.
+Quy tắc: Mỗi bài nộp phải thuộc một nhiệm vụ hoặc một checkpoint. Không nên để cả hai trường `task_id` và `checkpoint_id` cùng NULL.
 
-Thiết kế hỗ trợ quản lý tài khoản, phân quyền, môn học, lớp học, dự án, nhóm, công việc, checkpoint, bài nộp, họp nhóm, giao tiếp, workspace, đánh giá và AI.
+### 4.18. resources - Tài liệu và tài nguyên
 
-Cấu trúc có thể được mở rộng khi hệ thống phát triển thêm các chức năng mới.
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
+|---|---|---|
+| resource_id | BIGINT UNSIGNED | PK |
+| project_id | BIGINT UNSIGNED | FK → projects.project_id, NULL |
+| team_id | BIGINT UNSIGNED | FK → teams.team_id, NULL |
+| uploaded_by | BIGINT UNSIGNED | FK → users.user_id |
+| title | VARCHAR(200) | NOT NULL |
+| resource_url | VARCHAR(1000) | NOT NULL |
+| resource_type | VARCHAR(50) | NULL |
+| created_at | TIMESTAMP | NOT NULL |
+
+Chức năng: Lưu đường dẫn tài liệu, tệp tin và tài nguyên phục vụ dự án hoặc nhóm.
+
+Quy tắc nghiệp vụ: Cần xác định tài liệu thuộc dự án hay nhóm, tránh trường hợp không có đối tượng sở hữu hoặc đồng thời thuộc cả hai nếu hệ thống không cho phép.
+
+### 4.19. meetings - Cuộc họp
+
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
+|---|---|---|
+| meeting_id | BIGINT UNSIGNED | PK |
+| team_id | BIGINT UNSIGNED | FK → teams.team_id |
+| created_by | BIGINT UNSIGNED | FK → users.user_id |
+| title | VARCHAR(200) | NOT NULL |
+| description | TEXT | NULL |
+| meeting_url | VARCHAR(500) | NULL |
+| starts_at | DATETIME | NOT NULL |
+| ends_at | DATETIME | NULL |
+| created_at | TIMESTAMP | NOT NULL |
+
+Chức năng: Quản lý lịch họp và thông tin cuộc họp của nhóm.
+
+### 4.20. meeting_participants - Người tham gia cuộc họp
+
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
+|---|---|---|
+| meeting_id | BIGINT UNSIGNED | PK, FK → meetings.meeting_id |
+| user_id | BIGINT UNSIGNED | PK, FK → users.user_id |
+| joined_at | DATETIME | NULL |
+| attendance_status | ENUM | NOT NULL |
+
+Chức năng: Lưu danh sách người tham gia và trạng thái tham dự cuộc họp.
+
+### 4.21. messages - Tin nhắn
+
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
+|---|---|---|
+| message_id | BIGINT UNSIGNED | PK |
+| team_id | BIGINT UNSIGNED | FK → teams.team_id |
+| sender_id | BIGINT UNSIGNED | FK → users.user_id |
+| content | TEXT | NOT NULL |
+| message_type | ENUM | NOT NULL |
+| created_at | TIMESTAMP | NOT NULL |
+| updated_at | TIMESTAMP | NOT NULL |
+
+Chức năng: Lưu nội dung trao đổi giữa các thành viên trong nhóm.
+
+### 4.22. workspaces - Không gian làm việc
+
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
+|---|---|---|
+| workspace_id | BIGINT UNSIGNED | PK |
+| team_id | BIGINT UNSIGNED | FK → teams.team_id, UNIQUE |
+| created_at | TIMESTAMP | NOT NULL |
+| updated_at | TIMESTAMP | NOT NULL |
+
+Chức năng: Quản lý không gian làm việc chung của từng nhóm. Mỗi nhóm có tối đa một workspace.
+
+### 4.23. whiteboard_snapshots - Bản lưu bảng trắng
+
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
+|---|---|---|
+| snapshot_id | BIGINT UNSIGNED | PK |
+| workspace_id | BIGINT UNSIGNED | FK → workspaces.workspace_id |
+| created_by | BIGINT UNSIGNED | FK → users.user_id |
+| snapshot_data | JSON | NOT NULL |
+| created_at | TIMESTAMP | NOT NULL |
+
+Chức năng: Lưu dữ liệu hoặc ảnh chụp trạng thái bảng trắng của nhóm.
+
+### 4.24. workspace_documents - Tài liệu không gian làm việc
+
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
+|---|---|---|
+| document_id | BIGINT UNSIGNED | PK |
+| workspace_id | BIGINT UNSIGNED | FK → workspaces.workspace_id |
+| created_by | BIGINT UNSIGNED | FK → users.user_id |
+| title | VARCHAR(200) | NOT NULL |
+| content | LONGTEXT | NULL |
+| created_at | TIMESTAMP | NOT NULL |
+| updated_at | TIMESTAMP | NOT NULL |
+
+Chức năng: Quản lý tài liệu dùng chung trong workspace của nhóm.
+
+### 4.25. document_versions - Phiên bản tài liệu
+
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
+|---|---|---|
+| version_id | BIGINT UNSIGNED | PK |
+| document_id | BIGINT UNSIGNED | FK → workspace_documents.document_id |
+| edited_by | BIGINT UNSIGNED | FK → users.user_id |
+| version_number | INT UNSIGNED | NOT NULL |
+| content | LONGTEXT | NULL |
+| created_at | TIMESTAMP | NOT NULL |
+
+Chức năng: Lưu lịch sử chỉnh sửa và các phiên bản trước đó của tài liệu.
+
+### 4.26. evaluations - Đánh giá
+
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
+|---|---|---|
+| evaluation_id | BIGINT UNSIGNED | PK |
+| evaluator_user_id | BIGINT UNSIGNED | FK → users.user_id |
+| project_id | BIGINT UNSIGNED | FK → projects.project_id, NULL |
+| team_id | BIGINT UNSIGNED | FK → teams.team_id, NULL |
+| student_id | BIGINT UNSIGNED | FK → students.student_id, NULL |
+| evaluation_type | ENUM | NOT NULL |
+| score | DECIMAL(5,2) | NOT NULL |
+| comment | TEXT | NULL |
+| created_at | TIMESTAMP | NOT NULL |
+
+Chức năng: Lưu kết quả đánh giá dự án, nhóm hoặc cá nhân.
+
+Quy tắc nghiệp vụ: Cần xác định đối tượng được đánh giá theo `evaluation_type` và bảo đảm chỉ chọn đúng đối tượng tương ứng.
+
+### 4.27. notifications - Thông báo
+
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
+|---|---|---|
+| notification_id | BIGINT UNSIGNED | PK |
+| user_id | BIGINT UNSIGNED | FK → users.user_id |
+| title | VARCHAR(200) | NOT NULL |
+| message | TEXT | NOT NULL |
+| is_read | BOOLEAN | NOT NULL |
+| created_at | TIMESTAMP | NOT NULL |
+
+Chức năng: Lưu thông báo gửi đến từng người dùng, ví dụ thông báo nhiệm vụ mới, deadline và kết quả đánh giá.
+
+### 4.28. ai_conversations - Cuộc hội thoại AI
+
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
+|---|---|---|
+| conversation_id | BIGINT UNSIGNED | PK |
+| user_id | BIGINT UNSIGNED | FK → users.user_id |
+| title | VARCHAR(200) | NULL |
+| created_at | TIMESTAMP | NOT NULL |
+| updated_at | TIMESTAMP | NOT NULL |
+
+Chức năng: Quản lý các cuộc hội thoại giữa người dùng và trợ lý AI.
+
+### 4.29. ai_messages - Tin nhắn AI
+
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc |
+|---|---|---|
+| ai_message_id | BIGINT UNSIGNED | PK |
+| conversation_id | BIGINT UNSIGNED | FK → ai_conversations.conversation_id |
+| sender_type | ENUM | NOT NULL |
+| content | TEXT | NOT NULL |
+| created_at | TIMESTAMP | NOT NULL |
+
+Chức năng: Lưu nội dung từng tin nhắn trong một cuộc hội thoại AI, bao gồm nội dung người dùng gửi và phản hồi của AI.
+
+---
+
+## 5. Các mối quan hệ chính
+
+| STT | Bảng thứ nhất | Quan hệ | Bảng thứ hai |
+|---:|---|---|---|
+| 1 | roles | 1 - N | users |
+| 2 | users | 1 - 1 | students |
+| 3 | users | 1 - 1 | lecturers |
+| 4 | subjects | 1 - N | syllabi |
+| 5 | subjects | 1 - N | study_classes |
+| 6 | study_classes | N - N | students (qua class_students) |
+| 7 | study_classes | N - N | lecturers (qua class_lecturers) |
+| 8 | study_classes | 1 - N | projects |
+| 9 | projects | 1 - N | teams |
+| 10 | projects | 1 - N | milestones |
+| 11 | teams | N - N | students (qua team_members) |
+| 12 | milestones | 1 - N | checkpoints |
+| 13 | teams | 1 - N | tasks |
+| 14 | tasks | N - N | students (qua task_assignees) |
+| 15 | tasks | 1 - N | submissions |
+| 16 | checkpoints | 1 - N | submissions |
+| 17 | teams | 1 - 1 | workspaces |
+| 18 | teams | 1 - N | meetings |
+| 19 | meetings | N - N | users (qua meeting_participants) |
+| 20 | teams | 1 - N | messages |
+| 21 | workspaces | 1 - N | whiteboard_snapshots |
+| 22 | workspaces | 1 - N | workspace_documents |
+| 23 | workspace_documents | 1 - N | document_versions |
+| 24 | users | 1 - N | evaluations |
+| 25 | users | 1 - N | notifications |
+| 26 | users | 1 - N | ai_conversations |
+| 27 | ai_conversations | 1 - N | ai_messages |
+
+---
+
+## 6. Quy tắc thiết kế cơ sở dữ liệu
+
+1. Mỗi bảng có khóa chính (PK) để định danh duy nhất từng bản ghi.
+2. Các khóa ngoại (FK) được sử dụng để liên kết dữ liệu giữa các bảng và đảm bảo tính toàn vẹn tham chiếu.
+3. Các bảng trung gian như `class_students`, `class_lecturers`, `team_members`, `task_assignees` và `meeting_participants` sử dụng khóa chính kép để hạn chế dữ liệu liên kết trùng lặp.
+4. Các trường như email, username, mã sinh viên, mã giảng viên và mã lớp cần có ràng buộc UNIQUE.
+5. Các trường bắt buộc sử dụng NOT NULL.
+6. Các trường trạng thái và loại dữ liệu có tập giá trị cố định có thể sử dụng ENUM.
+7. Các trường thời gian sử dụng DATE, DATETIME hoặc TIMESTAMP tùy mục đích.
+8. Các bảng sử dụng InnoDB để hỗ trợ khóa ngoại và giao dịch.
+9. Các trường dữ liệu dạng cấu trúc linh hoạt có thể sử dụng JSON trong MySQL 8.0.
+10. Tên bảng, tên cột, kiểu dữ liệu và ràng buộc trong ERD phải thống nhất với file `schema.sql`.
+
+---
+
+## 7. Một số quy tắc nghiệp vụ cần bảo đảm
+
+Ngoài các khóa chính và khóa ngoại, hệ thống cần kiểm tra một số quy tắc nghiệp vụ:
+
+- Sinh viên được thêm vào nhóm phải thuộc lớp học tương ứng với dự án.
+- Trưởng nhóm phải là thành viên của nhóm đó.
+- Nhiệm vụ được giao cho sinh viên phải thuộc nhóm mà sinh viên tham gia.
+- Checkpoint phải thuộc một milestone của dự án tương ứng.
+- Bài nộp phải gắn với nhiệm vụ hoặc checkpoint hợp lệ.
+- Điểm đánh giá không được nhỏ hơn giá trị tối thiểu hoặc lớn hơn giới hạn cho phép.
+- Thời gian kết thúc cuộc họp phải sau thời gian bắt đầu.
+- Ngày kết thúc dự án phải phù hợp với ngày bắt đầu dự án.
+- Tài liệu cần xác định rõ thuộc dự án hay workspace/nhóm theo quy tắc của hệ thống.
+
+Các quy tắc này có thể cần được kiểm tra bằng CHECK constraint, khóa ngoại bổ sung hoặc logic xử lý ở Backend tùy theo cấu trúc thực tế.
+
+---
+
+## 8. Kết luận
+
+ERD mô tả cấu trúc dữ liệu của hệ thống CollabSphere với 29 bảng, bao gồm các chức năng quản lý tài khoản, môn học, lớp học, dự án PBL, nhóm, nhiệm vụ, tiến độ, bài nộp, workspace, trao đổi, đánh giá, thông báo và hỗ trợ AI.
+
+Thiết kế này là cơ sở để triển khai cơ sở dữ liệu trong file `schema.sql`.
+
+**Lưu ý:** ERD và `schema.sql` phải được kiểm tra đồng bộ về tên bảng, tên cột, kiểu dữ liệu, khóa chính, khóa ngoại và các ràng buộc. Khi thay đổi cấu trúc ở một file, cần cập nhật file còn lại để tránh sai lệch giữa tài liệu thiết kế và cơ sở dữ liệu thực tế.
