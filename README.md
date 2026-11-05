@@ -121,7 +121,7 @@ CollabSphere/
 ├── database/
 │   ├── 01-erd.md
 │   ├── schema.sql
-│   ├── seed.sql
+│   ├── scripts/
 │   └── migrations/
 │
 ├── backend/
