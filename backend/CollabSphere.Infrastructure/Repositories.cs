@@ -1,13 +1,14 @@
+
 using CollabSphere.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace CollabSphere.Infrastructure.Repositories;
 
-public interface IRepository<T> where T : class
+public interface IRepository<T, TId> where T : class
 {
     Task<IEnumerable<T>> GetAllAsync();
 
-    Task<T?> GetByIdAsync(ulong id);
+    Task<T?> GetByIdAsync(TId id);
 
     Task AddAsync(T entity);
 
@@ -18,10 +19,10 @@ public interface IRepository<T> where T : class
     Task SaveChangesAsync();
 }
 
-public class Repository<T> : IRepository<T> where T : class
+public class Repository<T, TId> : IRepository<T, TId>
+    where T : class
 {
     protected readonly ApplicationDbContext _context;
-
     protected readonly DbSet<T> _dbSet;
 
     public Repository(ApplicationDbContext context)
@@ -35,7 +36,7 @@ public class Repository<T> : IRepository<T> where T : class
         return await _dbSet.ToListAsync();
     }
 
-    public async Task<T?> GetByIdAsync(ulong id)
+    public async Task<T?> GetByIdAsync(TId id)
     {
         return await _dbSet.FindAsync(id);
     }
