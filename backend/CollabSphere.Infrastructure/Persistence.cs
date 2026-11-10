@@ -2,16 +2,15 @@
 using Microsoft.EntityFrameworkCore;
 using CollabSphere.Domain.Entities;
 
-namespace CollabSphere.Infrastructure;
+namespace CollabSphere.Infrastructure.Persistence;
 
-public class Persistence : DbContext
+public class ApplicationDbContext : DbContext
 {
-    public Persistence(DbContextOptions<Persistence> options)
+    public ApplicationDbContext(
+        DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
-
-    // Database tables
 
     public DbSet<Role> Roles => Set<Role>();
 
@@ -25,100 +24,12 @@ public class Persistence : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Role
-        modelBuilder.Entity<Role>(entity =>
-        {
-            entity.HasKey(x => x.RoleId);
+        modelBuilder.ApplyConfiguration(new RoleConfiguration());
 
-            entity.Property(x => x.RoleCode)
-                .IsRequired()
-                .HasMaxLength(50);
+        modelBuilder.ApplyConfiguration(new UserConfiguration());
 
-            entity.Property(x => x.RoleName)
-                .IsRequired()
-                .HasMaxLength(100);
+        modelBuilder.ApplyConfiguration(new ProjectConfiguration());
 
-            entity.Property(x => x.Description)
-                .HasMaxLength(500);
-
-            entity.HasIndex(x => x.RoleCode)
-                .IsUnique();
-        });
-
-        // User
-        modelBuilder.Entity<User>(entity =>
-        {
-            entity.HasKey(x => x.UserId);
-
-            entity.Property(x => x.Username)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            entity.Property(x => x.Email)
-                .IsRequired()
-                .HasMaxLength(255);
-
-            entity.Property(x => x.PasswordHash)
-                .IsRequired()
-                .HasMaxLength(255);
-
-            entity.Property(x => x.FullName)
-                .IsRequired()
-                .HasMaxLength(150);
-
-            entity.Property(x => x.AvatarUrl)
-                .HasMaxLength(500);
-
-            entity.Property(x => x.Phone)
-                .HasMaxLength(20);
-
-            entity.HasIndex(x => x.Username)
-                .IsUnique();
-
-            entity.HasIndex(x => x.Email)
-                .IsUnique();
-
-            entity.HasOne(x => x.Role)
-                .WithMany(x => x.Users)
-                .HasForeignKey(x => x.RoleId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
-
-        // Project
-        modelBuilder.Entity<Project>(entity =>
-        {
-            entity.HasKey(x => x.Id);
-
-            entity.Property(x => x.Name)
-                .IsRequired()
-                .HasMaxLength(200);
-
-            entity.Property(x => x.Description)
-                .HasMaxLength(2000);
-
-            entity.HasOne(x => x.Owner)
-                .WithMany(x => x.OwnedProjects)
-                .HasForeignKey(x => x.OwnerId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
-
-        // WorkTask
-        modelBuilder.Entity<WorkTask>(entity =>
-        {
-            entity.HasKey(x => x.Id);
-
-            entity.Property(x => x.Title)
-                .IsRequired()
-                .HasMaxLength(255);
-
-            entity.Property(x => x.Status)
-                .IsRequired()
-                .HasMaxLength(50);
-
-            entity.HasOne(x => x.Project)
-                .WithMany(x => x.Tasks)
-                .HasForeignKey(x => x.ProjectId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
+        modelBuilder.ApplyConfiguration(new WorkTaskConfiguration());
     }
 }
