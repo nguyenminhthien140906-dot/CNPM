@@ -1,17 +1,70 @@
 
-<svg xmlns="http://www.w3.org/2000/svg"
-     xmlns:xlink="http://www.w3.org/1999/xlink"
-     viewBox="0 0 1024 1024"
-     width="1024"
-     height="1024">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
 
-    <image
-        x="0"
-        y="0"
-        width="1024"
-        height="1024"
-        xlink:href="default-avatar.png"
-        preserveAspectRatio="xMidYMid meet"
-    />
+  <defs>
+    <linearGradient id="avatar" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#AC7AF5"/>
+      <stop offset="50%" stop-color="#638BFA"/>
+      <stop offset="100%" stop-color="#22B9F2"/>
+    </linearGradient>
+
+    <linearGradient id="orbit" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#B36CF5"/>
+      <stop offset="100%" stop-color="#63C9F8"/>
+    </linearGradient>
+
+    <radialGradient id="halo">
+      <stop offset="0%" stop-color="#E5EFFF" stop-opacity=".15"/>
+      <stop offset="100%" stop-color="#C8D8FF" stop-opacity=".45"/>
+    </radialGradient>
+
+    <clipPath id="headClip">
+      <circle cx="512" cy="415" r="195"/>
+    </clipPath>
+  </defs>
+
+  <!-- Halo -->
+  <circle cx="512" cy="490" r="390" fill="url(#halo)"/>
+
+  <!-- Orbit -->
+  <g fill="none" stroke="url(#orbit)"
+     stroke-width="13" stroke-linecap="round">
+    <path d="M110 380 C170 150 310 105 405 85"/>
+    <path d="M870 210 C1040 440 940 790 700 870"/>
+    <path d="M155 730 C200 825 290 850 355 890"/>
+  </g>
+
+  <!-- Decorative stars -->
+  <g fill="url(#orbit)">
+    <path d="M770 160 L795 225 L860 250 L795 275 L770 340 L745 275 L680 250 L745 225 Z"/>
+    <path d="M190 440 L210 490 L260 510 L210 530 L190 580 L170 530 L120 510 L170 490 Z"/>
+    <circle cx="110" cy="650" r="24"/>
+    <circle cx="845" cy="540" r="23"/>
+  </g>
+
+  <!-- Head -->
+  <circle cx="512" cy="415" r="195" fill="url(#avatar)"/>
+
+  <!-- Head highlight -->
+  <g clip-path="url(#headClip)">
+    <path d="M320 260 Q480 150 600 230 Q650 390 440 500 Q330 530 280 460 Z"
+          fill="#FFFFFF" opacity=".13"/>
+  </g>
+
+  <!-- Body -->
+  <path d="M245 850
+           C270 700 355 615 430 620
+           C480 640 545 640 595 620
+           C680 615 755 700 780 850
+           Q790 910 730 910
+           H295 Q235 910 245 850 Z"
+        fill="url(#avatar)"/>
+
+  <!-- Body highlight -->
+  <path d="M595 620
+           C680 615 755 700 780 850
+           Q790 910 730 910
+           H385 Q460 760 595 620 Z"
+        fill="#FFFFFF" opacity=".10"/>
 
 </svg>
