@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using CollabSphere.Domain.Entities;
+using DomainTask = CollabSphere.Domain.Entities.Task;
 
 namespace CollabSphere.Domain.Interfaces
 {
@@ -11,8 +12,8 @@ namespace CollabSphere.Domain.Interfaces
 
     public interface ITaskRepository
     {
-        IEnumerable<Task> GetTasksByGroup(string groupId);
-        void Save(Task task);
+        IEnumerable<DomainTask> GetTasksByGroup(string groupId);
+        void Save(DomainTask task);
     }
 
     public interface IWorkspaceRepository

@@ -7,7 +7,7 @@ public interface IRepository<T> where T : class
 {
     Task<IEnumerable<T>> GetAllAsync();
 
-    Task<T?> GetByIdAsync(int id);
+    Task<T?> GetByIdAsync(ulong id);
 
     Task AddAsync(T entity);
 
@@ -35,7 +35,7 @@ public class Repository<T> : IRepository<T> where T : class
         return await _dbSet.ToListAsync();
     }
 
-    public async Task<T?> GetByIdAsync(int id)
+    public async Task<T?> GetByIdAsync(ulong id)
     {
         return await _dbSet.FindAsync(id);
     }

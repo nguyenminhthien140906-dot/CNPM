@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using CollabSphere.Domain.Enums;
+using DomainTaskStatus = CollabSphere.Domain.Enums.TaskStatus;
 
 namespace CollabSphere.Domain.Entities
 {
@@ -54,17 +55,17 @@ namespace CollabSphere.Domain.Entities
         public string GroupId { get; set; }
         public string Title { get; set; }
         public DateTime Deadline { get; set; }
-        public TaskStatus Status { get; private set; } = TaskStatus.ToDo;
+        public DomainTaskStatus Status { get; private set; } = DomainTaskStatus.ToDo;
         public string AssigneeId { get; private set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public void AssignTo(string studentId)
         {
             AssigneeId = studentId;
-            Status = TaskStatus.InProgress;
+            Status = DomainTaskStatus.InProgress;
         }
 
-        public void UpdateStatus(TaskStatus newStatus)
+        public void UpdateStatus(DomainTaskStatus newStatus)
         {
             Status = newStatus;
         }

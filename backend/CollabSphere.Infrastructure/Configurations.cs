@@ -1,74 +1,115 @@
-using CollabSphere.Infrastructure.Entities;
+﻿using CollabSphere.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CollabSphere.Infrastructure.Configurations;
 
+public class RoleConfiguration : IEntityTypeConfiguration<Role>
+{
+    public void Configure(EntityTypeBuilder<Role> builder)
+    {
+        builder.ToTable("roles");
+
+        builder.HasKey(x => x.RoleId);
+
+        builder.Property(x => x.RoleId)
+            .HasColumnName("role_id")
+            .HasColumnType("bigint unsigned")
+            .ValueGeneratedOnAdd();
+
+        builder.Property(x => x.RoleCode)
+            .HasColumnName("role_code")
+            .HasMaxLength(30)
+            .IsRequired();
+
+        builder.HasIndex(x => x.RoleCode).IsUnique();
+
+        builder.Property(x => x.RoleName)
+            .HasColumnName("role_name")
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.Property(x => x.Description)
+            .HasColumnName("description")
+            .HasColumnType("text");
+
+        builder.Property(x => x.CreatedAt)
+            .HasColumnName("created_at")
+            .HasColumnType("timestamp")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+    }
+}
+
 public class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        builder.ToTable("Users");
+        builder.ToTable("users");
 
-        builder.HasKey(x => x.Id);
+        builder.HasKey(x => x.UserId);
 
-        builder.Property(x => x.FullName)
-            .IsRequired()
-            .HasMaxLength(100);
+        builder.Property(x => x.UserId)
+            .HasColumnName("user_id")
+            .HasColumnType("bigint unsigned")
+            .ValueGeneratedOnAdd();
+
+        builder.Property(x => x.RoleId)
+            .HasColumnName("role_id")
+            .HasColumnType("bigint unsigned")
+            .IsRequired();
+
+        builder.Property(x => x.Username)
+            .HasColumnName("username")
+            .HasMaxLength(50)
+            .IsRequired();
+
+        builder.HasIndex(x => x.Username).IsUnique();
 
         builder.Property(x => x.Email)
-            .IsRequired()
-            .HasMaxLength(150);
+            .HasColumnName("email")
+            .HasMaxLength(255)
+            .IsRequired();
 
         builder.HasIndex(x => x.Email).IsUnique();
 
-        builder.Property(x => x.Password)
-            .IsRequired()
-            .HasMaxLength(255);
-    }
-}
+        builder.Property(x => x.PasswordHash)
+            .HasColumnName("password_hash")
+            .HasMaxLength(255)
+            .IsRequired();
 
-public class ProjectConfiguration : IEntityTypeConfiguration<Project>
-{
-    public void Configure(EntityTypeBuilder<Project> builder)
-    {
-        builder.ToTable("Projects");
+        builder.Property(x => x.FullName)
+            .HasColumnName("full_name")
+            .HasMaxLength(150)
+            .IsRequired();
 
-        builder.HasKey(x => x.Id);
+        builder.Property(x => x.AvatarUrl)
+            .HasColumnName("avatar_url")
+            .HasMaxLength(500);
 
-        builder.Property(x => x.Name)
-            .IsRequired()
-            .HasMaxLength(150);
+        builder.Property(x => x.Phone)
+            .HasColumnName("phone")
+            .HasMaxLength(20);
 
-        builder.Property(x => x.Description)
-            .HasMaxLength(1000);
+        builder.Property(x => x.IsActive)
+            .HasColumnName("is_active")
+            .HasColumnType("tinyint(1)")
+            .HasDefaultValue(true)
+            .IsRequired();
 
-        builder.HasOne(x => x.Owner)
-            .WithMany(x => x.Projects)
-            .HasForeignKey(x => x.OwnerId)
+        builder.Property(x => x.CreatedAt)
+            .HasColumnName("created_at")
+            .HasColumnType("timestamp")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        builder.Property(x => x.UpdatedAt)
+            .HasColumnName("updated_at")
+            .HasColumnType("timestamp")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP")
+            .ValueGeneratedOnAddOrUpdate();
+
+        builder.HasOne(x => x.Role)
+            .WithMany(x => x.Users)
+            .HasForeignKey(x => x.RoleId)
             .OnDelete(DeleteBehavior.Restrict);
-    }
-}
-
-public class TaskConfiguration : IEntityTypeConfiguration<WorkTask>
-{
-    public void Configure(EntityTypeBuilder<WorkTask> builder)
-    {
-        builder.ToTable("Tasks");
-
-        builder.HasKey(x => x.Id);
-
-        builder.Property(x => x.Title)
-            .IsRequired()
-            .HasMaxLength(200);
-
-        builder.Property(x => x.Status)
-            .IsRequired()
-            .HasMaxLength(50);
-
-        builder.HasOne(x => x.Project)
-            .WithMany(x => x.Tasks)
-            .HasForeignKey(x => x.ProjectId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }
