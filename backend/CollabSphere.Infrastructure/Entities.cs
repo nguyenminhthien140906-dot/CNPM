@@ -1,4 +1,8 @@
-﻿namespace CollabSphere.Infrastructure.Entities;
+
+using System;
+using System.Collections.Generic;
+
+namespace CollabSphere.Domain.Entities;
 
 public class Role
 {
@@ -40,6 +44,9 @@ public class User
     public DateTime UpdatedAt { get; set; }
 
     public Role? Role { get; set; }
+
+    public ICollection<Project> OwnedProjects { get; set; }
+        = new List<Project>();
 }
 
 public class Project
@@ -50,11 +57,12 @@ public class Project
 
     public string? Description { get; set; }
 
-    public int OwnerId { get; set; }
+    public ulong OwnerId { get; set; }
 
     public User? Owner { get; set; }
 
-    public ICollection<WorkTask> Tasks { get; set; } = new List<WorkTask>();
+    public ICollection<WorkTask> Tasks { get; set; }
+        = new List<WorkTask>();
 }
 
 public class WorkTask
@@ -69,5 +77,6 @@ public class WorkTask
 
     public Project? Project { get; set; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
+        = DateTime.UtcNow;
 }
