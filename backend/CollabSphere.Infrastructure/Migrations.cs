@@ -1,122 +1,138 @@
+
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using CollabSphere.Infrastructure.Persistence;
 
-namespace CollabSphere.Infrastructure.Migrations;
+namespace CollabSphere.Infrastructure;
 
-[DbContext(typeof(ApplicationDbContext))]
-[Migration("202611050001_InitialCreate")]
-public class InitialCreate : Migration
+public static class Migrations
 {
-    protected override void Up(MigrationBuilder migrationBuilder)
+    public static async Task ApplyMigrationsAsync(
+        IServiceProvider serviceProvider)
     {
-        migrationBuilder.CreateTable(
-            name: "Users",
-            columns: table => new
+        using var scope = serviceProvider.CreateScope();
+
+        var logger = scope.ServiceProvider
+            .GetRequiredService<ILoggerFactory>()
+            .CreateLogger("DatabaseMigrations");
+
+        var dbContext = scope.ServiceProvider
+            .GetRequiredService<ApplicationDbContext>();
+
+        try
+        {
+            logger.LogInformation(
+                "Starting database migration for CollabSphere..."
+            );
+
+            var pendingMigrations = await dbContext.Database
+                .GetPendingMigrationsAsync();
+
+            var pendingList = pendingMigrations.ToList();
+
+            if (pendingList.Count == 0)
             {
-                Id = table.Column<int>(nullable: false)
-                    .Annotation("SqlServer:Identity", "1, 1"),
+                logger.LogInformation(
+                    "Database is already up to date."
+                );
 
-                FullName = table.Column<string>(
-                    maxLength: 100,
-                    nullable: false),
+                return;
+            }
 
-                Email = table.Column<string>(
-                    maxLength: 150,
-                    nullable: false),
+            logger.LogInformation(
+                "Found {Count} pending migrations.",
+                pendingList.Count
+            );
 
-                Password = table.Column<string>(
-                    maxLength: 255,
-                    nullable: false)
-            },
-            constraints: table =>
+            foreach (var migration in pendingList)
             {
-                table.PrimaryKey("PK_Users", x => x.Id);
-            });
+                logger.LogInformation(
+                    "Pending migration: {MigrationName}",
+                    migration
+                );
+            }
 
-        migrationBuilder.CreateIndex(
-            name: "IX_Users_Email",
-            table: "Users",
-            column: "Email",
-            unique: true);
+            await dbContext.Database.MigrateAsync();
 
-        migrationBuilder.CreateTable(
-            name: "Projects",
-            columns: table => new
-            {
-                Id = table.Column<int>(nullable: false)
-                    .Annotation("SqlServer:Identity", "1, 1"),
+            logger.LogInformation(
+                "Database migrations completed successfully."
+            );
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(
+                exception,
+                "An error occurred while applying database migrations."
+            );
 
-                Name = table.Column<string>(
-                    maxLength: 150,
-                    nullable: false),
-
-                Description = table.Column<string>(
-                    maxLength: 1000,
-                    nullable: true),
-
-                OwnerId = table.Column<int>(nullable: false)
-            },
-            constraints: table =>
-            {
-                table.PrimaryKey("PK_Projects", x => x.Id);
-
-                table.ForeignKey(
-                    name: "FK_Projects_Users_OwnerId",
-                    column: x => x.OwnerId,
-                    principalTable: "Users",
-                    principalColumn: "Id",
-                    onDelete: ReferentialAction.Restrict);
-            });
-
-        migrationBuilder.CreateTable(
-            name: "Tasks",
-            columns: table => new
-            {
-                Id = table.Column<int>(nullable: false)
-                    .Annotation("SqlServer:Identity", "1, 1"),
-
-                Title = table.Column<string>(
-                    maxLength: 200,
-                    nullable: false),
-
-                Status = table.Column<string>(
-                    maxLength: 50,
-                    nullable: false),
-
-                ProjectId = table.Column<int>(nullable: false),
-
-                CreatedAt = table.Column<DateTime>(nullable: false)
-            },
-            constraints: table =>
-            {
-                table.PrimaryKey("PK_Tasks", x => x.Id);
-
-                table.ForeignKey(
-                    name: "FK_Tasks_Projects_ProjectId",
-                    column: x => x.ProjectId,
-                    principalTable: "Projects",
-                    principalColumn: "Id",
-                    onDelete: ReferentialAction.Cascade);
-            });
-
-        migrationBuilder.CreateIndex(
-            name: "IX_Projects_OwnerId",
-            table: "Projects",
-            column: "OwnerId");
-
-        migrationBuilder.CreateIndex(
-            name: "IX_Tasks_ProjectId",
-            table: "Tasks",
-            column: "ProjectId");
+            throw;
+        }
     }
 
-    protected override void Down(MigrationBuilder migrationBuilder)
+    public static async Task<List<string>> GetAppliedMigrationsAsync(
+        IServiceProvider serviceProvider)
     {
-        migrationBuilder.DropTable(name: "Tasks");
+        using var scope = serviceProvider.CreateScope();
 
-        migrationBuilder.DropTable(name: "Projects");
+        var dbContext = scope.ServiceProvider
+            .GetRequiredService<ApplicationDbContext>();
 
-        migrationBuilder.DropTable(name: "Users");
+        var migrations = await dbContext.Database
+            .GetAppliedMigrationsAsync();
+
+        return migrations.ToList();
+    }
+
+    public static async Task<List<string>> GetPendingMigrationsAsync(
+        IServiceProvider serviceProvider)
+    {
+        using var scope = serviceProvider.CreateScope();
+
+        var dbContext = scope.ServiceProvider
+            .GetRequiredService<ApplicationDbContext>();
+
+        var migrations = await dbContext.Database
+            .GetPendingMigrationsAsync();
+
+        return migrations.ToList();
+    }
+
+    public static async Task<bool> CanConnectAsync(
+        IServiceProvider serviceProvider)
+    {
+        using var scope = serviceProvider.CreateScope();
+
+        var dbContext = scope.ServiceProvider
+            .GetRequiredService<ApplicationDbContext>();
+
+        try
+        {
+            return await dbContext.Database.CanConnectAsync();
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public static async Task<bool> EnsureDatabaseCreatedAsync(
+        IServiceProvider serviceProvider)
+    {
+        using var scope = serviceProvider.CreateScope();
+
+        var dbContext = scope.ServiceProvider
+            .GetRequiredService<ApplicationDbContext>();
+
+        try
+        {
+            return await dbContext.Database.EnsureCreatedAsync();
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
