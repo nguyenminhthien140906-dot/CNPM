@@ -1,6 +1,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using CollabSphere.Domain.Entities;
+using CollabSphere.Infrastructure;
 
 namespace CollabSphere.Infrastructure.Persistence;
 
@@ -13,11 +14,8 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<Role> Roles => Set<Role>();
-
     public DbSet<User> Users => Set<User>();
-
     public DbSet<Project> Projects => Set<Project>();
-
     public DbSet<WorkTask> Tasks => Set<WorkTask>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -25,11 +23,8 @@ public class ApplicationDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfiguration(new RoleConfiguration());
-
         modelBuilder.ApplyConfiguration(new UserConfiguration());
-
         modelBuilder.ApplyConfiguration(new ProjectConfiguration());
-
         modelBuilder.ApplyConfiguration(new WorkTaskConfiguration());
     }
 }
