@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using CollabSphere.Domain.Enums;
 using DomainTaskStatus = CollabSphere.Domain.Enums.TaskStatus;
@@ -7,9 +7,9 @@ namespace CollabSphere.Domain.Entities
 {
     public class User
     {
-        public string UserId { get; set; }
-        public string FullName { get; set; }
-        public string Email { get; set; }
+        public string UserId { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
         public UserRole Role { get; set; }
         public bool IsActive { get; private set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -20,11 +20,11 @@ namespace CollabSphere.Domain.Entities
 
     public class Group
     {
-        public string GroupId { get; set; }
-        public string Name { get; set; }
-        public string CourseId { get; set; }
-        public string LeaderId { get; set; }
-        public List<string> MemberIds { get; private set; }
+        public string GroupId { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string CourseId { get; set; } = string.Empty;
+        public string LeaderId { get; set; } = string.Empty;
+        public List<string> MemberIds { get; private set; } = new();
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public Group(string groupId, string name, string courseId, string leaderId)
@@ -51,12 +51,12 @@ namespace CollabSphere.Domain.Entities
 
     public class Task
     {
-        public string TaskId { get; set; }
-        public string GroupId { get; set; }
-        public string Title { get; set; }
+        public string TaskId { get; set; } = string.Empty;
+        public string GroupId { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
         public DateTime Deadline { get; set; }
         public DomainTaskStatus Status { get; private set; } = DomainTaskStatus.ToDo;
-        public string AssigneeId { get; private set; }
+        public string? AssigneeId { get; private set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public void AssignTo(string studentId)
@@ -73,10 +73,10 @@ namespace CollabSphere.Domain.Entities
 
     public class Workspace
     {
-        public string WorkspaceId { get; set; }
-        public string GroupId { get; set; }
-        public string WhiteboardData { get; private set; }
-        public string DocumentData { get; private set; }
+        public string WorkspaceId { get; set; } = string.Empty;
+        public string GroupId { get; set; } = string.Empty;
+        public string? WhiteboardData { get; private set; }
+        public string? DocumentData { get; private set; }
         public DateTime LastUpdated { get; private set; } = DateTime.UtcNow;
 
         public void SaveSnapshot(string whiteboardPayload, string documentPayload)
@@ -89,12 +89,12 @@ namespace CollabSphere.Domain.Entities
 
     public class Evaluation
     {
-        public string EvalId { get; set; }
-        public string EvaluatorId { get; set; }
-        public string TargetId { get; set; }
+        public string EvalId { get; set; } = string.Empty;
+        public string EvaluatorId { get; set; } = string.Empty;
+        public string TargetId { get; set; } = string.Empty;
         public EvaluationType EvalType { get; set; }
         public float Score { get; set; }
-        public string Comment { get; set; }
+        public string? Comment { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
