@@ -1,4 +1,6 @@
-﻿using CollabSphere.API.Services;
+
+using CollabSphere.Infrastructure.Database;
+using CollabSphere.API.Services;
 using CollabSphere.Infrastructure.Services;
 using CollabSphere.Application.Auth;
 using System.Text;
@@ -15,13 +17,14 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddOpenApi();
 
-// MySQL
+// MySQL connection
 var connectionString = builder.Configuration
     .GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException(
         "Không tìm thấy DefaultConnection."
     );
 
+// Entity Framework Core
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySQL(connectionString)
 );
@@ -69,7 +72,20 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Middleware xử lý lỗi
+// Run SQL migrations
+var migrationFolder = Path.Combine(
+    builder.Environment.ContentRootPath,
+    "Migrations"
+);
+
+var migrationEnvironment = new MigrationEnvironment(
+    connectionString,
+    migrationFolder
+);
+
+await migrationEnvironment.RunAsync();
+
+// Error handling middleware
 app.UseMiddleware<Middleware>();
 
 if (app.Environment.IsDevelopment())
