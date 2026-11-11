@@ -1,5 +1,3 @@
-
-using CollabSphere.Infrastructure.Database;
 using CollabSphere.API.Services;
 using CollabSphere.Infrastructure.Services;
 using CollabSphere.Application.Auth;
@@ -8,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using CollabSphere.Infrastructure.Persistence;
+using CollabSphere.Infrastructure.Database;
 using CollabSphere.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,19 +16,16 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddOpenApi();
 
-// MySQL connection
 var connectionString = builder.Configuration
     .GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException(
         "Không tìm thấy DefaultConnection."
     );
 
-// Entity Framework Core
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySQL(connectionString)
 );
 
-// JWT configuration
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("Thiếu Jwt:Key.");
 
@@ -72,20 +68,24 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Run SQL migrations
-var migrationFolder = Path.Combine(
-    builder.Environment.ContentRootPath,
-    "Migrations"
-);
+var migrationPath = Path.Combine(AppContext.BaseDirectory, "migrations", "versions");
+await MigrationEnvironment.ApplyPendingAsync(connectionString, migrationPath);
 
-var migrationEnvironment = new MigrationEnvironment(
-    connectionString,
-    migrationFolder
-);
+if (app.Environment.IsDevelopment())
+{
+    var seedPassword = builder.Configuration["Seed:DefaultPassword"];
 
-await migrationEnvironment.RunAsync();
+    if (string.IsNullOrWhiteSpace(seedPassword))
+    {
+        Console.WriteLine("[Seed] Bỏ qua: chưa đặt Seed:DefaultPassword.");
+    }
+    else
+    {
+        var seedPath = Path.Combine(AppContext.BaseDirectory, "seeds");
+        await DatabaseSeeder.SeedAsync(connectionString, seedPath, seedPassword);
+    }
+}
 
-// Error handling middleware
 app.UseMiddleware<Middleware>();
 
 if (app.Environment.IsDevelopment())
@@ -101,4 +101,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
