@@ -1,110 +1,75 @@
-
 using MySqlConnector;
 
 namespace CollabSphere.Infrastructure.Database;
 
-public class MigrationEnvironment
+public static class MigrationEnvironment
 {
-    private readonly string _connectionString;
-    private readonly string _migrationFolder;
-
-    public MigrationEnvironment(
+    public static async Task ApplyPendingAsync(
         string connectionString,
-        string migrationFolder)
+        string migrationDirectory,
+        CancellationToken cancellationToken = default)
     {
-        _connectionString = connectionString;
-        _migrationFolder = migrationFolder;
-    }
-
-    public async Task RunAsync()
-    {
-        if (!Directory.Exists(_migrationFolder))
-        {
+        if (!Directory.Exists(migrationDirectory))
             throw new DirectoryNotFoundException(
-                $"Không tìm thấy thư mục migration: {_migrationFolder}");
+                $"Không tìm thấy thư mục migration: {migrationDirectory}");
+
+        var files = Directory.GetFiles(migrationDirectory, "*.up.sql")
+            .OrderBy(Path.GetFileName, StringComparer.Ordinal)
+            .ToArray();
+
+        if (files.Length == 0)
+            throw new InvalidOperationException("Không tìm thấy file *.up.sql nào.");
+
+        await using var connection = new MySqlConnection(connectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        await using (var create = new MySqlCommand(
+            @"CREATE TABLE IF NOT EXISTS schema_migrations (
+                version VARCHAR(150) PRIMARY KEY,
+                applied_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+              ) ENGINE=InnoDB;", connection))
+        {
+            await create.ExecuteNonQueryAsync(cancellationToken);
         }
 
-        await using var connection =
-            new MySqlConnection(_connectionString);
-
-        await connection.OpenAsync();
-
-        const string createTableSql = """
-            CREATE TABLE IF NOT EXISTS schema_migrations
-            (
-                version VARCHAR(255) PRIMARY KEY,
-                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-            """;
-
-        await using (var command =
-            new MySqlCommand(createTableSql, connection))
+        foreach (var file in files)
         {
-            await command.ExecuteNonQueryAsync();
-        }
+            var version = Path.GetFileName(file)[..^".up.sql".Length];
 
-        var migrationFiles = Directory
-            .GetFiles(_migrationFolder, "*.up.sql")
-            .OrderBy(file => Path.GetFileName(file))
-            .ToList();
-
-        foreach (var file in migrationFiles)
-        {
-            var version = Path.GetFileName(file);
-
-            const string checkSql = """
-                SELECT COUNT(*)
-                FROM schema_migrations
-                WHERE version = @version;
-                """;
-
-            await using var checkCommand =
-                new MySqlCommand(checkSql, connection);
-
-            checkCommand.Parameters.AddWithValue(
-                "@version", version);
-
-            var result = await checkCommand.ExecuteScalarAsync();
-
-            if (Convert.ToInt32(result) > 0)
+            await using (var check = new MySqlCommand(
+                "SELECT COUNT(*) FROM schema_migrations WHERE version = @v;", connection))
             {
-                continue;
+                check.Parameters.AddWithValue("@v", version);
+                if (Convert.ToInt32(await check.ExecuteScalarAsync(cancellationToken)) > 0)
+                {
+                    Console.WriteLine($"[Migration] Skipped: {version}");
+                    continue;
+                }
             }
 
-            var sql = await File.ReadAllTextAsync(file);
-
-            await using var transaction =
-                await connection.BeginTransactionAsync();
+            var sql = await File.ReadAllTextAsync(file, cancellationToken);
 
             try
             {
-                await using var migrationCommand =
-                    new MySqlCommand(sql, connection, transaction);
+                await using (var run = new MySqlCommand(sql, connection))
+                    await run.ExecuteNonQueryAsync(cancellationToken);
 
-                await migrationCommand.ExecuteNonQueryAsync();
+                await using (var record = new MySqlCommand(
+                    "INSERT INTO schema_migrations (version) VALUES (@v);", connection))
+                {
+                    record.Parameters.AddWithValue("@v", version);
+                    await record.ExecuteNonQueryAsync(cancellationToken);
+                }
 
-                const string insertSql = """
-                    INSERT INTO schema_migrations (version)
-                    VALUES (@version);
-                    """;
-
-                await using var insertCommand =
-                    new MySqlCommand(
-                        insertSql, connection, transaction);
-
-                insertCommand.Parameters.AddWithValue(
-                    "@version", version);
-
-                await insertCommand.ExecuteNonQueryAsync();
-
-                await transaction.CommitAsync();
+                Console.WriteLine($"[Migration] Applied: {version}");
             }
-            catch
+            catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-                throw;
+                throw new InvalidOperationException(
+                    $"Migration {version} thất bại: {ex.Message}", ex);
             }
         }
+
+        Console.WriteLine("[Migration] Hoàn tất.");
     }
 }
-
