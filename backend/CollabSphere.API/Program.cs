@@ -1,11 +1,8 @@
- feature/leader-backend-core
-﻿using CollabSphere.API.Services;
 using CollabSphere.API.Authorization;
 using CollabSphere.API.Services;
- main
-using CollabSphere.Infrastructure.Services;
-using CollabSphere.Application.Auth;
 using CollabSphere.Application.Admin;
+using CollabSphere.Application.Auth;
+using CollabSphere.Infrastructure.Services;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +22,7 @@ builder.Services.AddOpenApi();
 var connectionString = builder.Configuration
     .GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException(
-        "KhĂ´ng tĂ¬m tháº¥y DefaultConnection."
+        "Không tìm thấy DefaultConnection."
     );
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -33,20 +30,20 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 );
 
 var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? throw new InvalidOperationException("Thiáº¿u Jwt:Key.");
+    ?? throw new InvalidOperationException("Thiếu Jwt:Key.");
 
 var jwtIssuer = builder.Configuration["Jwt:Issuer"]
-    ?? throw new InvalidOperationException("Thiáº¿u Jwt:Issuer.");
+    ?? throw new InvalidOperationException("Thiếu Jwt:Issuer.");
 
 var jwtAudience = builder.Configuration["Jwt:Audience"]
-    ?? throw new InvalidOperationException("Thiáº¿u Jwt:Audience.");
+    ?? throw new InvalidOperationException("Thiếu Jwt:Audience.");
 
 var jwtKeyBytes = Convert.FromBase64String(jwtKey);
 
 if (jwtKeyBytes.Length < 32)
 {
     throw new InvalidOperationException(
-        "JWT signing key pháº£i cĂ³ Ă­t nháº¥t 32 bytes."
+        "JWT signing key phải có ít nhất 32 bytes."
     );
 }
 
@@ -90,9 +87,6 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
-feature/leader-backend-core
-// Middleware xá»­ lĂ½ lá»—i
-
 var migrationPath = Path.Combine(AppContext.BaseDirectory, "migrations", "versions");
 await MigrationEnvironment.ApplyPendingAsync(connectionString, migrationPath);
 
@@ -111,7 +105,6 @@ if (app.Environment.IsDevelopment())
     }
 }
 
-main
 app.UseMiddleware<Middleware>();
 
 if (app.Environment.IsDevelopment())
