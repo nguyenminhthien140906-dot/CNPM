@@ -1,9 +1,4 @@
-feature/leader-backend-core
-﻿using System;
-
-
 using System;
- main
 using System.Collections.Generic;
 
 namespace CollabSphere.Domain.Entities;
@@ -89,6 +84,7 @@ public class WorkTask
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
+
 public class Subject
 {
     public long SubjectId { get; set; }
@@ -132,100 +128,6 @@ public class StudyClass
 
 public class Student
 {
-feature/leader-backend-core
-    public class User
-    {
-        public string UserId { get; set; } = string.Empty;
-        public string FullName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public UserRole Role { get; set; }
-        public bool IsActive { get; private set; } = true;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        public void Deactivate() => IsActive = false;
-        public void Activate() => IsActive = true;
-    }
-
-    public class Group
-    {
-        public string GroupId { get; set; } = string.Empty;
-        public string Name { get; set; } = string.Empty;
-        public string CourseId { get; set; } = string.Empty;
-        public string LeaderId { get; set; } = string.Empty;
-        public List<string> MemberIds { get; private set; } = new();
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        public Group(string groupId, string name, string courseId, string leaderId)
-        {
-            GroupId = groupId;
-            Name = name;
-            CourseId = courseId;
-            LeaderId = leaderId;
-            MemberIds = new List<string> { leaderId };
-        }
-
-        public void AddMember(string studentId)
-        {
-            if (!MemberIds.Contains(studentId))
-                MemberIds.Add(studentId);
-        }
-
-        public void RemoveMember(string studentId)
-        {
-            if (MemberIds.Contains(studentId) && studentId != LeaderId)
-                MemberIds.Remove(studentId);
-        }
-    }
-
-    public class Task
-    {
-        public string TaskId { get; set; } = string.Empty;
-        public string GroupId { get; set; } = string.Empty;
-        public string Title { get; set; } = string.Empty;
-        public DateTime Deadline { get; set; }
-        public DomainTaskStatus Status { get; private set; } = DomainTaskStatus.ToDo;
-        public string? AssigneeId { get; private set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        public void AssignTo(string studentId)
-        {
-            AssigneeId = studentId;
-            Status = DomainTaskStatus.InProgress;
-        }
-
-        public void UpdateStatus(DomainTaskStatus newStatus)
-        {
-            Status = newStatus;
-        }
-    }
-
-    public class Workspace
-    {
-        public string WorkspaceId { get; set; } = string.Empty;
-        public string GroupId { get; set; } = string.Empty;
-        public string? WhiteboardData { get; private set; }
-        public string? DocumentData { get; private set; }
-        public DateTime LastUpdated { get; private set; } = DateTime.UtcNow;
-
-        public void SaveSnapshot(string whiteboardPayload, string documentPayload)
-        {
-            WhiteboardData = whiteboardPayload;
-            DocumentData = documentPayload;
-            LastUpdated = DateTime.UtcNow;
-        }
-    }
-
-    public class Evaluation
-    {
-        public string EvalId { get; set; } = string.Empty;
-        public string EvaluatorId { get; set; } = string.Empty;
-        public string TargetId { get; set; } = string.Empty;
-        public EvaluationType EvalType { get; set; }
-        public float Score { get; set; }
-        public string? Comment { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    }
-
     public long StudentId { get; set; }
     public long UserId { get; set; }
     public string StudentCode { get; set; } = string.Empty;
@@ -260,5 +162,5 @@ public class ClassLecturer
     public DateTime AssignedAt { get; set; }
 
     public StudyClass? StudyClass { get; set; }
-main
+    public Lecturer? Lecturer { get; set; }
 }
