@@ -1,7 +1,8 @@
-using CollabSphere.API.Services;
+﻿using CollabSphere.API.Services;
 using CollabSphere.API.Authorization;
 using CollabSphere.Infrastructure.Services;
 using CollabSphere.Application.Auth;
+using CollabSphere.Application.Admin;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddOpenApi();
 
@@ -20,7 +22,7 @@ builder.Services.AddOpenApi();
 var connectionString = builder.Configuration
     .GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException(
-        "Không tìm thấy DefaultConnection."
+        "KhĂ´ng tĂ¬m tháº¥y DefaultConnection."
     );
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -29,20 +31,20 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // JWT configuration
 var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? throw new InvalidOperationException("Thiếu Jwt:Key.");
+    ?? throw new InvalidOperationException("Thiáº¿u Jwt:Key.");
 
 var jwtIssuer = builder.Configuration["Jwt:Issuer"]
-    ?? throw new InvalidOperationException("Thiếu Jwt:Issuer.");
+    ?? throw new InvalidOperationException("Thiáº¿u Jwt:Issuer.");
 
 var jwtAudience = builder.Configuration["Jwt:Audience"]
-    ?? throw new InvalidOperationException("Thiếu Jwt:Audience.");
+    ?? throw new InvalidOperationException("Thiáº¿u Jwt:Audience.");
 
 var jwtKeyBytes = Convert.FromBase64String(jwtKey);
 
 if (jwtKeyBytes.Length < 32)
 {
     throw new InvalidOperationException(
-        "JWT signing key phải có ít nhất 32 bytes."
+        "JWT signing key pháº£i cĂ³ Ă­t nháº¥t 32 bytes."
     );
 }
 
@@ -86,7 +88,7 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
-// Middleware xử lý lỗi
+// Middleware xá»­ lĂ½ lá»—i
 app.UseMiddleware<Middleware>();
 
 if (app.Environment.IsDevelopment())
@@ -102,3 +104,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
