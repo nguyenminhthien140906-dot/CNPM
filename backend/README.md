@@ -724,24 +724,3 @@ Làm trên nhánh riêng (ví dụ `feature/ten-chuc-nang`), chạy `dotnet buil
 
 ---
 
-## 15. Phạm vi hiện tại và hạn chế đã biết
-
-Đã hoàn thành:
-
-- Database 29 bảng, migration SQL 001 đến 007, bộ chạy migration, dữ liệu mẫu.
-- Mapping EF Core cho nhóm danh tính và học vụ.
-- Xác thực JWT, phân quyền theo vai trò.
-- API môn học, syllabus, lớp học, phân công giảng viên, đăng ký sinh viên.
-
-Chưa có hoặc cần lưu ý:
-
-- Chưa có API cho dự án, nhóm, nhiệm vụ, nộp bài, họp, tin nhắn, workspace, đánh giá, thông báo, AI. Các bảng đã có trong database nhưng chưa được map trong EF Core.
-- Chưa có API quản lý người dùng (tạo, sửa, khóa tài khoản). Tài khoản hiện chỉ có từ seed.
-- Chưa có phân trang cho các API danh sách. Phù hợp dữ liệu nhỏ, cần bổ sung khi dữ liệu lớn.
-- Phân quyền hiện theo vai trò, chưa kiểm tra theo sở hữu (ví dụ giảng viên chỉ xem lớp mình phụ trách). Mọi người dùng đăng nhập đều xem được toàn bộ môn và lớp.
-- Chưa cấu hình CORS. Frontend chạy ở origin khác sẽ bị trình duyệt chặn cho đến khi bổ sung.
-- Chưa có `launchSettings.json` và cấu hình HTTPS cho môi trường phát triển.
-- Middleware hiện trả lỗi 500 chung cho mọi ngoại lệ chưa xử lý, kể cả lỗi dữ liệu. Chi tiết chỉ có trong log.
-- Khi hai request đăng ký sinh viên cùng lúc vào lớp sắp đầy, kiểm tra sĩ số có thể bị vượt (chưa khóa ở mức database).
-- Chưa có kiểm thử đơn vị. Kiểm thử hiện là script gọi API thật.
-- File `.down.sql` chưa được backend sử dụng.
