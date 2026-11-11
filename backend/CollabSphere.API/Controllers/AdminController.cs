@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using CollabSphere.API.Authorization;
 
 namespace CollabSphere.API.Controllers;
 
 [ApiController]
 [Route("api/admin")]
-[Authorize(Roles = "ADMIN")]
+[Authorize(Policy = RolePolicies.AdminOnly)]
 public class AdminController : ControllerBase
 {
     [HttpGet("test")]

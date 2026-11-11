@@ -1,4 +1,5 @@
-﻿using CollabSphere.API.Services;
+using CollabSphere.API.Services;
+using CollabSphere.API.Authorization;
 using CollabSphere.Infrastructure.Services;
 using CollabSphere.Application.Auth;
 using System.Text;
@@ -65,7 +66,23 @@ builder.Services
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(RolePolicies.AdminOnly,
+        policy => policy.RequireRole(RoleNames.Admin));
+
+    options.AddPolicy(RolePolicies.HeadOnly,
+        policy => policy.RequireRole(RoleNames.Head));
+
+    options.AddPolicy(RolePolicies.StaffOnly,
+        policy => policy.RequireRole(RoleNames.Staff));
+
+    options.AddPolicy(RolePolicies.LecturerOnly,
+        policy => policy.RequireRole(RoleNames.Lecturer));
+
+    options.AddPolicy(RolePolicies.StudentOnly,
+        policy => policy.RequireRole(RoleNames.Student));
+});
 
 var app = builder.Build();
 
@@ -85,4 +102,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
