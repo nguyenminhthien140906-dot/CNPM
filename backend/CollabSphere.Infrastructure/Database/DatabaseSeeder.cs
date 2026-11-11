@@ -19,7 +19,6 @@ public static class DatabaseSeeder
         if (string.IsNullOrWhiteSpace(defaultPassword))
             throw new InvalidOperationException("Seed:DefaultPassword đang trống.");
 
-        // Hash đúng định dạng mà AuthService dùng để kiểm tra đăng nhập
         var hasher = new PasswordHasher<object>();
         var passwordHash = hasher.HashPassword(new object(), defaultPassword);
 
