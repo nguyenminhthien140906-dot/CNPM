@@ -40,7 +40,7 @@ Các quyền truy cập và thao tác cụ thể được xác định theo yêu
 | Frontend | ReactJS |
 | Backend | ASP.NET Core Web API |
 | Ngôn ngữ Backend | C# |
-| Cơ sở dữ liệu | PostgreSQL |
+| Cơ sở dữ liệu | MySQL |
 | Giao tiếp thời gian thực | WebRTC, Signal, Socket.IO |
 | Hỗ trợ AI | AWS Bedrock |
 | Cloud và lưu trữ | Azure, AWS, Cloudinary, Upstash |
