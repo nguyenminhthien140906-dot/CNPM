@@ -45,7 +45,7 @@ public class AuthService : IAuthService
 
         return new AuthUserDto
         {
-            UserId = user.UserId,
+            UserId = (ulong)user.UserId,
             Username = user.Username,
             Email = user.Email,
             FullName = user.FullName,
