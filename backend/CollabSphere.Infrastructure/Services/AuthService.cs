@@ -1,4 +1,5 @@
-﻿using CollabSphere.Application.Auth;
+using CollabSphere.Application.Auth;
+using CollabSphere.Domain.Entities;
 using CollabSphere.Infrastructure.Entities;
 using CollabSphere.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
@@ -45,7 +46,7 @@ public class AuthService : IAuthService
 
         return new AuthUserDto
         {
-            UserId = user.UserId,
+            UserId = (ulong)user.UserId,
             Username = user.Username,
             Email = user.Email,
             FullName = user.FullName,

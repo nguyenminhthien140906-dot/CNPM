@@ -1,2 +1,3 @@
--- Intentionally a no-op: seed roles may have existed before this migration.
--- Keeping them is safer than deleting role rows that may be referenced by users.
+
+-- Intentionally a no-op.
+-- Seed roles are kept because users may reference them.

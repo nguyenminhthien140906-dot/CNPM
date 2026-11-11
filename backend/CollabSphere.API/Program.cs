@@ -1,5 +1,8 @@
+ feature/leader-backend-core
 ﻿using CollabSphere.API.Services;
 using CollabSphere.API.Authorization;
+using CollabSphere.API.Services;
+ main
 using CollabSphere.Infrastructure.Services;
 using CollabSphere.Application.Auth;
 using CollabSphere.Application.Admin;
@@ -8,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using CollabSphere.Infrastructure.Persistence;
+using CollabSphere.Infrastructure.Database;
 using CollabSphere.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,7 +22,6 @@ builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddOpenApi();
 
-// MySQL
 var connectionString = builder.Configuration
     .GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException(
@@ -29,7 +32,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySQL(connectionString)
 );
 
-// JWT configuration
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("Thiáº¿u Jwt:Key.");
 
@@ -88,7 +90,28 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
+feature/leader-backend-core
 // Middleware xá»­ lĂ½ lá»—i
+
+var migrationPath = Path.Combine(AppContext.BaseDirectory, "migrations", "versions");
+await MigrationEnvironment.ApplyPendingAsync(connectionString, migrationPath);
+
+if (app.Environment.IsDevelopment())
+{
+    var seedPassword = builder.Configuration["Seed:DefaultPassword"];
+
+    if (string.IsNullOrWhiteSpace(seedPassword))
+    {
+        Console.WriteLine("[Seed] Bỏ qua: chưa đặt Seed:DefaultPassword.");
+    }
+    else
+    {
+        var seedPath = Path.Combine(AppContext.BaseDirectory, "seeds");
+        await DatabaseSeeder.SeedAsync(connectionString, seedPath, seedPassword);
+    }
+}
+
+main
 app.UseMiddleware<Middleware>();
 
 if (app.Environment.IsDevelopment())
@@ -104,4 +127,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-

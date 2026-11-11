@@ -1,12 +1,12 @@
 // CollabSphere Database Migration Environment
-// Requires: Npgsql NuGet package
+// Requires: MySqlConnector NuGet package
 
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Npgsql;
+using MySqlConnector;
 
 namespace CollabSphere.Database.Migrations;
 
@@ -17,15 +17,14 @@ public static class MigrationEnvironment
 
     public static string BuildConnectionString()
     {
-        var builder = new NpgsqlConnectionStringBuilder
+        var builder = new MySqlConnectionStringBuilder
         {
-            Host = Env("PGHOST", "localhost"),
-            Port = int.TryParse(Env("PGPORT", "5432"), out var port)
-                ? port : 5432,
-            Username = Env("PGUSER", "postgres"),
-            Password = Env("PGPASSWORD", ""),
-            Database = Env("PGDATABASE", "collabsphere"),
-            IncludeErrorDetail = false
+            Server = Env("MYSQL_HOST", "localhost"),
+            Port = uint.TryParse(Env("MYSQL_PORT", "3306"), out var port)
+                ? port : 3306,
+            UserID = Env("MYSQL_USER", "root"),
+            Password = Env("MYSQL_PASSWORD", ""),
+            Database = Env("MYSQL_DATABASE", "collabsphere")
         };
 
         var connectionString =
@@ -89,18 +88,18 @@ public static class MigrationEnvironment
                 "No migration files found.");
 
         await using var connection =
-            new NpgsqlConnection(BuildConnectionString());
+            new MySqlConnection(BuildConnectionString());
 
         await connection.OpenAsync(cancellationToken);
 
         // Create migration history table
-        await using (var command = new NpgsqlCommand(
+        await using (var command = new MySqlCommand(
             """
-CREATE TABLE IF NOT EXISTS public.schema_migrations (
+            CREATE TABLE IF NOT EXISTS schema_migrations (
                 version VARCHAR(150) PRIMARY KEY,
                 applied_at TIMESTAMP NOT NULL
                     DEFAULT CURRENT_TIMESTAMP
-            );
+            ) ENGINE=InnoDB;
             """,
             connection))
         {
@@ -113,11 +112,11 @@ CREATE TABLE IF NOT EXISTS public.schema_migrations (
             var version = filename[..^".up.sql".Length];
 
             // Check migration status
-            await using var check = new NpgsqlCommand(
+            await using var check = new MySqlCommand(
                 """
                 SELECT EXISTS (
                     SELECT 1
-                    FROM public.schema_migrations
+                    FROM schema_migrations
                     WHERE version = @version
                 )
                 """,
@@ -126,8 +125,9 @@ CREATE TABLE IF NOT EXISTS public.schema_migrations (
             check.Parameters.AddWithValue("version", version);
 
             var alreadyApplied =
-                (bool)(await check.ExecuteScalarAsync(
-                    cancellationToken) ?? false);
+                Convert.ToInt32(
+                    await check.ExecuteScalarAsync(
+                        cancellationToken)) == 1;
 
             if (alreadyApplied)
             {
@@ -147,7 +147,7 @@ CREATE TABLE IF NOT EXISTS public.schema_migrations (
 
             try
             {
-                await using (var apply = new NpgsqlCommand(
+                await using (var apply = new MySqlCommand(
                     sql,
                     connection,
                     transaction))
@@ -157,9 +157,9 @@ CREATE TABLE IF NOT EXISTS public.schema_migrations (
                 }
 
                 // Record migration
-                await using (var record = new NpgsqlCommand(
+                await using (var record = new MySqlCommand(
                     """
-                    INSERT INTO public.schema_migrations(version)
+                    INSERT INTO schema_migrations(version)
                     VALUES (@version)
                     """,
                     connection,
