@@ -1,4 +1,4 @@
-﻿using CollabSphere.API.Services;
+using CollabSphere.API.Services;
 using CollabSphere.Application.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
@@ -21,6 +21,7 @@ public class AuthController : ControllerBase
         _jwtTokenService = jwtTokenService;
     }
 
+    [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login(
         [FromBody] LoginRequestDto request)
