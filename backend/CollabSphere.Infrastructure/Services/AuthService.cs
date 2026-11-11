@@ -1,4 +1,5 @@
-﻿using CollabSphere.Application.Auth;
+using CollabSphere.Domain.Entities;
+using CollabSphere.Application.Auth;
 using CollabSphere.Infrastructure.Entities;
 using CollabSphere.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
