@@ -1,0 +1,295 @@
+
+@page "/classes"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>Danh sách lớp học</PageTitle>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1>Danh sách lớp học</h1>
+            <p>Thông tin các lớp học trong hệ thống CollabSphere.</p>
+        </div>
+    </div>
+
+    <div class="statistics">
+        <div class="stat-card">
+            <span>Tổng số lớp</span>
+            <h2>@Classes.Count</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Tổng sinh viên</span>
+            <h2>@Classes.Sum(x => x.StudentCount)</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Tổng giảng viên</span>
+            <h2>@Classes.Select(x => x.Lecturer).Distinct().Count()</h2>
+        </div>
+    </div>
+
+    <div class="content-card">
+
+        <div class="toolbar">
+            <input placeholder="Tìm kiếm mã lớp hoặc tên lớp..."
+                   @bind="SearchText"
+                   @bind:event="oninput" />
+
+            <select @bind="SelectedSemester">
+                <option value="">Tất cả học kỳ</option>
+                <option value="1">Học kỳ 1</option>
+                <option value="2">Học kỳ 2</option>
+                <option value="3">Học kỳ hè</option>
+            </select>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Mã lớp</th>
+                    <th>Tên lớp</th>
+                    <th>Học kỳ</th>
+                    <th>Năm học</th>
+                    <th>Giảng viên</th>
+                    <th>Sinh viên</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var item in FilteredClasses)
+                {
+                    <tr>
+                        <td>@item.Code</td>
+                        <td>@item.Name</td>
+                        <td>@item.Semester</td>
+                        <td>@item.AcademicYear</td>
+                        <td>@item.Lecturer</td>
+                        <td>@item.StudentCount</td>
+                        <td>
+                            <button class="btn-detail"
+                                    @onclick="() => ViewClass(item)">
+                                Chi tiết
+                            </button>
+                        </td>
+                    </tr>
+                }
+
+                @if (!FilteredClasses.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="empty">
+                            Không tìm thấy lớp học.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (SelectedClass != null)
+    {
+        <div class="modal-overlay">
+            <div class="modal">
+                <h2>Thông tin lớp học</h2>
+
+                <p><strong>Mã lớp:</strong> @SelectedClass.Code</p>
+                <p><strong>Tên lớp:</strong> @SelectedClass.Name</p>
+                <p><strong>Học kỳ:</strong> @SelectedClass.Semester</p>
+                <p><strong>Năm học:</strong> @SelectedClass.AcademicYear</p>
+                <p><strong>Giảng viên:</strong> @SelectedClass.Lecturer</p>
+                <p><strong>Số sinh viên:</strong> @SelectedClass.StudentCount</p>
+
+                <button class="btn-primary" @onclick="CloseDetails">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    }
+
+</div>
+
+@code {
+    private string SearchText = "";
+    private string SelectedSemester = "";
+
+    private ClassModel? SelectedClass;
+
+    private List<ClassModel> Classes = new()
+    {
+        new()
+        {
+            Code = "CNTT01",
+            Name = "Công nghệ thông tin 01",
+            Semester = "1",
+            AcademicYear = "2026-2027",
+            Lecturer = "Nguyễn Văn A",
+            StudentCount = 40
+        },
+        new()
+        {
+            Code = "CNTT02",
+            Name = "Công nghệ thông tin 02",
+            Semester = "2",
+            AcademicYear = "2026-2027",
+            Lecturer = "Trần Văn B",
+            StudentCount = 35
+        },
+        new()
+        {
+            Code = "HTTT01",
+            Name = "Hệ thống thông tin 01",
+            Semester = "1",
+            AcademicYear = "2026-2027",
+            Lecturer = "Lê Văn C",
+            StudentCount = 38
+        }
+    };
+
+    private IEnumerable<ClassModel> FilteredClasses =>
+        Classes.Where(x =>
+            (string.IsNullOrWhiteSpace(SearchText) ||
+             x.Code.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+             x.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(SelectedSemester) ||
+             x.Semester == SelectedSemester)
+        );
+
+    private void ViewClass(ClassModel item)
+    {
+        SelectedClass = item;
+    }
+
+    private void CloseDetails()
+    {
+        SelectedClass = null;
+    }
+
+    public class ClassModel
+    {
+        public string Code { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Semester { get; set; } = "";
+        public string AcademicYear { get; set; } = "";
+        public string Lecturer { get; set; } = "";
+        public int StudentCount { get; set; }
+    }
+}
+
+<style>
+    .page-container {
+        padding: 28px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .page-header h1 {
+        color: #1e293b;
+        font-size: 26px;
+    }
+
+    .page-header p {
+        color: #64748b;
+    }
+
+    .statistics {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin: 25px 0;
+    }
+
+    .stat-card, .content-card {
+        background: white;
+        padding: 22px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+    }
+
+    .stat-card span {
+        color: #64748b;
+    }
+
+    .stat-card h2 {
+        color: #2563eb;
+    }
+
+    .toolbar {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 22px;
+    }
+
+    .toolbar input {
+        flex: 1;
+    }
+
+    input, select {
+        padding: 11px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 14px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    th {
+        background: #f1f5f9;
+    }
+
+    button {
+        padding: 9px 14px;
+        border: none;
+        border-radius: 7px;
+        cursor: pointer;
+    }
+
+    .btn-detail, .btn-primary {
+        background: #2563eb;
+        color: white;
+    }
+
+    .empty {
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, .5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .modal {
+        background: white;
+        padding: 28px;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 450px;
+    }
+
+    @media(max-width: 768px) {
+        .statistics {
+            grid-template-columns: 1fr;
+        }
+
+        .content-card {
+            overflow-x: auto;
+        }
+    }
+</style>
