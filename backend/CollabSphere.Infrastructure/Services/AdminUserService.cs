@@ -1,4 +1,4 @@
-﻿using CollabSphere.Application.Admin;
+using CollabSphere.Application.Admin;
 using CollabSphere.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,10 +21,7 @@ public class AdminUserService : IAdminUserService
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 1, 100);
 
-        var query = _context.Users
-            .AsNoTracking()
-            .Include(u => u.Role)
-            .AsQueryable();
+        var query = _context.Users.AsNoTracking().AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -38,23 +35,34 @@ public class AdminUserService : IAdminUserService
 
         var totalCount = await query.CountAsync();
 
-        var users = await query
+        var rows = await query
             .OrderByDescending(u => u.UserId)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(u => new AdminUserListItemDto
+            .Select(u => new
             {
-                UserId = u.UserId,
-                Username = u.Username,
-                Email = u.Email,
-                FullName = u.FullName,
-                RoleCode = u.Role != null
-                    ? u.Role.RoleCode
-                    : string.Empty,
-                IsActive = u.IsActive,
-                CreatedAt = u.CreatedAt
+                u.UserId,
+                u.Username,
+                u.Email,
+                u.FullName,
+                RoleCode = u.Role != null ? u.Role.RoleCode : string.Empty,
+                u.IsActive,
+                u.CreatedAt
             })
             .ToListAsync();
+
+        var users = rows
+            .Select(r => new AdminUserListItemDto
+            {
+                UserId = (ulong)r.UserId,
+                Username = r.Username,
+                Email = r.Email,
+                FullName = r.FullName,
+                RoleCode = r.RoleCode,
+                IsActive = r.IsActive,
+                CreatedAt = r.CreatedAt
+            })
+            .ToList();
 
         return new AdminUserPageDto
         {
@@ -62,41 +70,57 @@ public class AdminUserService : IAdminUserService
             Page = page,
             PageSize = pageSize,
             TotalCount = totalCount,
-            TotalPages = (int)Math.Ceiling(
-                totalCount / (double)pageSize)
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
         };
     }
 
-    public async Task<AdminUserDetailDto?> GetUserByIdAsync(
-        ulong userId)
+    public async Task<AdminUserDetailDto?> GetUserByIdAsync(ulong userId)
     {
-        return await _context.Users
+        var id = (long)userId;
+
+        var row = await _context.Users
             .AsNoTracking()
-            .Where(u => u.UserId == userId)
-            .Select(u => new AdminUserDetailDto
+            .Where(u => u.UserId == id)
+            .Select(u => new
             {
-                UserId = u.UserId,
-                Username = u.Username,
-                Email = u.Email,
-                FullName = u.FullName,
-                RoleCode = u.Role != null
-                    ? u.Role.RoleCode
-                    : string.Empty,
-                IsActive = u.IsActive,
-                CreatedAt = u.CreatedAt,
-                UpdatedAt = u.UpdatedAt,
-                AvatarUrl = u.AvatarUrl,
-                Phone = u.Phone
+                u.UserId,
+                u.Username,
+                u.Email,
+                u.FullName,
+                RoleCode = u.Role != null ? u.Role.RoleCode : string.Empty,
+                u.IsActive,
+                u.CreatedAt,
+                u.UpdatedAt,
+                u.AvatarUrl,
+                u.Phone
             })
             .FirstOrDefaultAsync();
+
+        if (row == null)
+        {
+            return null;
+        }
+
+        return new AdminUserDetailDto
+        {
+            UserId = (ulong)row.UserId,
+            Username = row.Username,
+            Email = row.Email,
+            FullName = row.FullName,
+            RoleCode = row.RoleCode,
+            IsActive = row.IsActive,
+            CreatedAt = row.CreatedAt,
+            UpdatedAt = row.UpdatedAt,
+            AvatarUrl = row.AvatarUrl,
+            Phone = row.Phone
+        };
     }
 
-    public async Task<bool> SetUserStatusAsync(
-        ulong userId,
-        bool isActive)
+    public async Task<bool> SetUserStatusAsync(ulong userId, bool isActive)
     {
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.UserId == userId);
+        var id = (long)userId;
+
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
 
         if (user == null)
         {
