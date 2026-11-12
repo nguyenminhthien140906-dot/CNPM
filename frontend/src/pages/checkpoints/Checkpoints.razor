@@ -1,0 +1,405 @@
+
+@page "/checkpoints"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>Checkpoint</PageTitle>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1>Quản lý Checkpoint</h1>
+            <p>Theo dõi các mốc tiến độ của dự án PBL.</p>
+        </div>
+
+        <button class="btn-primary" @onclick="OpenForm">
+            + Thêm checkpoint
+        </button>
+    </div>
+
+    <div class="statistics">
+        <div class="stat-card">
+            <span>Tổng checkpoint</span>
+            <h2>@Checkpoints.Count</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Đã hoàn thành</span>
+            <h2>@CountStatus("COMPLETED")</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Đang thực hiện</span>
+            <h2>@CountStatus("IN_PROGRESS")</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Chưa bắt đầu</span>
+            <h2>@CountStatus("PENDING")</h2>
+        </div>
+    </div>
+
+    <div class="content-card">
+
+        <div class="toolbar">
+            <input placeholder="Tìm kiếm checkpoint..."
+                   @bind="SearchText"
+                   @bind:event="oninput" />
+
+            <select @bind="SelectedStatus">
+                <option value="">Tất cả trạng thái</option>
+                <option value="PENDING">Chưa bắt đầu</option>
+                <option value="IN_PROGRESS">Đang thực hiện</option>
+                <option value="COMPLETED">Đã hoàn thành</option>
+            </select>
+        </div>
+
+        @if (ShowForm)
+        {
+            <div class="form-card">
+
+                <h3>Thêm checkpoint mới</h3>
+
+                <label>Tên checkpoint</label>
+                <input @bind="NewCheckpoint.Name"
+                       placeholder="Nhập tên checkpoint" />
+
+                <label>Dự án</label>
+                <input @bind="NewCheckpoint.Project"
+                       placeholder="Tên dự án" />
+
+                <label>Mô tả</label>
+                <textarea @bind="NewCheckpoint.Description"
+                          placeholder="Mô tả nội dung checkpoint">
+                </textarea>
+
+                <label>Ngày hết hạn</label>
+                <input type="date"
+                       @bind="NewCheckpoint.DueDate" />
+
+                <label>Trạng thái</label>
+                <select @bind="NewCheckpoint.Status">
+                    <option value="PENDING">Chưa bắt đầu</option>
+                    <option value="IN_PROGRESS">Đang thực hiện</option>
+                    <option value="COMPLETED">Đã hoàn thành</option>
+                </select>
+
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <p class="error">@ErrorMessage</p>
+                }
+
+                <div class="form-actions">
+                    <button class="btn-primary"
+                            @onclick="AddCheckpoint">
+                        Lưu checkpoint
+                    </button>
+
+                    <button class="btn-secondary"
+                            @onclick="CloseForm">
+                        Hủy
+                    </button>
+                </div>
+
+            </div>
+        }
+
+        <div class="checkpoint-list">
+
+            @foreach (var item in FilteredCheckpoints)
+            {
+                <div class="checkpoint-item">
+
+                    <div class="checkpoint-info">
+                        <h3>@item.Name</h3>
+                        <p>Dự án: @item.Project</p>
+                        <p>@item.Description</p>
+                        <small>Hạn hoàn thành: @item.DueDate.ToString("dd/MM/yyyy")</small>
+                    </div>
+
+                    <div class="checkpoint-actions">
+                        <select @bind="item.Status">
+                            <option value="PENDING">Chưa bắt đầu</option>
+                            <option value="IN_PROGRESS">Đang thực hiện</option>
+                            <option value="COMPLETED">Đã hoàn thành</option>
+                        </select>
+
+                        <button class="btn-delete"
+                                @onclick="() => DeleteCheckpoint(item)">
+                            Xóa
+                        </button>
+                    </div>
+
+                </div>
+            }
+
+            @if (!FilteredCheckpoints.Any())
+            {
+                <p class="empty">
+                    Không có checkpoint phù hợp.
+                </p>
+            }
+
+        </div>
+
+    </div>
+
+</div>
+
+@code {
+    private string SearchText = "";
+    private string SelectedStatus = "";
+
+    private bool ShowForm = false;
+    private string ErrorMessage = "";
+
+    private CheckpointModel NewCheckpoint = new();
+
+    private List<CheckpointModel> Checkpoints = new()
+    {
+        new()
+        {
+            Name = "Phân tích yêu cầu",
+            Project = "CollabSphere",
+            Description = "Hoàn thành phân tích yêu cầu hệ thống.",
+            DueDate = DateTime.Today.AddDays(5),
+            Status = "COMPLETED"
+        },
+        new()
+        {
+            Name = "Thiết kế cơ sở dữ liệu",
+            Project = "CollabSphere",
+            Description = "Thiết kế ERD và hoàn thiện schema.",
+            DueDate = DateTime.Today.AddDays(10),
+            Status = "IN_PROGRESS"
+        },
+        new()
+        {
+            Name = "Hoàn thiện giao diện",
+            Project = "CollabSphere",
+            Description = "Xây dựng giao diện các chức năng PBL.",
+            DueDate = DateTime.Today.AddDays(20),
+            Status = "PENDING"
+        }
+    };
+
+    private IEnumerable<CheckpointModel> FilteredCheckpoints =>
+        Checkpoints.Where(item =>
+            (string.IsNullOrWhiteSpace(SearchText) ||
+             item.Name.Contains(
+                 SearchText,
+                 StringComparison.OrdinalIgnoreCase
+             ) ||
+             item.Project.Contains(
+                 SearchText,
+                 StringComparison.OrdinalIgnoreCase
+             )) &&
+            (string.IsNullOrWhiteSpace(SelectedStatus) ||
+             item.Status == SelectedStatus)
+        );
+
+    private int CountStatus(string status)
+    {
+        return Checkpoints.Count(x => x.Status == status);
+    }
+
+    private void OpenForm()
+    {
+        NewCheckpoint = new CheckpointModel();
+        NewCheckpoint.DueDate = DateTime.Today;
+        ErrorMessage = "";
+        ShowForm = true;
+    }
+
+    private void CloseForm()
+    {
+        ShowForm = false;
+        NewCheckpoint = new CheckpointModel();
+        ErrorMessage = "";
+    }
+
+    private void AddCheckpoint()
+    {
+        if (string.IsNullOrWhiteSpace(NewCheckpoint.Name) ||
+            string.IsNullOrWhiteSpace(NewCheckpoint.Project))
+        {
+            ErrorMessage = "Vui lòng nhập tên checkpoint và dự án.";
+            return;
+        }
+
+        Checkpoints.Add(new CheckpointModel
+        {
+            Name = NewCheckpoint.Name.Trim(),
+            Project = NewCheckpoint.Project.Trim(),
+            Description = NewCheckpoint.Description,
+            DueDate = NewCheckpoint.DueDate,
+            Status = NewCheckpoint.Status
+        });
+
+        CloseForm();
+    }
+
+    private void DeleteCheckpoint(CheckpointModel item)
+    {
+        Checkpoints.Remove(item);
+    }
+
+    public class CheckpointModel
+    {
+        public string Name { get; set; } = "";
+        public string Project { get; set; } = "";
+        public string Description { get; set; } = "";
+        public DateTime DueDate { get; set; } = DateTime.Today;
+        public string Status { get; set; } = "PENDING";
+    }
+}
+
+<style>
+    .page-container {
+        padding: 28px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .page-header h1 {
+        color: #1e293b;
+        font-size: 26px;
+    }
+
+    .page-header p {
+        color: #64748b;
+    }
+
+    .statistics {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card, .content-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        padding: 22px;
+        border-radius: 12px;
+    }
+
+    .stat-card span {
+        color: #64748b;
+    }
+
+    .stat-card h2 {
+        color: #2563eb;
+        font-size: 28px;
+    }
+
+    .toolbar {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    input, select, textarea {
+        padding: 11px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+    }
+
+    .toolbar input {
+        flex: 1;
+    }
+
+    button {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 7px;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: #2563eb;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .btn-delete {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .form-card {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-width: 550px;
+        background: #f8fafc;
+        padding: 22px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+    }
+
+    .form-card textarea {
+        min-height: 90px;
+        resize: vertical;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .checkpoint-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        padding: 20px 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .checkpoint-info h3 {
+        color: #1e293b;
+    }
+
+    .checkpoint-info p,
+    .checkpoint-info small {
+        color: #64748b;
+    }
+
+    .checkpoint-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .error {
+        color: #dc2626;
+    }
+
+    .empty {
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    @media (max-width: 768px) {
+        .statistics {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .checkpoint-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
