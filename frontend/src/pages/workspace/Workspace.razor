@@ -1,0 +1,826 @@
+
+@page "/workspace"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>Không gian làm việc</PageTitle>
+
+<div class="workspace-container">
+
+    <div class="workspace-header">
+        <div>
+            <span class="workspace-label">PROJECT WORKSPACE</span>
+            <h1>Không gian làm việc</h1>
+            <p>Theo dõi và phối hợp hoạt động trong dự án PBL.</p>
+        </div>
+
+        <select @bind="SelectedProjectId">
+            @foreach (var project in Projects)
+            {
+                <option value="@project.Id">@project.Name</option>
+            }
+        </select>
+    </div>
+
+    @if (CurrentProject != null)
+    {
+        <div class="project-banner">
+            <div>
+                <span class="project-code">@CurrentProject.Code</span>
+                <h2>@CurrentProject.Name</h2>
+                <p>@CurrentProject.Description</p>
+            </div>
+
+            <span class="project-status">
+                @CurrentProject.Status
+            </span>
+        </div>
+
+        <div class="statistics">
+
+            <div class="stat-card">
+                <span>Thành viên</span>
+                <h2>@CurrentProject.Members.Count</h2>
+            </div>
+
+            <div class="stat-card">
+                <span>Tổng nhiệm vụ</span>
+                <h2>@CurrentTasks.Count</h2>
+            </div>
+
+            <div class="stat-card">
+                <span>Đã hoàn thành</span>
+                <h2>@CurrentTasks.Count(x => x.Status == "COMPLETED")</h2>
+            </div>
+
+            <div class="stat-card">
+                <span>Tiến độ</span>
+                <h2>@ProjectProgress%</h2>
+            </div>
+
+        </div>
+
+        <div class="workspace-grid">
+
+            <div class="main-content">
+
+                <div class="section-header">
+                    <div>
+                        <h3>Bảng công việc</h3>
+                        <p>Quản lý và cập nhật tiến độ nhiệm vụ.</p>
+                    </div>
+
+                    <button class="btn-primary" @onclick="OpenTaskForm">
+                        + Thêm nhiệm vụ
+                    </button>
+                </div>
+
+                @if (ShowTaskForm)
+                {
+                    <div class="task-form">
+
+                        <h3>Thêm nhiệm vụ mới</h3>
+
+                        <label>Tên nhiệm vụ</label>
+                        <input @bind="NewTask.Name"
+                               placeholder="Nhập tên nhiệm vụ" />
+
+                        <label>Người thực hiện</label>
+                        <select @bind="NewTask.Assignee">
+                            <option value="">Chọn thành viên</option>
+                            @foreach (var member in CurrentProject.Members)
+                            {
+                                <option value="@member">@member</option>
+                            }
+                        </select>
+
+                        <label>Thời hạn</label>
+                        <input type="date" @bind="NewTask.DueDate" />
+
+                        <label>Trạng thái</label>
+                        <select @bind="NewTask.Status">
+                            <option value="PENDING">Chưa bắt đầu</option>
+                            <option value="IN_PROGRESS">Đang thực hiện</option>
+                            <option value="COMPLETED">Hoàn thành</option>
+                        </select>
+
+                        @if (!string.IsNullOrEmpty(ErrorMessage))
+                        {
+                            <p class="error">@ErrorMessage</p>
+                        }
+
+                        <div class="form-actions">
+                            <button class="btn-primary" @onclick="AddTask">
+                                Lưu nhiệm vụ
+                            </button>
+
+                            <button class="btn-secondary" @onclick="CloseTaskForm">
+                                Hủy
+                            </button>
+                        </div>
+
+                    </div>
+                }
+
+                <div class="task-board">
+
+                    <div class="task-column">
+                        <div class="column-header">
+                            <h4>Chưa bắt đầu</h4>
+                            <span>@GetTasksByStatus("PENDING").Count()</span>
+                        </div>
+
+                        @foreach (var task in GetTasksByStatus("PENDING"))
+                        {
+                            <div class="task-card">
+                                <h4>@task.Name</h4>
+                                <p>Người thực hiện: @task.Assignee</p>
+                                <small>Hạn: @task.DueDate.ToString("dd/MM/yyyy")</small>
+
+                                <select @bind="task.Status">
+                                    <option value="PENDING">Chưa bắt đầu</option>
+                                    <option value="IN_PROGRESS">Đang thực hiện</option>
+                                    <option value="COMPLETED">Hoàn thành</option>
+                                </select>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="task-column">
+                        <div class="column-header">
+                            <h4>Đang thực hiện</h4>
+                            <span>@GetTasksByStatus("IN_PROGRESS").Count()</span>
+                        </div>
+
+                        @foreach (var task in GetTasksByStatus("IN_PROGRESS"))
+                        {
+                            <div class="task-card">
+                                <h4>@task.Name</h4>
+                                <p>Người thực hiện: @task.Assignee</p>
+                                <small>Hạn: @task.DueDate.ToString("dd/MM/yyyy")</small>
+
+                                <select @bind="task.Status">
+                                    <option value="PENDING">Chưa bắt đầu</option>
+                                    <option value="IN_PROGRESS">Đang thực hiện</option>
+                                    <option value="COMPLETED">Hoàn thành</option>
+                                </select>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="task-column">
+                        <div class="column-header">
+                            <h4>Hoàn thành</h4>
+                            <span>@GetTasksByStatus("COMPLETED").Count()</span>
+                        </div>
+
+                        @foreach (var task in GetTasksByStatus("COMPLETED"))
+                        {
+                            <div class="task-card">
+                                <h4>@task.Name</h4>
+                                <p>Người thực hiện: @task.Assignee</p>
+                                <small>Hạn: @task.DueDate.ToString("dd/MM/yyyy")</small>
+
+                                <select @bind="task.Status">
+                                    <option value="PENDING">Chưa bắt đầu</option>
+                                    <option value="IN_PROGRESS">Đang thực hiện</option>
+                                    <option value="COMPLETED">Hoàn thành</option>
+                                </select>
+                            </div>
+                        }
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="sidebar">
+
+                <div class="sidebar-card">
+                    <h3>Thành viên nhóm</h3>
+
+                    @foreach (var member in CurrentProject.Members)
+                    {
+                        <div class="member-item">
+                            <div class="member-avatar">
+                                @GetInitials(member)
+                            </div>
+
+                            <div>
+                                <strong>@member</strong>
+                                <p>@(member == CurrentProject.Leader ? "Trưởng nhóm" : "Thành viên")</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="sidebar-card">
+                    <h3>Tiến độ dự án</h3>
+
+                    <div class="progress-info">
+                        <strong>@ProjectProgress%</strong>
+                        <span>Hoàn thành</span>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div class="progress-value"
+                             style="@($"width: {ProjectProgress}%")">
+                        </div>
+                    </div>
+
+                    <div class="project-dates">
+                        <p>Bắt đầu: @CurrentProject.StartDate.ToString("dd/MM/yyyy")</p>
+                        <p>Kết thúc: @CurrentProject.EndDate.ToString("dd/MM/yyyy")</p>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h3>Checkpoint</h3>
+
+                    @foreach (var checkpoint in CurrentProject.Checkpoints)
+                    {
+                        <div class="checkpoint-item">
+                            <strong>@checkpoint.Name</strong>
+                            <p>@checkpoint.DueDate.ToString("dd/MM/yyyy")</p>
+                            <span>@checkpoint.Status</span>
+                        </div>
+                    }
+                </div>
+
+            </div>
+
+        </div>
+    }
+    else
+    {
+        <div class="empty">
+            Không có dự án nào trong không gian làm việc.
+        </div>
+    }
+
+</div>
+
+@code {
+    private int SelectedProjectId = 1;
+    private int NextTaskId = 5;
+
+    private bool ShowTaskForm = false;
+    private string ErrorMessage = "";
+
+    private WorkspaceTask NewTask = new();
+
+    private ProjectWorkspace? CurrentProject =>
+        Projects.FirstOrDefault(x => x.Id == SelectedProjectId);
+
+    private List<ProjectWorkspace> Projects = new()
+    {
+        new()
+        {
+            Id = 1,
+            Code = "PBL001",
+            Name = "CollabSphere",
+            Description = "Hệ thống hỗ trợ học tập theo phương pháp Project-Based Learning.",
+            Status = "Đang thực hiện",
+            Leader = "Nguyễn Văn A",
+            StartDate = DateTime.Today.AddDays(-20),
+            EndDate = DateTime.Today.AddDays(30),
+            Members = new()
+            {
+                "Nguyễn Văn A",
+                "Trần Văn B",
+                "Lê Văn C",
+                "Phạm Văn D",
+                "Hoàng Văn E"
+            },
+            Checkpoints = new()
+            {
+                new()
+                {
+                    Name = "Hoàn thành phân tích",
+                    DueDate = DateTime.Today.AddDays(-5),
+                    Status = "Hoàn thành"
+                },
+                new()
+                {
+                    Name = "Hoàn thiện giao diện",
+                    DueDate = DateTime.Today.AddDays(5),
+                    Status = "Đang thực hiện"
+                },
+                new()
+                {
+                    Name = "Kiểm thử hệ thống",
+                    DueDate = DateTime.Today.AddDays(15),
+                    Status = "Chưa bắt đầu"
+                }
+            }
+        },
+        new()
+        {
+            Id = 2,
+            Code = "PBL002",
+            Name = "Website bán hàng",
+            Description = "Xây dựng hệ thống bán hàng trực tuyến.",
+            Status = "Đang thực hiện",
+            Leader = "Trần Văn B",
+            StartDate = DateTime.Today.AddDays(-10),
+            EndDate = DateTime.Today.AddDays(20),
+            Members = new()
+            {
+                "Trần Văn B",
+                "Lê Văn C",
+                "Phạm Văn D"
+            }
+        }
+    };
+
+    private List<WorkspaceTask> CurrentTasks =>
+        CurrentProject?.Tasks ?? new List<WorkspaceTask>();
+
+    private int ProjectProgress =>
+        CurrentTasks.Count == 0 ? 0 :
+        (int)Math.Round(
+            (double)CurrentTasks.Count(x => x.Status == "COMPLETED")
+            / CurrentTasks.Count * 100
+        );
+
+    private IEnumerable<WorkspaceTask> GetTasksByStatus(string status)
+    {
+        return CurrentTasks.Where(x => x.Status == status);
+    }
+
+    private void OpenTaskForm()
+    {
+        NewTask = new WorkspaceTask
+        {
+            DueDate = DateTime.Today.AddDays(7),
+            Status = "PENDING"
+        };
+
+        ErrorMessage = "";
+        ShowTaskForm = true;
+    }
+
+    private void AddTask()
+    {
+        if (CurrentProject == null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(NewTask.Name) ||
+            string.IsNullOrWhiteSpace(NewTask.Assignee))
+        {
+            ErrorMessage = "Vui lòng nhập tên nhiệm vụ và người thực hiện.";
+            return;
+        }
+
+        CurrentProject.Tasks.Add(new WorkspaceTask
+        {
+            Id = NextTaskId++,
+            Name = NewTask.Name.Trim(),
+            Assignee = NewTask.Assignee,
+            DueDate = NewTask.DueDate,
+            Status = NewTask.Status
+        });
+
+        CloseTaskForm();
+    }
+
+    private void CloseTaskForm()
+    {
+        ShowTaskForm = false;
+        NewTask = new WorkspaceTask();
+        ErrorMessage = "";
+    }
+
+    private string GetInitials(string name)
+    {
+        var words = name.Split(
+            ' ',
+            StringSplitOptions.RemoveEmptyEntries
+        );
+
+        return string.Concat(
+            words.Take(2).Select(x => x[0])
+        ).ToUpperInvariant();
+    }
+
+    public class ProjectWorkspace
+    {
+        public int Id { get; set; }
+        public string Code { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
+        public string Status { get; set; } = "";
+        public string Leader { get; set; } = "";
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+
+        public List<string> Members { get; set; } = new();
+
+        public List<WorkspaceTask> Tasks { get; set; } = new()
+        {
+            new()
+            {
+                Id = 1,
+                Name = "Phân tích yêu cầu",
+                Assignee = "Nguyễn Văn A",
+                Status = "COMPLETED",
+                DueDate = DateTime.Today.AddDays(-10)
+            },
+            new()
+            {
+                Id = 2,
+                Name = "Thiết kế database",
+                Assignee = "Trần Văn B",
+                Status = "COMPLETED",
+                DueDate = DateTime.Today.AddDays(-5)
+            },
+            new()
+            {
+                Id = 3,
+                Name = "Xây dựng giao diện",
+                Assignee = "Lê Văn C",
+                Status = "IN_PROGRESS",
+                DueDate = DateTime.Today.AddDays(5)
+            },
+            new()
+            {
+                Id = 4,
+                Name = "Kiểm thử API",
+                Assignee = "Phạm Văn D",
+                Status = "PENDING",
+                DueDate = DateTime.Today.AddDays(15)
+            }
+        };
+
+        public List<WorkspaceCheckpoint> Checkpoints { get; set; } = new();
+    }
+
+    public class WorkspaceTask
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Assignee { get; set; } = "";
+        public DateTime DueDate { get; set; } = DateTime.Today;
+        public string Status { get; set; } = "PENDING";
+    }
+
+    public class WorkspaceCheckpoint
+    {
+        public string Name { get; set; } = "";
+        public DateTime DueDate { get; set; }
+        public string Status { get; set; } = "";
+    }
+}
+
+<style>
+    .workspace-container {
+        padding: 28px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .workspace-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        gap: 15px;
+    }
+
+    .workspace-label {
+        color: #2563eb;
+        font-size: 12px;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+
+    .workspace-header h1 {
+        color: #1e293b;
+        font-size: 27px;
+    }
+
+    .workspace-header p {
+        color: #64748b;
+    }
+
+    .workspace-header select {
+        padding: 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: white;
+    }
+
+    .project-banner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        background: white;
+        padding: 25px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        margin-bottom: 22px;
+    }
+
+    .project-code {
+        color: #2563eb;
+        font-size: 13px;
+    }
+
+    .project-banner h2 {
+        color: #1e293b;
+        margin: 8px 0;
+    }
+
+    .project-banner p {
+        color: #64748b;
+    }
+
+    .project-status {
+        padding: 8px 12px;
+        background: #dbeafe;
+        color: #1d4ed8;
+        border-radius: 20px;
+        white-space: nowrap;
+    }
+
+    .statistics {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 25px;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+    }
+
+    .stat-card span {
+        color: #64748b;
+    }
+
+    .stat-card h2 {
+        color: #2563eb;
+        font-size: 28px;
+    }
+
+    .workspace-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        gap: 22px;
+        align-items: start;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .section-header h3 {
+        color: #1e293b;
+    }
+
+    .section-header p {
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    button {
+        padding: 10px 14px;
+        border: none;
+        border-radius: 7px;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: #2563eb;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .task-form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: white;
+        padding: 22px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+
+    input, select {
+        padding: 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .error {
+        color: #dc2626;
+    }
+
+    .task-board {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .task-column {
+        min-width: 0;
+        padding: 12px;
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+
+    .column-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 15px;
+    }
+
+    .column-header h4 {
+        color: #334155;
+        font-size: 13px;
+    }
+
+    .column-header span {
+        background: white;
+        padding: 5px 9px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+
+    .task-card {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 14px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 9px;
+        margin-bottom: 12px;
+    }
+
+    .task-card h4 {
+        color: #1e293b;
+        font-size: 14px;
+    }
+
+    .task-card p, .task-card small {
+        color: #64748b;
+        font-size: 12px;
+    }
+
+    .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .sidebar-card {
+        background: white;
+        padding: 20px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+    }
+
+    .sidebar-card h3 {
+        color: #1e293b;
+        margin-bottom: 18px;
+    }
+
+    .member-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .member-avatar {
+        width: 38px;
+        height: 38px;
+        flex-shrink: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        background: #dbeafe;
+        color: #2563eb;
+        font-weight: bold;
+    }
+
+    .member-item p {
+        color: #94a3b8;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    .progress-info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+
+    .progress-info strong {
+        color: #2563eb;
+        font-size: 24px;
+    }
+
+    .progress-info span {
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .progress-bar {
+        height: 9px;
+        background: #e2e8f0;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-value {
+        height: 100%;
+        background: #2563eb;
+    }
+
+    .project-dates {
+        margin-top: 15px;
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .checkpoint-item {
+        padding: 12px 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .checkpoint-item p {
+        color: #64748b;
+        font-size: 12px;
+        margin: 7px 0;
+    }
+
+    .checkpoint-item span {
+        color: #2563eb;
+        font-size: 12px;
+    }
+
+    .empty {
+        text-align: center;
+        padding: 30px;
+        color: #94a3b8;
+    }
+
+    @media(max-width: 1100px) {
+        .workspace-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media(max-width: 750px) {
+        .statistics {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .task-board {
+            grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+            grid-template-columns: 1fr;
+        }
+
+        .workspace-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .project-banner {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
