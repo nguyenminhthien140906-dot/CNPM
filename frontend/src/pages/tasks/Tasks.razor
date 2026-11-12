@@ -1,0 +1,514 @@
+
+@page "/tasks"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>Quản lý nhiệm vụ</PageTitle>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1>Quản lý nhiệm vụ</h1>
+            <p>Theo dõi và phân công công việc trong các dự án PBL.</p>
+        </div>
+
+        <button class="btn-primary" @onclick="OpenCreateForm">
+            + Thêm nhiệm vụ
+        </button>
+    </div>
+
+    <div class="statistics">
+        <div class="stat-card">
+            <span>Tổng nhiệm vụ</span>
+            <h2>@Tasks.Count</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Chưa bắt đầu</span>
+            <h2>@CountStatus("PENDING")</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Đang thực hiện</span>
+            <h2>@CountStatus("IN_PROGRESS")</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Hoàn thành</span>
+            <h2>@CountStatus("COMPLETED")</h2>
+        </div>
+    </div>
+
+    <div class="content-card">
+
+        <div class="toolbar">
+            <input placeholder="Tìm kiếm nhiệm vụ..."
+                   @bind="SearchText"
+                   @bind:event="oninput" />
+
+            <select @bind="SelectedStatus">
+                <option value="">Tất cả trạng thái</option>
+                <option value="PENDING">Chưa bắt đầu</option>
+                <option value="IN_PROGRESS">Đang thực hiện</option>
+                <option value="COMPLETED">Hoàn thành</option>
+            </select>
+        </div>
+
+        @if (ShowForm)
+        {
+            <div class="form-card">
+
+                <h3>@(EditingTask == null ? "Thêm nhiệm vụ mới" : "Chỉnh sửa nhiệm vụ")</h3>
+
+                <label>Tên nhiệm vụ</label>
+                <input @bind="FormData.Name"
+                       placeholder="Nhập tên nhiệm vụ" />
+
+                <label>Mô tả</label>
+                <textarea @bind="FormData.Description"
+                          placeholder="Mô tả nội dung công việc">
+                </textarea>
+
+                <label>Dự án</label>
+                <input @bind="FormData.Project"
+                       placeholder="Tên dự án" />
+
+                <label>Người thực hiện</label>
+                <input @bind="FormData.Assignee"
+                       placeholder="Tên thành viên" />
+
+                <label>Ngày hết hạn</label>
+                <input type="date" @bind="FormData.DueDate" />
+
+                <label>Trạng thái</label>
+                <select @bind="FormData.Status">
+                    <option value="PENDING">Chưa bắt đầu</option>
+                    <option value="IN_PROGRESS">Đang thực hiện</option>
+                    <option value="COMPLETED">Hoàn thành</option>
+                </select>
+
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <p class="error">@ErrorMessage</p>
+                }
+
+                <div class="form-actions">
+                    <button class="btn-primary" @onclick="SaveTask">
+                        Lưu nhiệm vụ
+                    </button>
+
+                    <button class="btn-secondary" @onclick="CloseForm">
+                        Hủy
+                    </button>
+                </div>
+
+            </div>
+        }
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nhiệm vụ</th>
+                        <th>Dự án</th>
+                        <th>Người thực hiện</th>
+                        <th>Thời hạn</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in FilteredTasks)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@item.Name</strong>
+                                <p class="description">@item.Description</p>
+                            </td>
+
+                            <td>@item.Project</td>
+                            <td>@item.Assignee</td>
+                            <td>@item.DueDate.ToString("dd/MM/yyyy")</td>
+
+                            <td>
+                                <span class="status-badge @item.Status.ToLower()">
+                                    @GetStatusName(item.Status)
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-edit"
+                                            @onclick="() => EditTask(item)">
+                                        Sửa
+                                    </button>
+
+                                    <button class="btn-delete"
+                                            @onclick="() => DeleteTask(item)">
+                                        Xóa
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+
+                    @if (!FilteredTasks.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="empty">
+                                Không tìm thấy nhiệm vụ.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    private string SearchText = "";
+    private string SelectedStatus = "";
+
+    private bool ShowForm = false;
+    private string ErrorMessage = "";
+
+    private int NextId = 4;
+
+    private TaskModel FormData = new();
+    private TaskModel? EditingTask;
+
+    private List<TaskModel> Tasks = new()
+    {
+        new()
+        {
+            Id = 1,
+            Name = "Thiết kế cơ sở dữ liệu",
+            Description = "Xây dựng ERD và schema hệ thống.",
+            Project = "CollabSphere",
+            Assignee = "Nguyễn Văn A",
+            DueDate = DateTime.Today.AddDays(5),
+            Status = "COMPLETED"
+        },
+        new()
+        {
+            Id = 2,
+            Name = "Xây dựng giao diện",
+            Description = "Hoàn thiện giao diện các chức năng.",
+            Project = "CollabSphere",
+            Assignee = "Trần Văn B",
+            DueDate = DateTime.Today.AddDays(10),
+            Status = "IN_PROGRESS"
+        },
+        new()
+        {
+            Id = 3,
+            Name = "Kiểm thử API",
+            Description = "Kiểm tra các chức năng backend.",
+            Project = "CollabSphere",
+            Assignee = "Lê Văn C",
+            DueDate = DateTime.Today.AddDays(15),
+            Status = "PENDING"
+        }
+    };
+
+    private IEnumerable<TaskModel> FilteredTasks =>
+        Tasks.Where(x =>
+            (string.IsNullOrWhiteSpace(SearchText) ||
+             x.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+             x.Project.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+             x.Assignee.Contains(SearchText, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(SelectedStatus) ||
+             x.Status == SelectedStatus)
+        );
+
+    private int CountStatus(string status)
+    {
+        return Tasks.Count(x => x.Status == status);
+    }
+
+    private void OpenCreateForm()
+    {
+        EditingTask = null;
+
+        FormData = new TaskModel
+        {
+            DueDate = DateTime.Today.AddDays(7),
+            Status = "PENDING"
+        };
+
+        ErrorMessage = "";
+        ShowForm = true;
+    }
+
+    private void EditTask(TaskModel item)
+    {
+        EditingTask = item;
+
+        FormData = new TaskModel
+        {
+            Name = item.Name,
+            Description = item.Description,
+            Project = item.Project,
+            Assignee = item.Assignee,
+            DueDate = item.DueDate,
+            Status = item.Status
+        };
+
+        ErrorMessage = "";
+        ShowForm = true;
+    }
+
+    private void SaveTask()
+    {
+        if (string.IsNullOrWhiteSpace(FormData.Name) ||
+            string.IsNullOrWhiteSpace(FormData.Project) ||
+            string.IsNullOrWhiteSpace(FormData.Assignee))
+        {
+            ErrorMessage = "Vui lòng nhập đầy đủ thông tin nhiệm vụ.";
+            return;
+        }
+
+        if (EditingTask != null)
+        {
+            EditingTask.Name = FormData.Name.Trim();
+            EditingTask.Description = FormData.Description.Trim();
+            EditingTask.Project = FormData.Project.Trim();
+            EditingTask.Assignee = FormData.Assignee.Trim();
+            EditingTask.DueDate = FormData.DueDate;
+            EditingTask.Status = FormData.Status;
+        }
+        else
+        {
+            Tasks.Add(new TaskModel
+            {
+                Id = NextId++,
+                Name = FormData.Name.Trim(),
+                Description = FormData.Description.Trim(),
+                Project = FormData.Project.Trim(),
+                Assignee = FormData.Assignee.Trim(),
+                DueDate = FormData.DueDate,
+                Status = FormData.Status
+            });
+        }
+
+        CloseForm();
+    }
+
+    private void DeleteTask(TaskModel item)
+    {
+        Tasks.Remove(item);
+    }
+
+    private void CloseForm()
+    {
+        ShowForm = false;
+        EditingTask = null;
+        FormData = new TaskModel();
+        ErrorMessage = "";
+    }
+
+    private string GetStatusName(string status)
+    {
+        return status switch
+        {
+            "PENDING" => "Chưa bắt đầu",
+            "IN_PROGRESS" => "Đang thực hiện",
+            "COMPLETED" => "Hoàn thành",
+            _ => status
+        };
+    }
+
+    public class TaskModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
+        public string Project { get; set; } = "";
+        public string Assignee { get; set; } = "";
+        public DateTime DueDate { get; set; } = DateTime.Today;
+        public string Status { get; set; } = "PENDING";
+    }
+}
+
+<style>
+    .page-container {
+        padding: 28px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .page-header h1 {
+        color: #1e293b;
+        font-size: 26px;
+    }
+
+    .page-header p {
+        color: #64748b;
+    }
+
+    .statistics {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card, .content-card {
+        background: white;
+        padding: 22px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+    }
+
+    .stat-card span {
+        color: #64748b;
+    }
+
+    .stat-card h2 {
+        color: #2563eb;
+        font-size: 28px;
+    }
+
+    .toolbar {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .toolbar input {
+        flex: 1;
+    }
+
+    input, select, textarea {
+        padding: 11px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+    }
+
+    button {
+        padding: 9px 13px;
+        border: none;
+        border-radius: 7px;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: #2563eb;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .form-card {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-width: 600px;
+        padding: 22px;
+        background: #f8fafc;
+        border-radius: 10px;
+        margin-bottom: 25px;
+    }
+
+    .form-card textarea {
+        min-height: 85px;
+        resize: vertical;
+    }
+
+    .form-actions, .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .error {
+        color: #dc2626;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 14px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    th {
+        background: #f1f5f9;
+    }
+
+    .description {
+        color: #94a3b8;
+        font-size: 12px;
+    }
+
+    .status-badge {
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .in_progress {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .completed {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .btn-edit {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .btn-delete {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .empty {
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    @media(max-width: 900px) {
+        .statistics {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media(max-width: 600px) {
+        .page-header, .toolbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    }
+</style>
