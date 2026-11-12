@@ -52,6 +52,38 @@ public class StudyClassRequest
     public string Status { get; set; } = "OPEN";
 }
 
+public class StudyClassPatchRequest
+{
+    public long? SubjectId { get; set; }
+
+    [StringLength(30, MinimumLength = 1)]
+    public string? ClassCode { get; set; }
+
+    [StringLength(150, MinimumLength = 1)]
+    public string? ClassName { get; set; }
+
+    [StringLength(30)]
+    public string? Semester { get; set; }
+
+    [StringLength(20)]
+    public string? AcademicYear { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int? Capacity { get; set; }
+
+    [RegularExpression("^(PLANNED|OPEN|CLOSED|ARCHIVED)$",
+        ErrorMessage = "Status phải là PLANNED, OPEN, CLOSED hoặc ARCHIVED.")]
+    public string? Status { get; set; }
+}
+
+public class StudyClassStatusRequest
+{
+    [Required]
+    [RegularExpression("^(PLANNED|OPEN|CLOSED|ARCHIVED)$",
+        ErrorMessage = "Status phải là PLANNED, OPEN, CLOSED hoặc ARCHIVED.")]
+    public string Status { get; set; } = string.Empty;
+}
+
 public class AssignLecturerRequest
 {
     [Required]
