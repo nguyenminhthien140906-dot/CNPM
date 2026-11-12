@@ -18,6 +18,6 @@ public abstract class ApiControllerBase : ControllerBase
 
     protected IActionResult Failure(int statusCode, string message)
     {
-        return StatusCode(statusCode, ApiResponse<object>.FailureResult(message));
+        return StatusCode(statusCode, ApiErrorResponse.From(statusCode, message));
     }
 }
