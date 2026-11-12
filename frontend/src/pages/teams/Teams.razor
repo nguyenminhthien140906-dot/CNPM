@@ -1,0 +1,575 @@
+
+@page "/teams"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>Quản lý nhóm học tập</PageTitle>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1>Quản lý nhóm học tập</h1>
+            <p>Tổ chức thành viên và phân công nhóm trong dự án PBL.</p>
+        </div>
+
+        <button class="btn-primary" @onclick="OpenCreateForm">
+            + Tạo nhóm mới
+        </button>
+    </div>
+
+    <div class="statistics">
+        <div class="stat-card">
+            <span>Tổng số nhóm</span>
+            <h2>@Teams.Count</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Tổng thành viên</span>
+            <h2>@Teams.Sum(x => x.Members.Count)</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Nhóm đang hoạt động</span>
+            <h2>@Teams.Count(x => x.Status == "ACTIVE")</h2>
+        </div>
+    </div>
+
+    <div class="content-card">
+
+        <div class="toolbar">
+            <input placeholder="Tìm kiếm nhóm..."
+                   @bind="SearchText"
+                   @bind:event="oninput" />
+
+            <select @bind="SelectedStatus">
+                <option value="">Tất cả trạng thái</option>
+                <option value="ACTIVE">Đang hoạt động</option>
+                <option value="INACTIVE">Ngừng hoạt động</option>
+            </select>
+        </div>
+
+        @if (ShowForm)
+        {
+            <div class="form-card">
+
+                <h3>@(EditingTeam == null ? "Tạo nhóm mới" : "Chỉnh sửa nhóm")</h3>
+
+                <label>Tên nhóm</label>
+                <input @bind="FormData.Name"
+                       placeholder="Nhập tên nhóm" />
+
+                <label>Dự án</label>
+                <input @bind="FormData.Project"
+                       placeholder="Tên dự án" />
+
+                <label>Trưởng nhóm</label>
+                <input @bind="FormData.Leader"
+                       placeholder="Tên trưởng nhóm" />
+
+                <label>Thành viên</label>
+                <textarea @bind="MemberInput"
+                          placeholder="Nhập tên thành viên, mỗi người một dòng">
+                </textarea>
+
+                <label>Trạng thái</label>
+                <select @bind="FormData.Status">
+                    <option value="ACTIVE">Đang hoạt động</option>
+                    <option value="INACTIVE">Ngừng hoạt động</option>
+                </select>
+
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <p class="error">@ErrorMessage</p>
+                }
+
+                <div class="form-actions">
+                    <button class="btn-primary" @onclick="SaveTeam">
+                        Lưu nhóm
+                    </button>
+
+                    <button class="btn-secondary" @onclick="CloseForm">
+                        Hủy
+                    </button>
+                </div>
+
+            </div>
+        }
+
+        <div class="team-grid">
+
+            @foreach (var team in FilteredTeams)
+            {
+                <div class="team-card">
+
+                    <div class="team-header">
+                        <div class="team-avatar">
+                            @GetInitials(team.Name)
+                        </div>
+
+                        <span class="status-badge @(team.Status == "ACTIVE" ? "active" : "inactive")">
+                            @(team.Status == "ACTIVE" ? "Đang hoạt động" : "Ngừng hoạt động")
+                        </span>
+                    </div>
+
+                    <h3>@team.Name</h3>
+
+                    <p class="project-name">
+                        Dự án: @team.Project
+                    </p>
+
+                    <div class="team-info">
+                        <p>
+                            <strong>Trưởng nhóm:</strong>
+                            @team.Leader
+                        </p>
+
+                        <p>
+                            <strong>Thành viên:</strong>
+                            @team.Members.Count người
+                        </p>
+                    </div>
+
+                    <div class="member-list">
+                        <strong>Danh sách thành viên</strong>
+
+                        @foreach (var member in team.Members)
+                        {
+                            <div class="member-item">
+                                <span>@member</span>
+
+                                <button class="btn-remove"
+                                        @onclick="() => RemoveMember(team, member)">
+                                    Xóa
+                                </button>
+                            </div>
+                        }
+                    </div>
+
+                    <button class="btn-edit"
+                            @onclick="() => EditTeam(team)">
+                        Chỉnh sửa nhóm
+                    </button>
+
+                    <button class="btn-delete"
+                            @onclick="() => DeleteTeam(team)">
+                        Xóa nhóm
+                    </button>
+
+                </div>
+            }
+
+        </div>
+
+        @if (!FilteredTeams.Any())
+        {
+            <p class="empty">Không tìm thấy nhóm học tập.</p>
+        }
+
+    </div>
+
+</div>
+
+@code {
+    private string SearchText = "";
+    private string SelectedStatus = "";
+
+    private string MemberInput = "";
+    private string ErrorMessage = "";
+
+    private bool ShowForm = false;
+
+    private int NextId = 4;
+
+    private TeamModel FormData = new();
+    private TeamModel? EditingTeam;
+
+    private List<TeamModel> Teams = new()
+    {
+        new()
+        {
+            Id = 1,
+            Name = "Nhóm Alpha",
+            Project = "CollabSphere",
+            Leader = "Nguyễn Văn A",
+            Status = "ACTIVE",
+            Members = new()
+            {
+                "Nguyễn Văn A",
+                "Trần Văn B",
+                "Lê Văn C"
+            }
+        },
+        new()
+        {
+            Id = 2,
+            Name = "Nhóm Beta",
+            Project = "Website bán hàng",
+            Leader = "Phạm Văn D",
+            Status = "ACTIVE",
+            Members = new()
+            {
+                "Phạm Văn D",
+                "Hoàng Văn E",
+                "Đỗ Văn F"
+            }
+        },
+        new()
+        {
+            Id = 3,
+            Name = "Nhóm Gamma",
+            Project = "Ứng dụng học tập",
+            Leader = "Vũ Văn G",
+            Status = "INACTIVE",
+            Members = new()
+            {
+                "Vũ Văn G",
+                "Bùi Văn H"
+            }
+        }
+    };
+
+    private IEnumerable<TeamModel> FilteredTeams =>
+        Teams.Where(x =>
+            (string.IsNullOrWhiteSpace(SearchText) ||
+             x.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+             x.Project.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+             x.Leader.Contains(SearchText, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(SelectedStatus) ||
+             x.Status == SelectedStatus)
+        );
+
+    private void OpenCreateForm()
+    {
+        EditingTeam = null;
+        FormData = new TeamModel
+        {
+            Status = "ACTIVE"
+        };
+
+        MemberInput = "";
+        ErrorMessage = "";
+        ShowForm = true;
+    }
+
+    private void EditTeam(TeamModel team)
+    {
+        EditingTeam = team;
+
+        FormData = new TeamModel
+        {
+            Name = team.Name,
+            Project = team.Project,
+            Leader = team.Leader,
+            Status = team.Status
+        };
+
+        MemberInput = string.Join(
+            Environment.NewLine,
+            team.Members
+        );
+
+        ErrorMessage = "";
+        ShowForm = true;
+    }
+
+    private void SaveTeam()
+    {
+        if (string.IsNullOrWhiteSpace(FormData.Name) ||
+            string.IsNullOrWhiteSpace(FormData.Project) ||
+            string.IsNullOrWhiteSpace(FormData.Leader))
+        {
+            ErrorMessage = "Vui lòng nhập đầy đủ thông tin nhóm.";
+            return;
+        }
+
+        var members = MemberInput
+            .Split(
+                new[] { '\r', '\n' },
+                StringSplitOptions.RemoveEmptyEntries
+            )
+            .Select(x => x.Trim())
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (!members.Contains(FormData.Leader, StringComparer.OrdinalIgnoreCase))
+        {
+            members.Insert(0, FormData.Leader.Trim());
+        }
+
+        if (EditingTeam != null)
+        {
+            EditingTeam.Name = FormData.Name.Trim();
+            EditingTeam.Project = FormData.Project.Trim();
+            EditingTeam.Leader = FormData.Leader.Trim();
+            EditingTeam.Status = FormData.Status;
+            EditingTeam.Members = members;
+        }
+        else
+        {
+            Teams.Add(new TeamModel
+            {
+                Id = NextId++,
+                Name = FormData.Name.Trim(),
+                Project = FormData.Project.Trim(),
+                Leader = FormData.Leader.Trim(),
+                Status = FormData.Status,
+                Members = members
+            });
+        }
+
+        CloseForm();
+    }
+
+    private void RemoveMember(TeamModel team, string member)
+    {
+        if (string.Equals(
+            team.Leader,
+            member,
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        team.Members.Remove(member);
+    }
+
+    private void DeleteTeam(TeamModel team)
+    {
+        Teams.Remove(team);
+    }
+
+    private void CloseForm()
+    {
+        ShowForm = false;
+        EditingTeam = null;
+        FormData = new TeamModel();
+        MemberInput = "";
+        ErrorMessage = "";
+    }
+
+    private string GetInitials(string name)
+    {
+        var words = name.Split(
+            ' ',
+            StringSplitOptions.RemoveEmptyEntries
+        );
+
+        return string.Concat(
+            words.Take(2).Select(x => x[0])
+        ).ToUpperInvariant();
+    }
+
+    public class TeamModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Project { get; set; } = "";
+        public string Leader { get; set; } = "";
+        public string Status { get; set; } = "ACTIVE";
+        public List<string> Members { get; set; } = new();
+    }
+}
+
+<style>
+    .page-container {
+        padding: 28px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .page-header h1 {
+        color: #1e293b;
+        font-size: 26px;
+    }
+
+    .page-header p {
+        color: #64748b;
+    }
+
+    .statistics {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card, .content-card {
+        background: white;
+        padding: 22px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+    }
+
+    .stat-card span {
+        color: #64748b;
+    }
+
+    .stat-card h2 {
+        color: #2563eb;
+        font-size: 28px;
+    }
+
+    .toolbar {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .toolbar input {
+        flex: 1;
+    }
+
+    input, select, textarea {
+        padding: 11px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+    }
+
+    button {
+        padding: 9px 13px;
+        border: none;
+        border-radius: 7px;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: #2563eb;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .form-card {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-width: 600px;
+        padding: 22px;
+        background: #f8fafc;
+        border-radius: 10px;
+        margin-bottom: 25px;
+    }
+
+    .form-card textarea {
+        min-height: 100px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .error {
+        color: #dc2626;
+    }
+
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .team-card {
+        padding: 22px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: white;
+    }
+
+    .team-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .team-avatar {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        background: #dbeafe;
+        color: #1d4ed8;
+        font-weight: bold;
+    }
+
+    .status-badge {
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+
+    .active {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .inactive {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .project-name, .team-info {
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .member-list {
+        margin: 20px 0;
+        padding-top: 15px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .member-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 9px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .btn-remove {
+        background: #fee2e2;
+        color: #dc2626;
+        font-size: 12px;
+    }
+
+    .btn-edit {
+        background: #fef3c7;
+        color: #92400e;
+        margin-right: 7px;
+    }
+
+    .btn-delete {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .empty {
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    @media(max-width: 800px) {
+        .team-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .statistics {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
