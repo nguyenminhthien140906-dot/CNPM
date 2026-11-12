@@ -1,0 +1,668 @@
+
+@page "/projects"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>Quản lý dự án</PageTitle>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1>Quản lý dự án PBL</h1>
+            <p>Tạo mới, theo dõi và quản lý các dự án học tập.</p>
+        </div>
+
+        <button class="btn-primary" @onclick="OpenCreateForm">
+            + Tạo dự án
+        </button>
+    </div>
+
+    <div class="statistics">
+
+        <div class="stat-card">
+            <span>Tổng dự án</span>
+            <h2>@Projects.Count</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Đang thực hiện</span>
+            <h2>@CountStatus("IN_PROGRESS")</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Đã hoàn thành</span>
+            <h2>@CountStatus("COMPLETED")</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Chờ phê duyệt</span>
+            <h2>@CountStatus("PENDING")</h2>
+        </div>
+
+    </div>
+
+    <div class="content-card">
+
+        <div class="toolbar">
+
+            <input placeholder="Tìm kiếm tên dự án..."
+                   @bind="SearchText"
+                   @bind:event="oninput" />
+
+            <select @bind="SelectedStatus">
+                <option value="">Tất cả trạng thái</option>
+                <option value="DRAFT">Bản nháp</option>
+                <option value="PENDING">Chờ phê duyệt</option>
+                <option value="IN_PROGRESS">Đang thực hiện</option>
+                <option value="COMPLETED">Hoàn thành</option>
+            </select>
+
+        </div>
+
+        @if (ShowForm)
+        {
+            <div class="form-card">
+
+                <h3>@(EditingProject == null ? "Tạo dự án mới" : "Cập nhật dự án")</h3>
+
+                <label>Tên dự án</label>
+                <input @bind="FormData.Name"
+                       placeholder="Nhập tên dự án" />
+
+                <label>Mô tả dự án</label>
+                <textarea @bind="FormData.Description"
+                          placeholder="Mô tả nội dung dự án">
+                </textarea>
+
+                <label>Mục tiêu dự án</label>
+                <textarea @bind="FormData.Objective"
+                          placeholder="Nhập mục tiêu dự án">
+                </textarea>
+
+                <label>Giảng viên phụ trách</label>
+                <input @bind="FormData.Lecturer"
+                       placeholder="Tên giảng viên" />
+
+                <label>Ngày bắt đầu</label>
+                <input type="date"
+                       @bind="FormData.StartDate" />
+
+                <label>Ngày kết thúc</label>
+                <input type="date"
+                       @bind="FormData.EndDate" />
+
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <p class="error">@ErrorMessage</p>
+                }
+
+                <div class="form-actions">
+
+                    <button class="btn-primary"
+                            @onclick="SaveProject">
+                        Lưu dự án
+                    </button>
+
+                    <button class="btn-secondary"
+                            @onclick="CloseForm">
+                        Hủy
+                    </button>
+
+                </div>
+
+            </div>
+        }
+
+        <div class="project-grid">
+
+            @foreach (var project in FilteredProjects)
+            {
+                <div class="project-card">
+
+                    <div class="project-card-header">
+                        <span class="project-status">
+                            @GetStatusName(project.Status)
+                        </span>
+
+                        <span class="project-code">
+                            @project.Code
+                        </span>
+                    </div>
+
+                    <h3>@project.Name</h3>
+
+                    <p class="description">
+                        @project.Description
+                    </p>
+
+                    <div class="project-info">
+                        <p>
+                            <strong>Giảng viên:</strong>
+                            @project.Lecturer
+                        </p>
+
+                        <p>
+                            <strong>Bắt đầu:</strong>
+                            @project.StartDate.ToString("dd/MM/yyyy")
+                        </p>
+
+                        <p>
+                            <strong>Kết thúc:</strong>
+                            @project.EndDate.ToString("dd/MM/yyyy")
+                        </p>
+                    </div>
+
+                    <div class="progress-section">
+                        <div class="progress-label">
+                            <span>Tiến độ</span>
+                            <strong>@project.Progress%</strong>
+                        </div>
+
+                        <div class="progress-bar">
+                            <div class="progress-value"
+                                 style="@($"width: {project.Progress}%")">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-actions">
+
+                        <button class="btn-detail"
+                                @onclick="() => ViewProject(project)">
+                            Chi tiết
+                        </button>
+
+                        <button class="btn-edit"
+                                @onclick="() => EditProject(project)">
+                            Sửa
+                        </button>
+
+                        <button class="btn-delete"
+                                @onclick="() => DeleteProject(project)">
+                            Xóa
+                        </button>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+
+        @if (!FilteredProjects.Any())
+        {
+            <p class="empty">
+                Không tìm thấy dự án phù hợp.
+            </p>
+        }
+
+    </div>
+
+    @if (SelectedProject != null)
+    {
+        <div class="modal-overlay">
+            <div class="modal">
+
+                <h2>Chi tiết dự án</h2>
+
+                <p><strong>Mã dự án:</strong> @SelectedProject.Code</p>
+                <p><strong>Tên dự án:</strong> @SelectedProject.Name</p>
+                <p><strong>Mô tả:</strong> @SelectedProject.Description</p>
+                <p><strong>Mục tiêu:</strong> @SelectedProject.Objective</p>
+                <p><strong>Giảng viên:</strong> @SelectedProject.Lecturer</p>
+                <p><strong>Ngày bắt đầu:</strong> @SelectedProject.StartDate.ToString("dd/MM/yyyy")</p>
+                <p><strong>Ngày kết thúc:</strong> @SelectedProject.EndDate.ToString("dd/MM/yyyy")</p>
+                <p><strong>Tiến độ:</strong> @SelectedProject.Progress%</p>
+                <p><strong>Trạng thái:</strong> @GetStatusName(SelectedProject.Status)</p>
+
+                <button class="btn-primary"
+                        @onclick="CloseDetails">
+                    Đóng
+                </button>
+
+            </div>
+        </div>
+    }
+
+</div>
+
+@code {
+    private string SearchText = "";
+    private string SelectedStatus = "";
+
+    private bool ShowForm = false;
+    private string ErrorMessage = "";
+
+    private ProjectModel FormData = new();
+
+    private ProjectModel? EditingProject;
+    private ProjectModel? SelectedProject;
+
+    private int NextId = 4;
+
+    private List<ProjectModel> Projects = new()
+    {
+        new()
+        {
+            Id = 1,
+            Code = "PBL001",
+            Name = "CollabSphere",
+            Description = "Hệ thống hỗ trợ học tập theo phương pháp Project-Based Learning.",
+            Objective = "Xây dựng nền tảng quản lý hoạt động học tập PBL.",
+            Lecturer = "Nguyễn Văn A",
+            StartDate = DateTime.Today.AddDays(-20),
+            EndDate = DateTime.Today.AddDays(30),
+            Progress = 65,
+            Status = "IN_PROGRESS"
+        },
+        new()
+        {
+            Id = 2,
+            Code = "PBL002",
+            Name = "Website bán hàng",
+            Description = "Xây dựng website quản lý bán hàng trực tuyến.",
+            Objective = "Phát triển hệ thống thương mại điện tử.",
+            Lecturer = "Trần Văn B",
+            StartDate = DateTime.Today.AddDays(-30),
+            EndDate = DateTime.Today.AddDays(-5),
+            Progress = 100,
+            Status = "COMPLETED"
+        },
+        new()
+        {
+            Id = 3,
+            Code = "PBL003",
+            Name = "Ứng dụng học tập",
+            Description = "Phát triển ứng dụng hỗ trợ sinh viên học tập.",
+            Objective = "Tạo nền tảng quản lý tài liệu học tập.",
+            Lecturer = "Lê Văn C",
+            StartDate = DateTime.Today,
+            EndDate = DateTime.Today.AddDays(45),
+            Progress = 0,
+            Status = "PENDING"
+        }
+    };
+
+    private IEnumerable<ProjectModel> FilteredProjects =>
+        Projects.Where(project =>
+            (string.IsNullOrWhiteSpace(SearchText) ||
+             project.Name.Contains(
+                 SearchText,
+                 StringComparison.OrdinalIgnoreCase
+             ) ||
+             project.Code.Contains(
+                 SearchText,
+                 StringComparison.OrdinalIgnoreCase
+             )) &&
+            (string.IsNullOrWhiteSpace(SelectedStatus) ||
+             project.Status == SelectedStatus)
+        );
+
+    private int CountStatus(string status)
+    {
+        return Projects.Count(x => x.Status == status);
+    }
+
+    private void OpenCreateForm()
+    {
+        EditingProject = null;
+        FormData = new ProjectModel
+        {
+            StartDate = DateTime.Today,
+            EndDate = DateTime.Today.AddDays(30)
+        };
+
+        ErrorMessage = "";
+        ShowForm = true;
+    }
+
+    private void EditProject(ProjectModel project)
+    {
+        EditingProject = project;
+
+        FormData = new ProjectModel
+        {
+            Name = project.Name,
+            Description = project.Description,
+            Objective = project.Objective,
+            Lecturer = project.Lecturer,
+            StartDate = project.StartDate,
+            EndDate = project.EndDate
+        };
+
+        ErrorMessage = "";
+        ShowForm = true;
+    }
+
+    private void SaveProject()
+    {
+        if (string.IsNullOrWhiteSpace(FormData.Name) ||
+            string.IsNullOrWhiteSpace(FormData.Description) ||
+            string.IsNullOrWhiteSpace(FormData.Lecturer))
+        {
+            ErrorMessage = "Vui lòng nhập đầy đủ thông tin.";
+            return;
+        }
+
+        if (FormData.EndDate < FormData.StartDate)
+        {
+            ErrorMessage = "Ngày kết thúc phải sau ngày bắt đầu.";
+            return;
+        }
+
+        if (EditingProject != null)
+        {
+            EditingProject.Name = FormData.Name.Trim();
+            EditingProject.Description = FormData.Description.Trim();
+            EditingProject.Objective = FormData.Objective.Trim();
+            EditingProject.Lecturer = FormData.Lecturer.Trim();
+            EditingProject.StartDate = FormData.StartDate;
+            EditingProject.EndDate = FormData.EndDate;
+        }
+        else
+        {
+            Projects.Add(new ProjectModel
+            {
+                Id = NextId,
+                Code = $"PBL{NextId:000}",
+                Name = FormData.Name.Trim(),
+                Description = FormData.Description.Trim(),
+                Objective = FormData.Objective.Trim(),
+                Lecturer = FormData.Lecturer.Trim(),
+                StartDate = FormData.StartDate,
+                EndDate = FormData.EndDate,
+                Progress = 0,
+                Status = "DRAFT"
+            });
+
+            NextId++;
+        }
+
+        CloseForm();
+    }
+
+    private void DeleteProject(ProjectModel project)
+    {
+        Projects.Remove(project);
+    }
+
+    private void ViewProject(ProjectModel project)
+    {
+        SelectedProject = project;
+    }
+
+    private void CloseDetails()
+    {
+        SelectedProject = null;
+    }
+
+    private void CloseForm()
+    {
+        ShowForm = false;
+        EditingProject = null;
+        FormData = new ProjectModel();
+        ErrorMessage = "";
+    }
+
+    private string GetStatusName(string status)
+    {
+        return status switch
+        {
+            "DRAFT" => "Bản nháp",
+            "PENDING" => "Chờ phê duyệt",
+            "IN_PROGRESS" => "Đang thực hiện",
+            "COMPLETED" => "Đã hoàn thành",
+            _ => status
+        };
+    }
+
+    public class ProjectModel
+    {
+        public int Id { get; set; }
+        public string Code { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
+        public string Objective { get; set; } = "";
+        public string Lecturer { get; set; } = "";
+        public DateTime StartDate { get; set; } = DateTime.Today;
+        public DateTime EndDate { get; set; } = DateTime.Today.AddDays(30);
+        public int Progress { get; set; }
+        public string Status { get; set; } = "DRAFT";
+    }
+}
+
+<style>
+    .page-container {
+        padding: 28px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .page-header h1 {
+        color: #1e293b;
+        font-size: 26px;
+    }
+
+    .page-header p {
+        color: #64748b;
+    }
+
+    .statistics {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card, .content-card {
+        background: white;
+        padding: 22px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+    }
+
+    .stat-card span {
+        color: #64748b;
+    }
+
+    .stat-card h2 {
+        color: #2563eb;
+        font-size: 28px;
+    }
+
+    .toolbar {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .toolbar input {
+        flex: 1;
+    }
+
+    input, select, textarea {
+        padding: 11px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+    }
+
+    button {
+        padding: 9px 13px;
+        border: none;
+        border-radius: 7px;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: #2563eb;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .form-card {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-width: 600px;
+        padding: 22px;
+        margin-bottom: 25px;
+        background: #f8fafc;
+        border-radius: 10px;
+    }
+
+    .form-card textarea {
+        min-height: 80px;
+        resize: vertical;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .error {
+        color: #dc2626;
+    }
+
+    .project-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .project-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px;
+        background: white;
+    }
+
+    .project-card-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 18px;
+    }
+
+    .project-status {
+        background: #dbeafe;
+        color: #1d4ed8;
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+
+    .project-code {
+        color: #94a3b8;
+    }
+
+    .project-card h3 {
+        color: #1e293b;
+    }
+
+    .description {
+        color: #64748b;
+        min-height: 40px;
+    }
+
+    .project-info {
+        font-size: 13px;
+        color: #475569;
+    }
+
+    .progress-section {
+        margin: 18px 0;
+    }
+
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .progress-bar {
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-value {
+        height: 100%;
+        background: #2563eb;
+    }
+
+    .project-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn-detail {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .btn-edit {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .btn-delete {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .empty {
+        text-align: center;
+        padding: 25px;
+        color: #94a3b8;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        background: rgba(15, 23, 42, .5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .modal {
+        width: 100%;
+        max-width: 550px;
+        max-height: 90vh;
+        overflow-y: auto;
+        background: white;
+        padding: 28px;
+        border-radius: 12px;
+    }
+
+    .modal p {
+        color: #475569;
+        line-height: 1.6;
+    }
+
+    @media(max-width: 900px) {
+        .statistics {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .project-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
