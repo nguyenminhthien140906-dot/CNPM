@@ -1,0 +1,535 @@
+
+@page "/subjects"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>Quản lý môn học</PageTitle>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1>Quản lý môn học</h1>
+            <p>Quản lý thông tin môn học và chương trình đào tạo.</p>
+        </div>
+
+        <button class="btn-primary" @onclick="OpenCreateForm">
+            + Thêm môn học
+        </button>
+    </div>
+
+    <div class="statistics">
+
+        <div class="stat-card">
+            <span>Tổng môn học</span>
+            <h2>@Subjects.Count</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Đang hoạt động</span>
+            <h2>@Subjects.Count(x => x.Status == "ACTIVE")</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Ngừng hoạt động</span>
+            <h2>@Subjects.Count(x => x.Status == "INACTIVE")</h2>
+        </div>
+
+    </div>
+
+    <div class="content-card">
+
+        <div class="toolbar">
+            <input placeholder="Tìm kiếm mã môn hoặc tên môn..."
+                   @bind="SearchText"
+                   @bind:event="oninput" />
+
+            <select @bind="SelectedStatus">
+                <option value="">Tất cả trạng thái</option>
+                <option value="ACTIVE">Đang hoạt động</option>
+                <option value="INACTIVE">Ngừng hoạt động</option>
+            </select>
+        </div>
+
+        @if (ShowForm)
+        {
+            <div class="form-card">
+
+                <h3>@(EditingSubject == null ? "Thêm môn học mới" : "Chỉnh sửa môn học")</h3>
+
+                <div class="form-group">
+                    <label>Mã môn học</label>
+                    <input @bind="FormData.SubjectCode"
+                           placeholder="Ví dụ: CS101"
+                           disabled="@(EditingSubject != null)" />
+                </div>
+
+                <div class="form-group">
+                    <label>Tên môn học</label>
+                    <input @bind="FormData.SubjectName"
+                           placeholder="Nhập tên môn học" />
+                </div>
+
+                <div class="form-group">
+                    <label>Số tín chỉ</label>
+                    <input type="number"
+                           min="1"
+                           max="10"
+                           @bind="FormData.Credits" />
+                </div>
+
+                <div class="form-group">
+                    <label>Mô tả</label>
+                    <textarea @bind="FormData.Description"
+                              placeholder="Mô tả môn học">
+                    </textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Trạng thái</label>
+                    <select @bind="FormData.Status">
+                        <option value="ACTIVE">Đang hoạt động</option>
+                        <option value="INACTIVE">Ngừng hoạt động</option>
+                    </select>
+                </div>
+
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <p class="error">@ErrorMessage</p>
+                }
+
+                <div class="form-actions">
+
+                    <button class="btn-primary" @onclick="SaveSubject">
+                        Lưu môn học
+                    </button>
+
+                    <button class="btn-secondary" @onclick="CloseForm">
+                        Hủy
+                    </button>
+
+                </div>
+
+            </div>
+        }
+
+        <div class="table-wrapper">
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã môn học</th>
+                        <th>Tên môn học</th>
+                        <th>Tín chỉ</th>
+                        <th>Mô tả</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var subject in FilteredSubjects)
+                    {
+                        <tr>
+                            <td>@subject.SubjectCode</td>
+                            <td>@subject.SubjectName</td>
+                            <td>@subject.Credits</td>
+                            <td>@subject.Description</td>
+                            <td>
+                                <span class="status-badge @(subject.Status == "ACTIVE" ? "active" : "inactive")">
+                                    @GetStatusName(subject.Status)
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+
+                                    <button class="btn-edit"
+                                            @onclick="() => EditSubject(subject)">
+                                        Sửa
+                                    </button>
+
+                                    <button class="btn-delete"
+                                            @onclick="() => DeleteSubject(subject)">
+                                        Xóa
+                                    </button>
+
+                                </div>
+                            </td>
+                        </tr>
+                    }
+
+                    @if (!FilteredSubjects.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="empty">
+                                Không tìm thấy môn học.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+@code {
+    private string SearchText = "";
+    private string SelectedStatus = "";
+
+    private bool ShowForm = false;
+    private string ErrorMessage = "";
+
+    private SubjectModel FormData = new();
+
+    private SubjectModel? EditingSubject;
+
+    private List<SubjectModel> Subjects = new()
+    {
+        new()
+        {
+            SubjectCode = "CS101",
+            SubjectName = "Lập trình cơ bản",
+            Credits = 3,
+            Description = "Kiến thức lập trình cơ bản.",
+            Status = "ACTIVE"
+        },
+        new()
+        {
+            SubjectCode = "DB201",
+            SubjectName = "Cơ sở dữ liệu",
+            Credits = 3,
+            Description = "Thiết kế và quản lý cơ sở dữ liệu.",
+            Status = "ACTIVE"
+        },
+        new()
+        {
+            SubjectCode = "SE301",
+            SubjectName = "Công nghệ phần mềm",
+            Credits = 4,
+            Description = "Phân tích và phát triển phần mềm.",
+            Status = "ACTIVE"
+        },
+        new()
+        {
+            SubjectCode = "AI401",
+            SubjectName = "Trí tuệ nhân tạo",
+            Credits = 3,
+            Description = "Nhập môn trí tuệ nhân tạo.",
+            Status = "INACTIVE"
+        }
+    };
+
+    private IEnumerable<SubjectModel> FilteredSubjects =>
+        Subjects.Where(subject =>
+            (string.IsNullOrWhiteSpace(SearchText) ||
+             subject.SubjectCode.Contains(
+                 SearchText,
+                 StringComparison.OrdinalIgnoreCase
+             ) ||
+             subject.SubjectName.Contains(
+                 SearchText,
+                 StringComparison.OrdinalIgnoreCase
+             )) &&
+            (string.IsNullOrWhiteSpace(SelectedStatus) ||
+             subject.Status == SelectedStatus)
+        );
+
+    private void OpenCreateForm()
+    {
+        EditingSubject = null;
+        FormData = new SubjectModel
+        {
+            Credits = 3,
+            Status = "ACTIVE"
+        };
+
+        ErrorMessage = "";
+        ShowForm = true;
+    }
+
+    private void EditSubject(SubjectModel subject)
+    {
+        EditingSubject = subject;
+
+        FormData = new SubjectModel
+        {
+            SubjectCode = subject.SubjectCode,
+            SubjectName = subject.SubjectName,
+            Credits = subject.Credits,
+            Description = subject.Description,
+            Status = subject.Status
+        };
+
+        ErrorMessage = "";
+        ShowForm = true;
+    }
+
+    private void SaveSubject()
+    {
+        if (string.IsNullOrWhiteSpace(FormData.SubjectCode) ||
+            string.IsNullOrWhiteSpace(FormData.SubjectName))
+        {
+            ErrorMessage = "Vui lòng nhập mã môn và tên môn học.";
+            return;
+        }
+
+        if (FormData.Credits < 1 || FormData.Credits > 10)
+        {
+            ErrorMessage = "Số tín chỉ phải từ 1 đến 10.";
+            return;
+        }
+
+        if (EditingSubject == null)
+        {
+            bool codeExists = Subjects.Any(x =>
+                x.SubjectCode.Equals(
+                    FormData.SubjectCode.Trim(),
+                    StringComparison.OrdinalIgnoreCase
+                )
+            );
+
+            if (codeExists)
+            {
+                ErrorMessage = "Mã môn học đã tồn tại.";
+                return;
+            }
+
+            Subjects.Add(new SubjectModel
+            {
+                SubjectCode = FormData.SubjectCode.Trim(),
+                SubjectName = FormData.SubjectName.Trim(),
+                Credits = FormData.Credits,
+                Description = FormData.Description.Trim(),
+                Status = FormData.Status
+            });
+        }
+        else
+        {
+            EditingSubject.SubjectName = FormData.SubjectName.Trim();
+            EditingSubject.Credits = FormData.Credits;
+            EditingSubject.Description = FormData.Description.Trim();
+            EditingSubject.Status = FormData.Status;
+        }
+
+        CloseForm();
+    }
+
+    private void DeleteSubject(SubjectModel subject)
+    {
+        Subjects.Remove(subject);
+    }
+
+    private void CloseForm()
+    {
+        ShowForm = false;
+        EditingSubject = null;
+        FormData = new SubjectModel();
+        ErrorMessage = "";
+    }
+
+    private string GetStatusName(string status)
+    {
+        return status switch
+        {
+            "ACTIVE" => "Đang hoạt động",
+            "INACTIVE" => "Ngừng hoạt động",
+            _ => status
+        };
+    }
+
+    public class SubjectModel
+    {
+        public string SubjectCode { get; set; } = "";
+        public string SubjectName { get; set; } = "";
+        public int Credits { get; set; } = 3;
+        public string Description { get; set; } = "";
+        public string Status { get; set; } = "ACTIVE";
+    }
+}
+
+<style>
+    .page-container {
+        padding: 28px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .page-header h1 {
+        color: #1e293b;
+        font-size: 26px;
+    }
+
+    .page-header p {
+        color: #64748b;
+    }
+
+    .statistics {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card, .content-card {
+        background: white;
+        padding: 22px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+    }
+
+    .stat-card span {
+        color: #64748b;
+    }
+
+    .stat-card h2 {
+        color: #2563eb;
+        font-size: 28px;
+    }
+
+    .toolbar {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .toolbar input {
+        flex: 1;
+    }
+
+    input, select, textarea {
+        padding: 11px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+    }
+
+    button {
+        padding: 9px 13px;
+        border: none;
+        border-radius: 7px;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: #2563eb;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .form-card {
+        background: #f8fafc;
+        padding: 22px;
+        border-radius: 10px;
+        max-width: 600px;
+        margin-bottom: 25px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin: 16px 0;
+    }
+
+    .form-group textarea {
+        min-height: 90px;
+        resize: vertical;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .error {
+        color: #dc2626;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 14px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    th {
+        background: #f1f5f9;
+        color: #334155;
+    }
+
+    .status-badge {
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .active {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .inactive {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 7px;
+    }
+
+    .btn-edit {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .btn-delete {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .empty {
+        text-align: center;
+        color: #94a3b8;
+        padding: 25px;
+    }
+
+    @media(max-width: 768px) {
+        .statistics {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .toolbar {
+            flex-direction: column;
+        }
+    }
+</style>
