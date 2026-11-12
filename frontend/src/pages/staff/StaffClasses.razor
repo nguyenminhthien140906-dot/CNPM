@@ -1,38 +1,418 @@
-import React, { useState } from 'react';
-import DataTable from '../../components/DataTable';
 
-const StaffClasses = () => {
-  const [classes] = useState([
-    { id: 'SE114', name: 'Nhập môn CNPM', syllabus: 'Đã duyệt', lecturer: 'Lê Văn C' },
-    { id: 'IT007', name: 'Cơ sở dữ liệu', syllabus: 'Đang soạn thảo', lecturer: 'Nguyễn Thị D' },
-  ]);
+@page "/staff/classes"
 
-  const columns = [
-    { key: 'id', label: 'Mã Môn' },
-    { key: 'name', label: 'Tên Môn Học' },
-    { key: 'lecturer', label: 'Giảng viên phụ trách' },
-    { 
-      key: 'syllabus', label: 'Trạng thái Syllabus',
-      render: (val) => <span className={val === 'Đã duyệt' ? 'badge-success' : 'badge-warning'}>{val}</span>
-    }
-  ];
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "STAFF")]
 
-  return (
-    <div style={{ padding: '20px' }}>
-      <h2>Quản lý Môn học & Đề cương (Staff)</h2>
-      <div className="card" style={{ marginBottom: '20px', display: 'flex', gap: '20px' }}>
-        <div><strong>Tổng số môn:</strong> 120</div>
-        <div><strong>Đề cương cần duyệt:</strong> 5</div>
-      </div>
-      
-      <DataTable 
-        columns={columns} 
-        data={classes} 
-        onEdit={(row) => console.log("Cập nhật môn học", row)}
-        searchPlaceholder="Tìm kiếm môn học..."
-      />
+<PageTitle>Quản lý lớp học</PageTitle>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1>Quản lý lớp học</h1>
+            <p>
+                Tạo mới và quản lý danh sách lớp học
+                trong hệ thống CollabSphere.
+            </p>
+        </div>
+
+        <button class="btn-primary"
+                @onclick="OpenForm">
+            + Thêm lớp học
+        </button>
     </div>
-  );
-};
 
-export default StaffClasses;
+    <div class="statistics">
+
+        <div class="stat-card">
+            <span>Tổng số lớp</span>
+            <h2>@Classes.Count</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Đang hoạt động</span>
+            <h2>@Classes.Count(x => x.Status == "ACTIVE")</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Tổng sinh viên</span>
+            <h2>@Classes.Sum(x => x.StudentCount)</h2>
+        </div>
+
+    </div>
+
+    <div class="content-card">
+
+        <div class="toolbar">
+            <input placeholder="Tìm kiếm mã lớp hoặc tên lớp..."
+                   @bind="SearchText"
+                   @bind:event="oninput" />
+
+            <select @bind="SelectedStatus">
+                <option value="">Tất cả trạng thái</option>
+                <option value="ACTIVE">Đang hoạt động</option>
+                <option value="INACTIVE">Ngừng hoạt động</option>
+            </select>
+        </div>
+
+        @if (ShowForm)
+        {
+            <div class="form-card">
+
+                <h3>Thêm lớp học mới</h3>
+
+                <label>Mã lớp</label>
+                <input @bind="NewClass.Code"
+                       placeholder="Ví dụ: CNTT01" />
+
+                <label>Tên lớp</label>
+                <input @bind="NewClass.Name"
+                       placeholder="Nhập tên lớp" />
+
+                <label>Học kỳ</label>
+                <select @bind="NewClass.Semester">
+                    <option value="1">Học kỳ 1</option>
+                    <option value="2">Học kỳ 2</option>
+                    <option value="3">Học kỳ hè</option>
+                </select>
+
+                <label>Năm học</label>
+                <input @bind="NewClass.AcademicYear"
+                       placeholder="2026-2027" />
+
+                <label>Sĩ số tối đa</label>
+                <input type="number"
+                       min="1"
+                       @bind="NewClass.Capacity" />
+
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <p class="error-message">@ErrorMessage</p>
+                }
+
+                <div class="form-actions">
+
+                    <button class="btn-primary"
+                            @onclick="AddClass">
+                        Lưu lớp học
+                    </button>
+
+                    <button class="btn-secondary"
+                            @onclick="CloseForm">
+                        Hủy
+                    </button>
+
+                </div>
+
+            </div>
+        }
+
+        <div class="table-wrapper">
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã lớp</th>
+                        <th>Tên lớp</th>
+                        <th>Học kỳ</th>
+                        <th>Năm học</th>
+                        <th>Sĩ số</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var item in FilteredClasses)
+                    {
+                        <tr>
+                            <td>@item.Code</td>
+                            <td>@item.Name</td>
+                            <td>@item.Semester</td>
+                            <td>@item.AcademicYear</td>
+
+                            <td>
+                                @item.StudentCount / @item.Capacity
+                            </td>
+
+                            <td>
+                                <span class="status-badge">
+                                    @GetStatusName(item.Status)
+                                </span>
+                            </td>
+
+                            <td>
+                                <button class="btn-delete"
+                                        @onclick="() => DeleteClass(item)">
+                                    Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    }
+
+                    @if (!FilteredClasses.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="empty">
+                                Chưa có lớp học phù hợp.
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+@code {
+    private string SearchText = "";
+    private string SelectedStatus = "";
+
+    private bool ShowForm = false;
+    private string ErrorMessage = "";
+
+    private ClassModel NewClass = new();
+
+    private List<ClassModel> Classes = new();
+
+    private IEnumerable<ClassModel> FilteredClasses =>
+        Classes.Where(item =>
+            (string.IsNullOrWhiteSpace(SearchText) ||
+             item.Code.Contains(
+                 SearchText,
+                 StringComparison.OrdinalIgnoreCase
+             ) ||
+             item.Name.Contains(
+                 SearchText,
+                 StringComparison.OrdinalIgnoreCase
+             )) &&
+            (string.IsNullOrWhiteSpace(SelectedStatus) ||
+             item.Status == SelectedStatus)
+        );
+
+    private void OpenForm()
+    {
+        NewClass = new ClassModel();
+        ErrorMessage = "";
+        ShowForm = true;
+    }
+
+    private void CloseForm()
+    {
+        ShowForm = false;
+        NewClass = new ClassModel();
+        ErrorMessage = "";
+    }
+
+    private void AddClass()
+    {
+        if (string.IsNullOrWhiteSpace(NewClass.Code) ||
+            string.IsNullOrWhiteSpace(NewClass.Name))
+        {
+            ErrorMessage = "Vui lòng nhập mã lớp và tên lớp.";
+            return;
+        }
+
+        if (NewClass.Capacity <= 0)
+        {
+            ErrorMessage = "Sĩ số tối đa phải lớn hơn 0.";
+            return;
+        }
+
+        if (Classes.Any(x => x.Code.Equals(
+            NewClass.Code.Trim(),
+            StringComparison.OrdinalIgnoreCase)))
+        {
+            ErrorMessage = "Mã lớp đã tồn tại.";
+            return;
+        }
+
+        Classes.Add(new ClassModel
+        {
+            Code = NewClass.Code.Trim(),
+            Name = NewClass.Name.Trim(),
+            Semester = NewClass.Semester,
+            AcademicYear = NewClass.AcademicYear,
+            Capacity = NewClass.Capacity,
+            StudentCount = 0,
+            Status = "ACTIVE"
+        });
+
+        CloseForm();
+    }
+
+    private void DeleteClass(ClassModel item)
+    {
+        Classes.Remove(item);
+    }
+
+    private string GetStatusName(string status)
+    {
+        return status switch
+        {
+            "ACTIVE" => "Đang hoạt động",
+            "INACTIVE" => "Ngừng hoạt động",
+            _ => status
+        };
+    }
+
+    public class ClassModel
+    {
+        public string Code { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Semester { get; set; } = "1";
+        public string AcademicYear { get; set; } = "";
+        public int Capacity { get; set; } = 40;
+        public int StudentCount { get; set; }
+        public string Status { get; set; } = "ACTIVE";
+    }
+}
+
+<style>
+    .page-container {
+        padding: 28px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 28px;
+    }
+
+    .page-header h1 {
+        font-size: 26px;
+        color: #1e293b;
+    }
+
+    .page-header p {
+        color: #64748b;
+    }
+
+    .statistics {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card, .content-card {
+        background: white;
+        padding: 22px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+    }
+
+    .stat-card span {
+        color: #64748b;
+    }
+
+    .stat-card h2 {
+        color: #2563eb;
+        font-size: 28px;
+    }
+
+    .toolbar {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .toolbar input {
+        flex: 1;
+    }
+
+    input, select {
+        padding: 11px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+    }
+
+    button {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 7px;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: #2563eb;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .btn-delete {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .form-card {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-width: 550px;
+        padding: 22px;
+        margin-bottom: 24px;
+        background: #f8fafc;
+        border-radius: 10px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .error-message {
+        color: #dc2626;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 14px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    th {
+        background: #f8fafc;
+        color: #475569;
+    }
+
+    .status-badge {
+        padding: 6px 10px;
+        border-radius: 20px;
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .empty {
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    @media (max-width: 768px) {
+        .statistics {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
