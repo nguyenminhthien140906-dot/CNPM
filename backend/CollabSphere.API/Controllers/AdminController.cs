@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+using CollabSphere.API.Contracts;
+using System.Security.Claims;
 using CollabSphere.API.Authorization;
 using CollabSphere.Application.Admin;
 using Microsoft.AspNetCore.Authorization;
@@ -61,11 +62,7 @@ public class AdminController : ControllerBase
 
         if (user == null)
         {
-            return NotFound(new
-            {
-                Success = false,
-                Message = "User not found."
-            });
+            return StatusCode(404, ApiErrorResponse.From(404, "Không tìm thấy người dùng."));
         }
 
         return Ok(new
@@ -88,20 +85,12 @@ public class AdminController : ControllerBase
 
         if (!ulong.TryParse(currentUserId, out var adminId))
         {
-            return Unauthorized(new
-            {
-                Success = false,
-                Message = "Invalid admin identity."
-            });
+            return StatusCode(401, ApiErrorResponse.From(401, "Danh tính quản trị viên không hợp lệ."));
         }
 
         if (adminId == id && !request.IsActive)
         {
-            return BadRequest(new
-            {
-                Success = false,
-                Message = "You cannot deactivate your own account."
-            });
+            return StatusCode(400, ApiErrorResponse.From(400, "Bạn không thể khóa tài khoản của chính mình."));
         }
 
         var updated = await _adminUserService.SetUserStatusAsync(
@@ -111,11 +100,7 @@ public class AdminController : ControllerBase
 
         if (!updated)
         {
-            return NotFound(new
-            {
-                Success = false,
-                Message = "User not found."
-            });
+            return StatusCode(404, ApiErrorResponse.From(404, "Không tìm thấy người dùng."));
         }
 
         return Ok(new
