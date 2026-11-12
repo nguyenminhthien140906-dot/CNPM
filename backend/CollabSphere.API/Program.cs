@@ -1,10 +1,12 @@
 using CollabSphere.API.Authorization;
+using CollabSphere.API.Contracts;
 using CollabSphere.API.Services;
 using CollabSphere.Application.Admin;
 using CollabSphere.Application.Auth;
 using CollabSphere.Infrastructure.Services;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using CollabSphere.Infrastructure.Persistence;
@@ -13,7 +15,25 @@ using CollabSphere.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var details = context.ModelState
+                .Where(entry => entry.Value != null && entry.Value.Errors.Count > 0)
+                .ToDictionary(
+                    entry => entry.Key,
+                    entry => entry.Value!.Errors
+                        .Select(error => error.ErrorMessage)
+                        .ToArray());
+
+            return new BadRequestObjectResult(
+                ApiErrorResponse.From(400, "Dữ liệu không hợp lệ.", details));
+        };
+    });
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 builder.Services.AddScoped<JwtTokenService>();
@@ -64,6 +84,25 @@ builder.Services
 
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromSeconds(30)
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = async context =>
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = 401;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(
+                    ApiErrorResponse.From(401, "Bạn chưa đăng nhập hoặc token không hợp lệ."));
+            },
+            OnForbidden = async context =>
+            {
+                context.Response.StatusCode = 403;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(
+                    ApiErrorResponse.From(403, "Bạn không có quyền thực hiện thao tác này."));
+            }
         };
     });
 
