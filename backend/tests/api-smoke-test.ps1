@@ -159,6 +159,34 @@ Check "Giam capacity thap hon so SV hien tai bi chan (409)" ($r.Code -eq 409)
 $r = Call "GET" "/api/classes/$classId/students" $admin $null
 Check "Lop co 1 sinh vien" ($r.Code -eq 200 -and $r.Json.data.Count -eq 1)
 
+Write-Host "== Contract moi: PATCH, status, syllabus ==" -ForegroundColor Cyan
+$r = Call "PATCH" "/api/classes/$classId" $admin @{ className = "Lop test da patch" }
+Check "PATCH mot phan lop (200)" ($r.Code -eq 200)
+
+$r = Call "PATCH" "/api/classes/$classId/status" $admin @{ status = "CLOSED" }
+Check "Doi trang thai lop sang CLOSED (200)" ($r.Code -eq 200)
+
+$r = Call "POST" "/api/classes/$classId/students" $admin @{ studentId = $studentB }
+Check "Them sinh vien vao lop CLOSED bi chan (409)" ($r.Code -eq 409)
+
+$r = Call "PATCH" "/api/classes/$classId/status" $admin @{ status = "ABC" }
+Check "Trang thai khong hop le (400)" ($r.Code -eq 400)
+
+$r = Call "PATCH" "/api/classes/$classId/status" $admin @{ status = "OPEN" }
+Check "Mo lai lop (200)" ($r.Code -eq 200)
+
+$r = Call "GET" "/api/subjects/$subjectId/syllabus" $admin $null
+Check "Xem de cuong cua mon (200, 1 phien ban)" ($r.Code -eq 200 -and $r.Json.data.syllabi.Count -eq 1)
+
+$r = Call "GET" "/api/subjects/999999/syllabus" $admin $null
+Check "De cuong cua mon khong ton tai (404)" ($r.Code -eq 404)
+
+$r = Call "GET" "/api/admin/users?page=1&pageSize=5" $admin $null
+Check "Admin xem danh sach nguoi dung (200)" ($r.Code -eq 200)
+
+$r = Call "GET" "/api/admin/users?page=1&pageSize=5" $student $null
+Check "Student khong xem duoc danh sach nguoi dung (403)" ($r.Code -eq 403)
+
 Write-Host "== Rang buoc xoa ==" -ForegroundColor Cyan
 $r = Call "DELETE" "/api/subjects/$subjectId" $admin $null
 Check "Xoa mon dang co lop bi chan (409)" ($r.Code -eq 409)
