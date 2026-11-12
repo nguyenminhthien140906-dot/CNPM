@@ -1,0 +1,320 @@
+
+@page "/reports"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>Báo cáo và thống kê</PageTitle>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1>Báo cáo và thống kê</h1>
+            <p>Theo dõi kết quả học tập và tiến độ thực hiện dự án PBL.</p>
+        </div>
+
+        <button class="btn-primary" @onclick="ExportReport">
+            Xuất báo cáo
+        </button>
+    </div>
+
+    <div class="filter-section">
+        <label>Học kỳ</label>
+        <select @bind="SelectedSemester">
+            <option value="Tất cả">Tất cả học kỳ</option>
+            <option value="Học kỳ 1">Học kỳ 1</option>
+            <option value="Học kỳ 2">Học kỳ 2</option>
+            <option value="Học kỳ hè">Học kỳ hè</option>
+        </select>
+    </div>
+
+    <div class="statistics">
+
+        <div class="stat-card">
+            <span>Tổng dự án</span>
+            <h2>@TotalProjects</h2>
+            <small>Dự án được ghi nhận</small>
+        </div>
+
+        <div class="stat-card">
+            <span>Tổng sinh viên</span>
+            <h2>@TotalStudents</h2>
+            <small>Sinh viên tham gia</small>
+        </div>
+
+        <div class="stat-card">
+            <span>Nhiệm vụ hoàn thành</span>
+            <h2>@CompletedTasks</h2>
+            <small>Trên tổng @TotalTasks nhiệm vụ</small>
+        </div>
+
+        <div class="stat-card">
+            <span>Điểm trung bình</span>
+            <h2>@AverageScore.ToString("0.0")</h2>
+            <small>Kết quả đánh giá</small>
+        </div>
+
+    </div>
+
+    <div class="content-card">
+        <h3>Tiến độ nhiệm vụ</h3>
+
+        <div class="progress-info">
+            <span>Tỷ lệ hoàn thành</span>
+            <strong>@TaskProgress%</strong>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-value"
+                 style="@($"width: {TaskProgress}%")">
+            </div>
+        </div>
+    </div>
+
+    <div class="content-card">
+        <h3>Bảng báo cáo kết quả dự án</h3>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã dự án</th>
+                        <th>Tên dự án</th>
+                        <th>Lớp học</th>
+                        <th>Số thành viên</th>
+                        <th>Tiến độ</th>
+                        <th>Điểm trung bình</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in FilteredReports)
+                    {
+                        <tr>
+                            <td>@item.Code</td>
+                            <td>@item.Name</td>
+                            <td>@item.ClassName</td>
+                            <td>@item.MemberCount</td>
+                            <td>@item.Progress%</td>
+                            <td>@item.AverageScore.ToString("0.0")</td>
+                            <td>
+                                <span class="status">
+                                    @item.Status
+                                </span>
+                            </td>
+                        </tr>
+                    }
+
+                    @if (!FilteredReports.Any())
+                    {
+                        <tr>
+                            <td colspan="7">Không có dữ liệu báo cáo.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+@code {
+    private string SelectedSemester = "Tất cả";
+
+    private int TotalProjects = 12;
+    private int TotalStudents = 120;
+    private int CompletedTasks = 85;
+    private int TotalTasks = 100;
+
+    private double AverageScore = 8.2;
+
+    private int TaskProgress =>
+        TotalTasks == 0 ? 0 :
+        (int)Math.Round((double)CompletedTasks / TotalTasks * 100);
+
+    private List<ReportModel> Reports = new()
+    {
+        new()
+        {
+            Code = "PBL001",
+            Name = "CollabSphere",
+            ClassName = "CNTT01",
+            Semester = "Học kỳ 1",
+            MemberCount = 5,
+            Progress = 85,
+            AverageScore = 8.5,
+            Status = "Đang thực hiện"
+        },
+        new()
+        {
+            Code = "PBL002",
+            Name = "Website bán hàng",
+            ClassName = "CNTT02",
+            Semester = "Học kỳ 1",
+            MemberCount = 4,
+            Progress = 100,
+            AverageScore = 9.0,
+            Status = "Hoàn thành"
+        },
+        new()
+        {
+            Code = "PBL003",
+            Name = "Ứng dụng học tập",
+            ClassName = "HTTT01",
+            Semester = "Học kỳ 2",
+            MemberCount = 6,
+            Progress = 50,
+            AverageScore = 7.5,
+            Status = "Đang thực hiện"
+        }
+    };
+
+    private IEnumerable<ReportModel> FilteredReports =>
+        Reports.Where(x =>
+            SelectedSemester == "Tất cả" ||
+            x.Semester == SelectedSemester
+        );
+
+    private void ExportReport()
+    {
+        // Chức năng xuất báo cáo sẽ được kết nối với API sau.
+    }
+
+    public class ReportModel
+    {
+        public string Code { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string ClassName { get; set; } = "";
+        public string Semester { get; set; } = "";
+        public int MemberCount { get; set; }
+        public int Progress { get; set; }
+        public double AverageScore { get; set; }
+        public string Status { get; set; } = "";
+    }
+}
+
+<style>
+    .page-container {
+        padding: 28px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .page-header h1 {
+        color: #1e293b;
+        font-size: 26px;
+    }
+
+    .page-header p {
+        color: #64748b;
+    }
+
+    .filter-section {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    input, select {
+        padding: 11px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+    }
+
+    .statistics {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card, .content-card {
+        background: white;
+        padding: 22px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+    }
+
+    .stat-card span {
+        color: #64748b;
+    }
+
+    .stat-card h2 {
+        color: #2563eb;
+        font-size: 28px;
+    }
+
+    .stat-card small {
+        color: #94a3b8;
+    }
+
+    .btn-primary {
+        background: #2563eb;
+        color: white;
+        padding: 11px 16px;
+        border: none;
+        border-radius: 7px;
+        cursor: pointer;
+    }
+
+    .content-card {
+        margin-bottom: 24px;
+    }
+
+    .progress-info {
+        display: flex;
+        justify-content: space-between;
+        margin: 18px 0 10px;
+    }
+
+    .progress-bar {
+        height: 10px;
+        background: #e2e8f0;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-value {
+        height: 100%;
+        background: #2563eb;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 18px;
+    }
+
+    th, td {
+        padding: 14px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    th {
+        background: #f1f5f9;
+    }
+
+    .status {
+        color: #2563eb;
+    }
+
+    @media(max-width: 900px) {
+        .statistics {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
