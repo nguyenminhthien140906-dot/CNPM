@@ -1,0 +1,210 @@
+
+@page "/register"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Authorization
+@attribute [AllowAnonymous]
+
+<PageTitle>Đăng ký</PageTitle>
+
+<div class="auth-container">
+    <div class="auth-card">
+
+        <div class="logo">
+            <h1>CollabSphere</h1>
+            <p>Tạo tài khoản để tham gia học tập PBL.</p>
+        </div>
+
+        <h2>Đăng ký tài khoản</h2>
+
+        <EditForm Model="RegisterData" OnValidSubmit="HandleRegister">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <label>Họ và tên</label>
+                <InputText class="form-control"
+                           @bind-Value="RegisterData.FullName"
+                           placeholder="Nhập họ và tên" />
+                <ValidationMessage For="@(() => RegisterData.FullName)" />
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <InputText class="form-control"
+                           @bind-Value="RegisterData.Email"
+                           placeholder="Nhập email" />
+                <ValidationMessage For="@(() => RegisterData.Email)" />
+            </div>
+
+            <div class="form-group">
+                <label>Mật khẩu</label>
+                <InputText class="form-control"
+                           type="password"
+                           @bind-Value="RegisterData.Password"
+                           placeholder="Nhập mật khẩu" />
+                <ValidationMessage For="@(() => RegisterData.Password)" />
+            </div>
+
+            <div class="form-group">
+                <label>Xác nhận mật khẩu</label>
+                <InputText class="form-control"
+                           type="password"
+                           @bind-Value="RegisterData.ConfirmPassword"
+                           placeholder="Nhập lại mật khẩu" />
+                <ValidationMessage For="@(() => RegisterData.ConfirmPassword)" />
+            </div>
+
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <p class="error">@ErrorMessage</p>
+            }
+
+            @if (!string.IsNullOrEmpty(SuccessMessage))
+            {
+                <p class="success">@SuccessMessage</p>
+            }
+
+            <button type="submit" class="btn-register" disabled="@IsLoading">
+                @(IsLoading ? "Đang xử lý..." : "Tạo tài khoản")
+            </button>
+        </EditForm>
+
+        <div class="auth-footer">
+            Đã có tài khoản?
+            <a href="/login">Đăng nhập</a>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    private RegisterModel RegisterData = new();
+
+    private string ErrorMessage = "";
+    private string SuccessMessage = "";
+
+    private bool IsLoading = false;
+
+    private async Task HandleRegister()
+    {
+        ErrorMessage = "";
+        SuccessMessage = "";
+
+        if (RegisterData.Password != RegisterData.ConfirmPassword)
+        {
+            ErrorMessage = "Mật khẩu xác nhận không khớp.";
+            return;
+        }
+
+        IsLoading = true;
+
+        try
+        {
+            // TODO: Gọi AuthService để tạo tài khoản trên Backend.
+            await Task.Delay(300);
+
+            ErrorMessage = "Chưa kết nối API đăng ký. Vui lòng cấu hình AuthService.";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    public class RegisterModel
+    {
+        [Required(ErrorMessage = "Vui lòng nhập họ tên.")]
+        [StringLength(100)]
+        public string FullName { get; set; } = "";
+
+        [Required(ErrorMessage = "Vui lòng nhập email.")]
+        [EmailAddress(ErrorMessage = "Email không hợp lệ.")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "Vui lòng nhập mật khẩu.")]
+        [MinLength(8, ErrorMessage = "Mật khẩu phải có ít nhất 8 ký tự.")]
+        public string Password { get; set; } = "";
+
+        [Required(ErrorMessage = "Vui lòng xác nhận mật khẩu.")]
+        public string ConfirmPassword { get; set; } = "";
+    }
+}
+
+<style>
+    .auth-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f1f5f9;
+        padding: 20px;
+    }
+
+    .auth-card {
+        background: white;
+        width: 100%;
+        max-width: 460px;
+        padding: 35px;
+        border-radius: 15px;
+        box-shadow: 0 5px 25px rgba(0,0,0,.05);
+    }
+
+    .logo {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .logo h1 {
+        color: #2563eb;
+    }
+
+    .logo p {
+        color: #64748b;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin: 16px 0;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+    }
+
+    .btn-register {
+        width: 100%;
+        padding: 13px;
+        color: white;
+        background: #2563eb;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .btn-register:disabled {
+        opacity: .6;
+    }
+
+    .error {
+        color: #dc2626;
+    }
+
+    .success {
+        color: #16a34a;
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 25px;
+    }
+
+    a {
+        color: #2563eb;
+        text-decoration: none;
+    }
+</style>
