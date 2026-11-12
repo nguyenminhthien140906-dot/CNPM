@@ -1,0 +1,165 @@
+
+@if (IsOpen)
+{
+    <div class="modal-overlay" @onclick="CloseOnOverlay">
+
+        <div class="modal-container"
+             @onclick:stopPropagation="true">
+
+            <div class="modal-header">
+                <h3>@Title</h3>
+
+                <button class="modal-close"
+                        @onclick="Close">
+                    &times;
+                </button>
+            </div>
+
+            <div class="modal-body">
+                @ChildContent
+            </div>
+
+            @if (FooterContent != null)
+            {
+                <div class="modal-footer">
+                    @FooterContent
+                </div>
+            }
+            else
+            {
+                <div class="modal-footer">
+                    <button class="btn-cancel"
+                            @onclick="Close">
+                        Đóng
+                    </button>
+                </div>
+            }
+
+        </div>
+
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    [Parameter]
+    public string Title { get; set; } = "Thông báo";
+
+    [Parameter]
+    public EventCallback<bool> IsOpenChanged { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? FooterContent { get; set; }
+
+    [Parameter]
+    public bool CloseOnOutsideClick { get; set; } = true;
+
+    private async Task Close()
+    {
+        await IsOpenChanged.InvokeAsync(false);
+    }
+
+    private async Task CloseOnOverlay()
+    {
+        if (CloseOnOutsideClick)
+        {
+            await Close();
+        }
+    }
+}
+
+<style>
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(15, 23, 42, 0.55);
+    }
+
+    .modal-container {
+        width: 100%;
+        max-width: 550px;
+        max-height: 90vh;
+        overflow-y: auto;
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.18);
+        animation: modal-show 0.2s ease;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .modal-header h3 {
+        font-size: 19px;
+        color: #1e293b;
+    }
+
+    .modal-close {
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 6px;
+        background: #f1f5f9;
+        color: #64748b;
+        font-size: 23px;
+        cursor: pointer;
+    }
+
+    .modal-body {
+        padding: 22px;
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 16px 20px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .btn-cancel {
+        padding: 9px 18px;
+        border: none;
+        border-radius: 7px;
+        background: #e2e8f0;
+        color: #334155;
+        cursor: pointer;
+    }
+
+    @keyframes modal-show {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 600px) {
+        .modal-container {
+            max-width: 100%;
+        }
+
+        .modal-body {
+            padding: 16px;
+        }
+    }
+</style>
