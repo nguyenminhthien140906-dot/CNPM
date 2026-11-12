@@ -70,6 +70,27 @@ public class SubjectsController : ApiControllerBase
         return Success(data);
     }
 
+    [HttpGet("{id:long}/syllabus")]
+    public async Task<IActionResult> GetSyllabus(long id)
+    {
+        var subject = await _context.Subjects.AsNoTracking()
+            .Where(s => s.SubjectId == id)
+            .Select(s => new { s.SubjectId, s.SubjectCode, s.SubjectName })
+            .FirstOrDefaultAsync();
+
+        if (subject == null)
+            return Failure(404, "Không tìm thấy môn học.");
+
+        var syllabi = await _context.Syllabi.AsNoTracking()
+            .Where(s => s.SubjectId == id)
+            .OrderByDescending(s => s.CreatedAt)
+            .ThenByDescending(s => s.SyllabusId)
+            .Select(s => new { s.SyllabusId, s.Version, s.Title, s.Content, s.CreatedAt })
+            .ToListAsync();
+
+        return Success(new { subject, syllabi });
+    }
+
     [HttpPost]
     [Authorize(Roles = ManageRoles)]
     public async Task<IActionResult> Create([FromBody] SubjectRequest request)
