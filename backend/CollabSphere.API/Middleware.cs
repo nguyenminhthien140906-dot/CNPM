@@ -1,10 +1,13 @@
-using System.Net;
 using System.Text.Json;
+using CollabSphere.API.Contracts;
 
 namespace CollabSphere.API.Middleware;
 
 public class Middleware
 {
+    private static readonly JsonSerializerOptions JsonOptions =
+        new(JsonSerializerDefaults.Web);
+
     private readonly RequestDelegate _next;
     private readonly ILogger<Middleware> _logger;
 
@@ -24,28 +27,16 @@ public class Middleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(
-                ex,
-                "Đã xảy ra lỗi khi xử lý request."
-            );
+            _logger.LogError(ex, "Đã xảy ra lỗi khi xử lý request.");
 
             context.Response.Clear();
-            context.Response.StatusCode =
-                (int)HttpStatusCode.InternalServerError;
-
+            context.Response.StatusCode = 500;
             context.Response.ContentType = "application/json";
 
-            var response = new
-            {
-                Success = false,
-                Message = "Đã xảy ra lỗi từ máy chủ.",
-                StatusCode = 500
-            };
+            var response = ApiErrorResponse.From(500, "Đã xảy ra lỗi từ máy chủ.");
 
             await context.Response.WriteAsync(
-                JsonSerializer.Serialize(response)
-            );
+                JsonSerializer.Serialize(response, JsonOptions));
         }
     }
 }
-
