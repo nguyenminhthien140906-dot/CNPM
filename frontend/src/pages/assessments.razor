@@ -1,0 +1,200 @@
+
+@page "/assessments"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>Đánh giá</PageTitle>
+
+<div class="page-container">
+    <h1>Đánh giá học tập</h1>
+    <p>Theo dõi kết quả đánh giá dự án và thành viên.</p>
+
+    <div class="toolbar">
+        <input placeholder="Tìm kiếm..."
+               @bind="SearchText"
+               @bind:event="oninput" />
+
+        <select @bind="SelectedType">
+            <option value="">Tất cả loại đánh giá</option>
+            <option value="PROJECT">Dự án</option>
+            <option value="TEAM">Nhóm</option>
+            <option value="INDIVIDUAL">Cá nhân</option>
+        </select>
+    </div>
+
+    <div class="statistics">
+        <div class="stat-card">
+            <span>Tổng đánh giá</span>
+            <h2>@Assessments.Count</h2>
+        </div>
+        <div class="stat-card">
+            <span>Đã hoàn thành</span>
+            <h2>@Assessments.Count(x => x.Status == "COMPLETED")</h2>
+        </div>
+        <div class="stat-card">
+            <span>Chưa đánh giá</span>
+            <h2>@Assessments.Count(x => x.Status == "PENDING")</h2>
+        </div>
+    </div>
+
+    <div class="content-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Đối tượng</th>
+                    <th>Dự án</th>
+                    <th>Loại đánh giá</th>
+                    <th>Điểm</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in FilteredAssessments)
+                {
+                    <tr>
+                        <td>@item.Target</td>
+                        <td>@item.Project</td>
+                        <td>@GetTypeName(item.Type)</td>
+                        <td>@(item.Score?.ToString("0.0") ?? "Chưa có")</td>
+                        <td>@GetStatusName(item.Status)</td>
+                    </tr>
+                }
+
+                @if (!FilteredAssessments.Any())
+                {
+                    <tr>
+                        <td colspan="5">Không có dữ liệu đánh giá.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private string SearchText = "";
+    private string SelectedType = "";
+
+    private List<AssessmentModel> Assessments = new()
+    {
+        new() {
+            Target = "Nguyễn Văn A",
+            Project = "Website quản lý",
+            Type = "INDIVIDUAL",
+            Score = 8.5,
+            Status = "COMPLETED"
+        },
+        new() {
+            Target = "Nhóm 01",
+            Project = "Hệ thống bán hàng",
+            Type = "TEAM",
+            Score = 9.0,
+            Status = "COMPLETED"
+        },
+        new() {
+            Target = "Nhóm 02",
+            Project = "Ứng dụng học tập",
+            Type = "PROJECT",
+            Score = null,
+            Status = "PENDING"
+        }
+    };
+
+    private IEnumerable<AssessmentModel> FilteredAssessments =>
+        Assessments.Where(x =>
+            (string.IsNullOrWhiteSpace(SearchText) ||
+             x.Target.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+             x.Project.Contains(SearchText, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(SelectedType) || x.Type == SelectedType)
+        );
+
+    private string GetTypeName(string type) => type switch
+    {
+        "PROJECT" => "Dự án",
+        "TEAM" => "Nhóm",
+        "INDIVIDUAL" => "Cá nhân",
+        _ => type
+    };
+
+    private string GetStatusName(string status) => status switch
+    {
+        "COMPLETED" => "Đã hoàn thành",
+        "PENDING" => "Chờ đánh giá",
+        _ => status
+    };
+
+    public class AssessmentModel
+    {
+        public string Target { get; set; } = "";
+        public string Project { get; set; } = "";
+        public string Type { get; set; } = "";
+        public double? Score { get; set; }
+        public string Status { get; set; } = "";
+    }
+}
+
+<style>
+    .page-container {
+        padding: 25px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .page-container h1 {
+        color: #1e293b;
+    }
+
+    .page-container p {
+        color: #64748b;
+    }
+
+    .toolbar {
+        display: flex;
+        gap: 12px;
+        margin: 25px 0;
+    }
+
+    input, select {
+        padding: 11px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+    }
+
+    .toolbar input {
+        flex: 1;
+    }
+
+    .statistics {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card, .content-card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .stat-card h2 {
+        color: #2563eb;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 14px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    th {
+        background: #f1f5f9;
+    }
+</style>
+
