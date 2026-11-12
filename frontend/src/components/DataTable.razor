@@ -1,0 +1,235 @@
+
+@typeparam TItem
+
+<div class="data-table-container">
+
+    <div class="table-toolbar">
+        <div class="table-search">
+            <input type="text"
+                   placeholder="Tìm kiếm dữ liệu..."
+                   @bind="SearchText"
+                   @bind:event="oninput" />
+        </div>
+
+        <div class="table-info">
+            Tổng số: @FilteredItems.Count() bản ghi
+        </div>
+    </div>
+
+    @if (FilteredItems.Any())
+    {
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    @HeaderTemplate
+                </thead>
+
+                <tbody>
+                    @foreach (var item in PagedItems)
+                    {
+                        <tr>
+                            @RowTemplate(item)
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="table-empty">
+            @EmptyMessage
+        </div>
+    }
+
+    <div class="table-pagination">
+        <span>
+            Trang @CurrentPage / @TotalPages
+        </span>
+
+        <div class="pagination-actions">
+            <button disabled="@(CurrentPage <= 1)"
+                    @onclick="PreviousPage">
+                Trước
+            </button>
+
+            <button disabled="@(CurrentPage >= TotalPages)"
+                    @onclick="NextPage">
+                Tiếp
+            </button>
+        </div>
+    </div>
+
+</div>
+
+@code {
+    [Parameter]
+    public IEnumerable<TItem> Items { get; set; } = Enumerable.Empty<TItem>();
+
+    [Parameter]
+    public RenderFragment? HeaderTemplate { get; set; }
+
+    [Parameter]
+    public RenderFragment<TItem>? RowTemplate { get; set; }
+
+    [Parameter]
+    public Func<TItem, string?>? SearchSelector { get; set; }
+
+    [Parameter]
+    public int PageSize { get; set; } = 10;
+
+    [Parameter]
+    public string EmptyMessage { get; set; } = "Không có dữ liệu.";
+
+    private string SearchText = "";
+
+    private int CurrentPage = 1;
+
+    private IEnumerable<TItem> FilteredItems =>
+        string.IsNullOrWhiteSpace(SearchText) ||
+        SearchSelector == null
+            ? Items
+            : Items.Where(item =>
+                SearchSelector(item)?.Contains(
+                    SearchText.Trim(),
+                    StringComparison.OrdinalIgnoreCase
+                ) == true
+            );
+
+    private int TotalItems => FilteredItems.Count();
+
+    private int TotalPages =>
+        Math.Max(1, (int)Math.Ceiling(
+            (double)TotalItems / Math.Max(1, PageSize)
+        ));
+
+    private IEnumerable<TItem> PagedItems =>
+        FilteredItems
+            .Skip((CurrentPage - 1) * Math.Max(1, PageSize))
+            .Take(Math.Max(1, PageSize));
+
+    private void PreviousPage()
+    {
+        if (CurrentPage > 1)
+            CurrentPage--;
+    }
+
+    private void NextPage()
+    {
+        if (CurrentPage < TotalPages)
+            CurrentPage++;
+    }
+
+    protected override void OnParametersSet()
+    {
+        CurrentPage = Math.Clamp(CurrentPage, 1, TotalPages);
+    }
+}
+
+<style>
+    .data-table-container {
+        width: 100%;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .table-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        padding: 16px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .table-search {
+        width: 300px;
+        max-width: 100%;
+    }
+
+    .table-search input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+    }
+
+    .table-info {
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        white-space: nowrap;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #e2e8f0;
+        text-align: left;
+    }
+
+    .data-table th {
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 600;
+    }
+
+    .data-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .table-empty {
+        padding: 35px;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .table-pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .pagination-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .pagination-actions button {
+        padding: 8px 14px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        background: white;
+        cursor: pointer;
+    }
+
+    .pagination-actions button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    @media (max-width: 600px) {
+        .table-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .table-search {
+            width: 100%;
+        }
+    }
+</style>
