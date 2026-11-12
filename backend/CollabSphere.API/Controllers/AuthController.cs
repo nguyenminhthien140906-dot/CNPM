@@ -31,11 +31,8 @@ public class AuthController : ControllerBase
 
         if (user == null)
         {
-            return Unauthorized(new
-            {
-                Success = false,
-                Message = "Username or password is incorrect."
-            });
+                       return StatusCode(401, ApiErrorResponse.From(
+                401, "Tên đăng nhập hoặc mật khẩu không đúng."));
         }
 
         var response = _jwtTokenService.GenerateToken(user);
