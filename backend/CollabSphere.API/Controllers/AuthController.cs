@@ -1,3 +1,4 @@
+using CollabSphere.API.Contracts;
 using CollabSphere.API.Services;
 using CollabSphere.Application.Auth;
 using Microsoft.AspNetCore.Mvc;
