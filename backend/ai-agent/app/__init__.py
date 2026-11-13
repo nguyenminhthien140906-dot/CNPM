@@ -38,5 +38,7 @@ def create_app():
                 "status": "unhealthy",
                 "database": "disconnected"
             }), 503
+    from app.routes.chat_routes import chat_bp
+    app.register_blueprint(chat_bp)
 
     return app
