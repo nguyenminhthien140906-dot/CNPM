@@ -43,4 +43,8 @@ def create_app():
 
     from app.routes.history_routes import history_bp
     app.register_blueprint(history_bp)
+
+    from app.routes.progress_routes import progress_bp
+    app.register_blueprint(progress_bp)
+
     return app
