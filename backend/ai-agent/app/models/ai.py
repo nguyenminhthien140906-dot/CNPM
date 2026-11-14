@@ -1,36 +1,40 @@
 
-from sqlalchemy import String, ForeignKey
-from sqlalchemy.dialects.mysql import BIGINT, LONGTEXT, ENUM, TIMESTAMP
+from sqlalchemy import BigInteger, String, Text, ForeignKey
+from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.models.base import db
 
 
-# =========================
-# AI CONVERSATION
-# =========================
 class AIConversation(db.Model):
     __tablename__ = "ai_conversations"
 
     conversation_id = db.Column(
-        BIGINT(unsigned=True),
+        BigInteger,
         primary_key=True,
-        autoincrement=True,
+        autoincrement=True
     )
 
     user_id = db.Column(
-        BIGINT(unsigned=True),
+        BigInteger,
         ForeignKey("users.user_id"),
-        nullable=False,
+        nullable=False
     )
 
-    conversation_title = db.Column(String(200))
+    title = db.Column(String(200), nullable=True)
 
     created_at = db.Column(
         TIMESTAMP,
         nullable=False,
+        server_default=func.current_timestamp()
+    )
+
+    updated_at = db.Column(
+        TIMESTAMP,
+        nullable=False,
         server_default=func.current_timestamp(),
+        server_onupdate=func.current_timestamp()
     )
 
     user = relationship("User")
@@ -38,42 +42,42 @@ class AIConversation(db.Model):
     messages = relationship(
         "AIMessage",
         back_populates="conversation",
-        cascade="all, delete-orphan",
+        cascade="all, delete-orphan"
     )
 
 
-# =========================
-# AI MESSAGE
-# =========================
 class AIMessage(db.Model):
     __tablename__ = "ai_messages"
 
     ai_message_id = db.Column(
-        BIGINT(unsigned=True),
+        BigInteger,
         primary_key=True,
-        autoincrement=True,
+        autoincrement=True
     )
 
     conversation_id = db.Column(
-        BIGINT(unsigned=True),
+        BigInteger,
         ForeignKey("ai_conversations.conversation_id"),
-        nullable=False,
+        nullable=False
     )
 
     sender_type = db.Column(
-        ENUM("USER", "ASSISTANT", "SYSTEM"),
-        nullable=False,
+        String(20),
+        nullable=False
     )
 
-    content = db.Column(LONGTEXT, nullable=False)
+    content = db.Column(
+        Text,
+        nullable=False
+    )
 
     created_at = db.Column(
         TIMESTAMP,
         nullable=False,
-        server_default=func.current_timestamp(),
+        server_default=func.current_timestamp()
     )
 
     conversation = relationship(
         "AIConversation",
-        back_populates="messages",
+        back_populates="messages"
     )
