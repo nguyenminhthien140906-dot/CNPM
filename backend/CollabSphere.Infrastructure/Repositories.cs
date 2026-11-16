@@ -4,19 +4,39 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CollabSphere.Infrastructure.Repositories;
 
-public interface IRepository<T, TId> where T : class
+public interface IRepository<T> : IRepository<T, long>
+    where T : class
 {
-    Task<IEnumerable<T>> GetAllAsync();
+}
 
-    Task<T?> GetByIdAsync(TId id);
+public interface IRepository<T, TId>
+    where T : class
+{
+    Task<IEnumerable<T>> GetAllAsync(
+        CancellationToken cancellationToken = default);
 
-    Task AddAsync(T entity);
+    Task<T?> GetByIdAsync(
+        TId id,
+        CancellationToken cancellationToken = default);
+
+    Task AddAsync(
+        T entity,
+        CancellationToken cancellationToken = default);
 
     void Update(T entity);
 
     void Delete(T entity);
 
-    Task SaveChangesAsync();
+    Task SaveChangesAsync(
+        CancellationToken cancellationToken = default);
+}
+
+public class Repository<T> : Repository<T, long>, IRepository<T>
+    where T : class
+{
+    public Repository(ApplicationDbContext context) : base(context)
+    {
+    }
 }
 
 public class Repository<T, TId> : IRepository<T, TId>
@@ -31,19 +51,29 @@ public class Repository<T, TId> : IRepository<T, TId>
         _dbSet = context.Set<T>();
     }
 
-    public async Task<IEnumerable<T>> GetAllAsync()
+    public async Task<IEnumerable<T>> GetAllAsync(
+        CancellationToken cancellationToken = default)
     {
-        return await _dbSet.ToListAsync();
+        return await _dbSet
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<T?> GetByIdAsync(TId id)
+    public async Task<T?> GetByIdAsync(
+        TId id,
+        CancellationToken cancellationToken = default)
     {
-        return await _dbSet.FindAsync(id);
+        return await _dbSet.FindAsync(
+            new object?[] { id },
+            cancellationToken
+        );
     }
 
-    public async Task AddAsync(T entity)
+    public async Task AddAsync(
+        T entity,
+        CancellationToken cancellationToken = default)
     {
-        await _dbSet.AddAsync(entity);
+        await _dbSet.AddAsync(entity, cancellationToken);
     }
 
     public void Update(T entity)
@@ -56,8 +86,9 @@ public class Repository<T, TId> : IRepository<T, TId>
         _dbSet.Remove(entity);
     }
 
-    public async Task SaveChangesAsync()
+    public async Task SaveChangesAsync(
+        CancellationToken cancellationToken = default)
     {
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }
