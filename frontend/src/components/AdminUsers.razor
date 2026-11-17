@@ -1,0 +1,144 @@
+@page "/admin/users"
+@using CollabSphere.Frontend.Services
+@using CollabSphere.Frontend.Components
+@inject CollabSphereApiService ApiService
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold mb-0">Quản lý Tài khoản (Admin)</h3>
+        <button class="btn btn-primary" @onclick="OpenAddModal">+ Thêm tài khoản</button>
+    </div>
+
+    <DataTable TItem="UserDto" Items="users"
+               SearchPlaceholder="Tìm theo tên, email, mã..."
+               SearchPredicate="@((u, q) => u.FullName.Contains(q, StringComparison.OrdinalIgnoreCase) || u.Email.Contains(q, StringComparison.OrdinalIgnoreCase) || u.Id.Contains(q, StringComparison.OrdinalIgnoreCase))"
+               FilterOptions="@(new List<string> { "Admin", "Head", "Staff", "Lecturer", "Student" })"
+               FilterPredicate="@((u, f) => u.Role == f)">
+        <HeaderTemplate>
+            <th>ID</th>
+            <th>Họ và tên</th>
+            <th>Email</th>
+            <th>Vai trò</th>
+            <th>Trạng thái</th>
+            <th class="text-end">Thao tác</th>
+        </HeaderTemplate>
+        <RowTemplate Context="user">
+            <td>@user.Id</td>
+            <td class="fw-semibold">@user.FullName</td>
+            <td>@user.Email</td>
+            <td><span class="badge bg-secondary">@user.Role</span></td>
+            <td>
+                <span class="badge @(user.IsActive ? "bg-success" : "bg-danger")">
+                    @(user.IsActive ? "Hoạt động" : "Vô hiệu hóa")
+                </span>
+            </td>
+            <td class="text-end">
+                <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => OpenEditModal(user)">Sửa</button>
+                <button class="btn btn-sm @(user.IsActive ? "btn-outline-danger" : "btn-outline-success")"
+                        @onclick="() => ConfirmToggleStatus(user)">
+                    @(user.IsActive ? "Khóa" : "Mở khóa")
+                </button>
+            </td>
+        </RowTemplate>
+    </DataTable>
+</div>
+
+@if (showModal)
+{
+    <div class="modal fade show d-block" style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(isNew ? "Thêm tài khoản mới" : "Cập nhật tài khoản")</h5>
+                    <button type="button" class="btn-close" @onclick="() => showModal = false"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Họ và tên</label>
+                        <input class="form-control" @bind="editingUser.FullName" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input class="form-control" @bind="editingUser.Email" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Vai trò</label>
+                        <select class="form-select" @bind="editingUser.Role">
+                            <option value="Admin">Admin</option>
+                            <option value="Head">Head Department</option>
+                            <option value="Staff">Staff</option>
+                            <option value="Lecturer">Lecturer</option>
+                            <option value="Student">Student</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="() => showModal = false">Hủy</button>
+                    <button class="btn btn-primary" @onclick="SaveUser">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (confirmUser != null)
+{
+    <div class="modal fade show d-block" style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header"><h6 class="modal-title">Xác nhận thao tác</h6></div>
+                <div class="modal-body">
+                    Bạn có chắc muốn @(confirmUser.IsActive ? "vô hiệu hóa" : "kích hoạt lại") tài khoản <b>@confirmUser.FullName</b>?
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-sm btn-secondary" @onclick="() => confirmUser = null">Hủy</button>
+                    <button class="btn btn-sm btn-danger" @onclick="ExecuteToggleStatus">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<UserDto> users = new();
+    private bool showModal = false, isNew = true;
+    private UserDto editingUser = new();
+    private UserDto? confirmUser;
+
+    protected override async Task OnInitializedAsync() => users = await ApiService.GetUsersAsync();
+
+    private void OpenAddModal() { editingUser = new UserDto(); isNew = true; showModal = true; }
+    private void OpenEditModal(UserDto u)
+    {
+        editingUser = new UserDto { Id = u.Id, FullName = u.FullName, Email = u.Email, Role = u.Role, IsActive = u.IsActive };
+        isNew = false; showModal = true;
+    }
+
+    private async Task SaveUser()
+    {
+        if (isNew)
+        {
+            await ApiService.CreateUserAsync(editingUser);
+            users.Insert(0, editingUser);
+        }
+        else
+        {
+            await ApiService.UpdateUserAsync(editingUser);
+            var idx = users.FindIndex(x => x.Id == editingUser.Id);
+            if (idx >= 0) users[idx] = editingUser;
+        }
+        showModal = false;
+    }
+
+    private void ConfirmToggleStatus(UserDto u) => confirmUser = u;
+
+    private async Task ExecuteToggleStatus()
+    {
+        if (confirmUser != null)
+        {
+            confirmUser.IsActive = !confirmUser.IsActive;
+            await ApiService.ToggleUserStatusAsync(confirmUser.Id, confirmUser.IsActive);
+            confirmUser = null;
+        }
+    }
+}
