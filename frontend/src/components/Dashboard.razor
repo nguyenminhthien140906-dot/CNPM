@@ -1,0 +1,88 @@
+@page "/dashboard"
+@using CollabSphere.Frontend.Services
+@inject CollabSphereApiService ApiService
+
+<div class="container-fluid py-3">
+    <h3 class="mb-4 fw-bold">Tổng quan hệ thống (Dashboard)</h3>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-start border-primary border-4 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Tổng tài khoản</div>
+                    <div class="fs-3 fw-bold text-primary">@totalUsers</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-success border-4 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Môn học đang mở</div>
+                    <div class="fs-3 fw-bold text-success">@totalSubjects</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-info border-4 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Lớp học phần</div>
+                    <div class="fs-3 fw-bold text-info">@totalClasses</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-warning border-4 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Dự án chờ duyệt</div>
+                    <div class="fs-3 fw-bold text-warning">@pendingProjects</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white fw-bold">Dự án cần Head Department phê duyệt</div>
+        <div class="card-body p-0">
+            <table class="table mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Mã</th>
+                        <th>Tên dự án</th>
+                        <th>Nhóm</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in recentProjects)
+                    {
+                        <tr>
+                            <td>@p.Id</td>
+                            <td>@p.Name</td>
+                            <td>@p.GroupName</td>
+                            <td><span class="badge bg-warning text-dark">@p.Status</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+    private int totalUsers, totalSubjects, totalClasses, pendingProjects;
+    private List<ProjectDto> recentProjects = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var users = await ApiService.GetUsersAsync();
+        var subjects = await ApiService.GetSubjectsAsync();
+        var classes = await ApiService.GetClassesAsync();
+        var projects = await ApiService.GetProjectsAsync();
+
+        totalUsers = users.Count;
+        totalSubjects = subjects.Count;
+        totalClasses = classes.Count;
+        recentProjects = projects.Where(p => p.Status == "Chờ duyệt").ToList();
+        pendingProjects = recentProjects.Count;
+    }
+}
