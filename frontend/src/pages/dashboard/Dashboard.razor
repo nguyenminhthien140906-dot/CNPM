@@ -1,7 +1,9 @@
 
 @page "/dashboard"
 @using Microsoft.AspNetCore.Authorization
+@using System.Net.Http.Json
 @attribute [Authorize]
+@inject HttpClient Http
 
 <PageTitle>Dashboard</PageTitle>
 
@@ -13,7 +15,12 @@
             <p>Chào mừng đến với CollabSphere.</p>
         </div>
 
-        <span class="date-label">@DateTime.Today.ToString("dd/MM/yyyy")</span>
+        <div class="header-actions">
+            <button class="refresh-btn" @onclick="LoadDashboardData" disabled="@IsLoading">
+                @(IsLoading ? "Đang tải..." : "↻ Làm mới")
+            </button>
+            <span class="date-label">@DateTime.Today.ToString("dd/MM/yyyy")</span>
+        </div>
     </div>
 
     <div class="stat-grid">
@@ -120,6 +127,20 @@
             <a href="/checkpoints">Xem tất cả</a>
         </div>
 
+        <div class="checkpoint-toolbar">
+            <input type="text"
+                   placeholder="Tìm checkpoint hoặc dự án..."
+                   @bind="CheckpointSearch"
+                   @bind:event="oninput" />
+
+            <select @bind="CheckpointStatusFilter">
+                <option value="">Tất cả trạng thái</option>
+                <option value="Đang thực hiện">Đang thực hiện</option>
+                <option value="Chưa bắt đầu">Chưa bắt đầu</option>
+                <option value="Hoàn thành">Hoàn thành</option>
+            </select>
+        </div>
+
         <table>
             <thead>
                 <tr>
@@ -131,20 +152,22 @@
             </thead>
 
             <tbody>
-                @foreach (var item in UpcomingCheckpoints)
+                @foreach (var item in FilteredCheckpoints)
                 {
                     <tr>
                         <td>@item.Name</td>
                         <td>@item.Project</td>
                         <td>@item.DueDate.ToString("dd/MM/yyyy")</td>
-                        <td>@item.Status</td>
+                        <td>
+                            <span class="status-badge">@item.Status</span>
+                        </td>
                     </tr>
                 }
 
-                @if (!UpcomingCheckpoints.Any())
+                @if (!FilteredCheckpoints.Any())
                 {
                     <tr>
-                        <td colspan="4">Không có checkpoint sắp đến hạn.</td>
+                        <td colspan="4" class="empty-cell">Không có checkpoint phù hợp.</td>
                     </tr>
                 }
             </tbody>
@@ -155,8 +178,11 @@
         <h3>Truy cập nhanh</h3>
 
         <div class="quick-grid">
+            <a href="/admin/users">Quản lý tài khoản</a>
+            <a href="/subjects">Môn học & Syllabus</a>
+            <a href="/head/approvals">Phê duyệt dự án</a>
             <a href="/projects">Quản lý dự án</a>
-            <a href="/classes">Danh sách lớp</a>
+            <a href="/staff/classes">Danh sách lớp</a>
             <a href="/teams">Nhóm học tập</a>
             <a href="/tasks">Nhiệm vụ</a>
             <a href="/assessments">Đánh giá</a>
@@ -167,6 +193,10 @@
 </div>
 
 @code {
+    private bool IsLoading = false;
+    private string CheckpointSearch = "";
+    private string CheckpointStatusFilter = "";
+
     private int TotalProjects = 12;
     private int TotalClasses = 8;
     private int TotalTeams = 20;
@@ -220,6 +250,66 @@
         }
     };
 
+    private IEnumerable<CheckpointItem> FilteredCheckpoints =>
+        UpcomingCheckpoints.Where(c =>
+            (string.IsNullOrWhiteSpace(CheckpointSearch) ||
+             c.Name.Contains(CheckpointSearch, StringComparison.OrdinalIgnoreCase) ||
+             c.Project.Contains(CheckpointSearch, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(CheckpointStatusFilter) ||
+             c.Status == CheckpointStatusFilter)
+        );
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardData();
+    }
+
+    private async Task LoadDashboardData()
+    {
+        IsLoading = true;
+        try
+        {
+            var summary = await Http.GetFromJsonAsync<DashboardSummaryDto>("api/dashboard");
+            if (summary != null)
+            {
+                TotalProjects = summary.TotalProjects;
+                TotalClasses = summary.TotalClasses;
+                TotalTeams = summary.TotalTeams;
+                TotalTasks = summary.TotalTasks;
+                CompletedTasks = summary.CompletedTasks;
+                InProgressTasks = summary.InProgressTasks;
+                PendingTasks = summary.PendingTasks;
+
+                if (summary.RecentProjects != null && summary.RecentProjects.Any())
+                    RecentProjects = summary.RecentProjects;
+
+                if (summary.UpcomingCheckpoints != null && summary.UpcomingCheckpoints.Any())
+                    UpcomingCheckpoints = summary.UpcomingCheckpoints;
+            }
+        }
+        catch
+        {
+            // Giữ nguyên dữ liệu mẫu mặc định khi API chưa kết nối
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    public class DashboardSummaryDto
+    {
+        public int TotalProjects { get; set; }
+        public int TotalClasses { get; set; }
+        public int TotalTeams { get; set; }
+        public int TotalTasks { get; set; }
+        public int CompletedTasks { get; set; }
+        public int InProgressTasks { get; set; }
+        public int PendingTasks { get; set; }
+        public List<ProjectItem>? RecentProjects { get; set; }
+        public List<CheckpointItem>? UpcomingCheckpoints { get; set; }
+    }
+
     public class ProjectItem
     {
         public string Name { get; set; } = "";
@@ -257,6 +347,32 @@
 
     .dashboard-header p {
         color: #64748b;
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .refresh-btn {
+        background: white;
+        color: #2563eb;
+        padding: 12px 16px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .refresh-btn:hover:not(:disabled) {
+        background: #eff6ff;
+        border-color: #2563eb;
+    }
+
+    .refresh-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
     }
 
     .date-label {
@@ -375,62 +491,4 @@
 
     .checkpoint-card {
         margin-bottom: 24px;
-        overflow-x: auto;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    th, td {
-        padding: 14px;
-        text-align: left;
-        border-bottom: 1px solid #e2e8f0;
-    }
-
-    th {
-        background: #f8fafc;
-    }
-
-    .quick-links {
-        margin-top: 25px;
-    }
-
-    .quick-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
-        margin-top: 15px;
-    }
-
-    .quick-grid a {
-        padding: 20px;
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        color: #2563eb;
-        text-decoration: none;
-    }
-
-    .quick-grid a:hover {
-        border-color: #2563eb;
-        background: #eff6ff;
-    }
-
-    @media(max-width: 900px) {
-        .stat-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .dashboard-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    @media(max-width: 600px) {
-        .quick-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
+        overflow-x: auto
