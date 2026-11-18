@@ -4,11 +4,31 @@
 <div class="data-table-container">
 
     <div class="table-toolbar">
-        <div class="table-search">
-            <input type="text"
-                   placeholder="Tìm kiếm dữ liệu..."
-                   @bind="SearchText"
-                   @bind:event="oninput" />
+        <div class="table-toolbar-left">
+            <div class="table-search">
+                <input type="text"
+                       placeholder="@SearchPlaceholder"
+                       @bind="SearchText"
+                       @bind:event="oninput" />
+            </div>
+
+            @if (FilterOptions != null && FilterOptions.Any() && FilterSelector != null)
+            {
+                <div class="table-filter">
+                    <select @bind="SelectedFilter">
+                        <option value="">@FilterPlaceholder</option>
+                        @foreach (var option in FilterOptions)
+                        {
+                            <option value="@option">@option</option>
+                        }
+                    </select>
+                </div>
+            }
+
+            @if (ExtraToolbarContent != null)
+            {
+                @ExtraToolbarContent
+            }
         </div>
 
         <div class="table-info">
@@ -28,7 +48,10 @@
                     @foreach (var item in PagedItems)
                     {
                         <tr>
-                            @RowTemplate(item)
+                            @if (RowTemplate != null)
+                            {
+                                @RowTemplate(item)
+                            }
                         </tr>
                     }
                 </tbody>
@@ -76,25 +99,70 @@
     public Func<TItem, string?>? SearchSelector { get; set; }
 
     [Parameter]
+    public string SearchPlaceholder { get; set; } = "Tìm kiếm dữ liệu...";
+
+    [Parameter]
+    public IEnumerable<string>? FilterOptions { get; set; }
+
+    [Parameter]
+    public Func<TItem, string?>? FilterSelector { get; set; }
+
+    [Parameter]
+    public string FilterPlaceholder { get; set; } = "Tất cả";
+
+    [Parameter]
+    public RenderFragment? ExtraToolbarContent { get; set; }
+
+    [Parameter]
     public int PageSize { get; set; } = 10;
 
     [Parameter]
     public string EmptyMessage { get; set; } = "Không có dữ liệu.";
 
-    private string SearchText = "";
+    private string _searchText = "";
+    private string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            _searchText = value;
+            CurrentPage = 1;
+        }
+    }
+
+    private string _selectedFilter = "";
+    private string SelectedFilter
+    {
+        get => _selectedFilter;
+        set
+        {
+            _selectedFilter = value;
+            CurrentPage = 1;
+        }
+    }
 
     private int CurrentPage = 1;
 
     private IEnumerable<TItem> FilteredItems =>
-        string.IsNullOrWhiteSpace(SearchText) ||
-        SearchSelector == null
-            ? Items
-            : Items.Where(item =>
-                SearchSelector(item)?.Contains(
-                    SearchText.Trim(),
-                    StringComparison.OrdinalIgnoreCase
-                ) == true
-            );
+        Items.Where(item =>
+        {
+            bool matchSearch = string.IsNullOrWhiteSpace(SearchText) ||
+                               SearchSelector == null ||
+                               (SearchSelector(item)?.Contains(
+                                   SearchText.Trim(),
+                                   StringComparison.OrdinalIgnoreCase
+                               ) == true);
+
+            bool matchFilter = string.IsNullOrWhiteSpace(SelectedFilter) ||
+                               FilterSelector == null ||
+                               string.Equals(
+                                   FilterSelector(item)?.Trim(),
+                                   SelectedFilter.Trim(),
+                                   StringComparison.OrdinalIgnoreCase
+                               );
+
+            return matchSearch && matchFilter;
+        });
 
     private int TotalItems => FilteredItems.Count();
 
@@ -142,6 +210,15 @@
         gap: 15px;
         padding: 16px;
         border-bottom: 1px solid #e2e8f0;
+        flex-wrap: wrap;
+    }
+
+    .table-toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        flex: 1;
     }
 
     .table-search {
@@ -149,16 +226,23 @@
         max-width: 100%;
     }
 
-    .table-search input {
+    .table-search input,
+    .table-filter select {
         width: 100%;
         padding: 10px 12px;
         border: 1px solid #cbd5e1;
         border-radius: 7px;
+        background: white;
+    }
+
+    .table-filter {
+        min-width: 180px;
     }
 
     .table-info {
         color: #64748b;
         font-size: 13px;
+        white-space: nowrap;
     }
 
     .table-responsive {
@@ -228,7 +312,13 @@
             align-items: stretch;
         }
 
-        .table-search {
+        .table-toolbar-left {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .table-search,
+        .table-filter {
             width: 100%;
         }
     }
