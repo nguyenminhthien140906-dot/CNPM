@@ -2,7 +2,9 @@
 @page "/head/approval"
 
 @using Microsoft.AspNetCore.Authorization
+@using System.Net.Http.Json
 @attribute [Authorize(Roles = "HEAD")]
+@inject HttpClient Http
 
 <PageTitle>Phê duyệt dự án</PageTitle>
 
@@ -40,7 +42,7 @@
     <div class="content-card">
 
         <div class="toolbar">
-            <input placeholder="Tìm kiếm dự án..."
+            <input placeholder="Tìm kiếm tên dự án hoặc giảng viên..."
                    @bind="SearchText"
                    @bind:event="oninput" />
 
@@ -65,14 +67,14 @@
                 </thead>
 
                 <tbody>
-                    @foreach (var project in FilteredProjects)
+                    @foreach (var project in PagedProjects)
                     {
                         <tr>
                             <td>@project.Name</td>
                             <td>@project.Lecturer</td>
                             <td>@project.SubmittedDate</td>
                             <td>
-                                <span class="status-badge">
+                                <span class="status-badge @GetStatusClass(project.Status)">
                                     @GetStatusName(project.Status)
                                 </span>
                             </td>
@@ -86,7 +88,7 @@
                         </tr>
                     }
 
-                    @if (!FilteredProjects.Any())
+                    @if (!PagedProjects.Any())
                     {
                         <tr>
                             <td colspan="5" class="empty">
@@ -97,6 +99,31 @@
                 </tbody>
             </table>
         </div>
+
+        @if (FilteredProjects.Any())
+        {
+            <div class="pagination">
+                <span class="page-info">
+                    Hiển thị @PagedProjects.Count() / @FilteredProjects.Count() dự án
+                </span>
+
+                <div class="page-controls">
+                    <button class="page-btn"
+                            disabled="@(CurrentPage <= 1)"
+                            @onclick="() => ChangePage(CurrentPage - 1)">
+                        Trước
+                    </button>
+
+                    <span class="page-current">Trang @CurrentPage / @TotalPages</span>
+
+                    <button class="page-btn"
+                            disabled="@(CurrentPage >= TotalPages)"
+                            @onclick="() => ChangePage(CurrentPage + 1)">
+                        Sau
+                    </button>
+                </div>
+            </div>
+        }
 
     </div>
 
@@ -118,6 +145,11 @@
                 </div>
 
                 <div class="detail-item">
+                    <strong>Ngày gửi:</strong>
+                    <p>@SelectedProject.SubmittedDate</p>
+                </div>
+
+                <div class="detail-item">
                     <strong>Mô tả:</strong>
                     <p>@SelectedProject.Description</p>
                 </div>
@@ -127,6 +159,14 @@
                     <p>@GetStatusName(SelectedProject.Status)</p>
                 </div>
 
+                @if (SelectedProject.Status == "REJECTED" && !string.IsNullOrWhiteSpace(SelectedProject.RejectionReason))
+                {
+                    <div class="detail-item">
+                        <strong>Lý do từ chối:</strong>
+                        <p class="rejected-text">@SelectedProject.RejectionReason</p>
+                    </div>
+                }
+
                 @if (SelectedProject.Status == "PENDING")
                 {
                     <label>Lý do từ chối (nếu có)</label>
@@ -134,6 +174,11 @@
                     <textarea @bind="RejectionReason"
                               placeholder="Nhập lý do từ chối...">
                     </textarea>
+
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <p class="error-message">@ErrorMessage</p>
+                    }
 
                     <div class="modal-actions">
                         <button class="btn-approve"
@@ -160,13 +205,78 @@
 </div>
 
 @code {
-    private string SearchText = "";
-    private string SelectedStatus = "";
+    private string _searchText = "";
+    private string SearchText
+    {
+        get => _searchText;
+        set { _searchText = value; CurrentPage = 1; }
+    }
+
+    private string _selectedStatus = "";
+    private string SelectedStatus
+    {
+        get => _selectedStatus;
+        set { _selectedStatus = value; CurrentPage = 1; }
+    }
+
     private string RejectionReason = "";
+    private string ErrorMessage = "";
+
+    private int CurrentPage = 1;
+    private int PageSize = 5;
 
     private ProjectModel? SelectedProject;
 
     private List<ProjectModel> Projects = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var apiProjects = await Http.GetFromJsonAsync<List<ProjectModel>>("api/projects");
+            if (apiProjects != null && apiProjects.Any())
+            {
+                Projects = apiProjects;
+                return;
+            }
+        }
+        catch
+        {
+            // Dùng dữ liệu mẫu bên dưới nếu API chưa kết nối
+        }
+
+        Projects = new List<ProjectModel>
+        {
+            new()
+            {
+                Id = "PRJ-01",
+                Name = "Hệ thống quản lý học tập PBL CollabSphere",
+                Lecturer = "ThS. Nguyễn Văn An",
+                SubmittedDate = "15/11/2026",
+                Description = "Nền tảng hỗ trợ làm việc nhóm, quản lý checkpoint và đánh giá theo môn học.",
+                Status = "PENDING"
+            },
+            new()
+            {
+                Id = "PRJ-02",
+                Name = "Ứng dụng đặt lịch khám bệnh trực tuyến",
+                Lecturer = "TS. Trần Thị Bình",
+                SubmittedDate = "12/11/2026",
+                Description = "Hệ thống đặt lịch, quản lý hồ sơ bệnh nhân và nhắc lịch tự động.",
+                Status = "APPROVED"
+            },
+            new()
+            {
+                Id = "PRJ-03",
+                Name = "Website quản lý bán hàng đa chi nhánh",
+                Lecturer = "ThS. Lê Hoàng Cường",
+                SubmittedDate = "10/11/2026",
+                Description = "Quản lý tồn kho, đơn hàng và báo cáo doanh thu theo thời gian thực.",
+                Status = "REJECTED",
+                RejectionReason = "Phạm vi chức năng còn sơ sài, cần bổ sung phân tích nghiệp vụ và sơ đồ CSDL."
+            }
+        };
+    }
 
     private IEnumerable<ProjectModel> FilteredProjects =>
         Projects.Where(project =>
@@ -174,10 +284,27 @@
              project.Name.Contains(
                  SearchText,
                  StringComparison.OrdinalIgnoreCase
+             ) ||
+             project.Lecturer.Contains(
+                 SearchText,
+                 StringComparison.OrdinalIgnoreCase
              )) &&
             (string.IsNullOrWhiteSpace(SelectedStatus) ||
              project.Status == SelectedStatus)
         );
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling((double)FilteredProjects.Count() / PageSize));
+
+    private IEnumerable<ProjectModel> PagedProjects =>
+        FilteredProjects.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+
+    private void ChangePage(int page)
+    {
+        if (page >= 1 && page <= TotalPages)
+        {
+            CurrentPage = page;
+        }
+    }
 
     private int CountStatus(string status)
     {
@@ -195,17 +322,38 @@
         };
     }
 
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "APPROVED" => "approved",
+            "REJECTED" => "rejected",
+            _ => "pending"
+        };
+    }
+
     private void ViewProject(ProjectModel project)
     {
         SelectedProject = project;
         RejectionReason = "";
+        ErrorMessage = "";
     }
 
-    private void ApproveProject()
+    private async Task ApproveProject()
     {
         if (SelectedProject == null ||
             SelectedProject.Status != "PENDING")
             return;
+
+        try
+        {
+            await Http.PatchAsJsonAsync($"api/projects/{SelectedProject.Id}/status", new
+            {
+                status = "APPROVED",
+                rejectionReason = ""
+            });
+        }
+        catch { }
 
         SelectedProject.Status = "APPROVED";
         SelectedProject.RejectionReason = "";
@@ -213,15 +361,32 @@
         CloseDetails();
     }
 
-    private void RejectProject()
+    private async Task RejectProject()
     {
         if (SelectedProject == null ||
-            SelectedProject.Status != "PENDING" ||
-            string.IsNullOrWhiteSpace(RejectionReason))
+            SelectedProject.Status != "PENDING")
             return;
 
+        if (string.IsNullOrWhiteSpace(RejectionReason))
+        {
+            ErrorMessage = "Vui lòng nhập lý do từ chối dự án.";
+            return;
+        }
+
+        string reason = RejectionReason.Trim();
+
+        try
+        {
+            await Http.PatchAsJsonAsync($"api/projects/{SelectedProject.Id}/status", new
+            {
+                status = "REJECTED",
+                rejectionReason = reason
+            });
+        }
+        catch { }
+
         SelectedProject.Status = "REJECTED";
-        SelectedProject.RejectionReason = RejectionReason.Trim();
+        SelectedProject.RejectionReason = reason;
 
         CloseDetails();
     }
@@ -230,10 +395,12 @@
     {
         SelectedProject = null;
         RejectionReason = "";
+        ErrorMessage = "";
     }
 
     public class ProjectModel
     {
+        public string Id { get; set; } = Guid.NewGuid().ToString("N")[..6].ToUpper();
         public string Name { get; set; } = "";
         public string Lecturer { get; set; } = "";
         public string SubmittedDate { get; set; } = "";
@@ -327,6 +494,23 @@
         background: #dbeafe;
         padding: 6px 10px;
         border-radius: 20px;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .status-badge.pending {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    .status-badge.approved {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .status-badge.rejected {
+        background: #fee2e2;
+        color: #dc2626;
     }
 
     button {
@@ -374,6 +558,16 @@
         margin: 5px 0;
     }
 
+    .rejected-text {
+        color: #dc2626 !important;
+    }
+
+    .error-message {
+        color: #dc2626;
+        font-size: 14px;
+        margin: 0;
+    }
+
     .modal textarea {
         min-height: 90px;
         resize: vertical;
@@ -401,5 +595,55 @@
     .empty {
         text-align: center;
         color: #94a3b8;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .page-info {
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .page-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .page-current {
+        color: #334155;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .page-btn {
+        padding: 8px 14px;
+        border: 1px solid #cbd5e1;
+        background: white;
+        color: #334155;
+        border-radius: 7px;
+        cursor: pointer;
+    }
+
+    .page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    @media (max-width: 768px) {
+        .statistics {
+            grid-template-columns: 1fr;
+        }
+
+        .toolbar {
+            flex-direction: column;
+        }
     }
 </style>
