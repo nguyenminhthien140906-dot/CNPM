@@ -2,7 +2,9 @@
 @page "/staff/classes"
 
 @using Microsoft.AspNetCore.Authorization
+@using System.Net.Http.Json
 @attribute [Authorize(Roles = "STAFF")]
+@inject HttpClient Http
 
 <PageTitle>Quản lý lớp học</PageTitle>
 
@@ -49,6 +51,13 @@
                    @bind="SearchText"
                    @bind:event="oninput" />
 
+            <select @bind="SelectedSemester">
+                <option value="">Tất cả học kỳ</option>
+                <option value="1">Học kỳ 1</option>
+                <option value="2">Học kỳ 2</option>
+                <option value="3">Học kỳ hè</option>
+            </select>
+
             <select @bind="SelectedStatus">
                 <option value="">Tất cả trạng thái</option>
                 <option value="ACTIVE">Đang hoạt động</option>
@@ -60,11 +69,12 @@
         {
             <div class="form-card">
 
-                <h3>Thêm lớp học mới</h3>
+                <h3>@(EditingClass == null ? "Thêm lớp học mới" : "Chỉnh sửa lớp học")</h3>
 
                 <label>Mã lớp</label>
                 <input @bind="NewClass.Code"
-                       placeholder="Ví dụ: CNTT01" />
+                       placeholder="Ví dụ: CNTT01"
+                       disabled="@(EditingClass != null)" />
 
                 <label>Tên lớp</label>
                 <input @bind="NewClass.Name"
@@ -81,10 +91,28 @@
                 <input @bind="NewClass.AcademicYear"
                        placeholder="2026-2027" />
 
+                @if (EditingClass != null)
+                {
+                    <label>Sĩ số hiện tại</label>
+                    <input type="number"
+                           min="0"
+                           max="@NewClass.Capacity"
+                           @bind="NewClass.StudentCount" />
+                }
+
                 <label>Sĩ số tối đa</label>
                 <input type="number"
                        min="1"
                        @bind="NewClass.Capacity" />
+
+                @if (EditingClass != null)
+                {
+                    <label>Trạng thái</label>
+                    <select @bind="NewClass.Status">
+                        <option value="ACTIVE">Đang hoạt động</option>
+                        <option value="INACTIVE">Ngừng hoạt động</option>
+                    </select>
+                }
 
                 @if (!string.IsNullOrEmpty(ErrorMessage))
                 {
@@ -94,8 +122,8 @@
                 <div class="form-actions">
 
                     <button class="btn-primary"
-                            @onclick="AddClass">
-                        Lưu lớp học
+                            @onclick="SaveClass">
+                        @(EditingClass == null ? "Lưu lớp học" : "Cập nhật lớp học")
                     </button>
 
                     <button class="btn-secondary"
@@ -125,12 +153,12 @@
 
                 <tbody>
 
-                    @foreach (var item in FilteredClasses)
+                    @foreach (var item in PagedClasses)
                     {
                         <tr>
                             <td>@item.Code</td>
                             <td>@item.Name</td>
-                            <td>@item.Semester</td>
+                            <td>@GetSemesterName(item.Semester)</td>
                             <td>@item.AcademicYear</td>
 
                             <td>
@@ -138,21 +166,28 @@
                             </td>
 
                             <td>
-                                <span class="status-badge">
+                                <span class="status-badge @(item.Status == "INACTIVE" ? "inactive" : "")">
                                     @GetStatusName(item.Status)
                                 </span>
                             </td>
 
                             <td>
-                                <button class="btn-delete"
-                                        @onclick="() => DeleteClass(item)">
-                                    Xóa
-                                </button>
+                                <div class="action-buttons">
+                                    <button class="btn-edit"
+                                            @onclick="() => EditClass(item)">
+                                        Sửa
+                                    </button>
+
+                                    <button class="btn-delete"
+                                            @onclick="() => ConfirmDelete(item)">
+                                        Xóa
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     }
 
-                    @if (!FilteredClasses.Any())
+                    @if (!PagedClasses.Any())
                     {
                         <tr>
                             <td colspan="7" class="empty">
@@ -166,20 +201,147 @@
 
         </div>
 
+        @if (FilteredClasses.Any())
+        {
+            <div class="pagination">
+                <span class="page-info">
+                    Hiển thị @PagedClasses.Count() / @FilteredClasses.Count() lớp học
+                </span>
+
+                <div class="page-controls">
+                    <button class="page-btn"
+                            disabled="@(CurrentPage <= 1)"
+                            @onclick="() => ChangePage(CurrentPage - 1)">
+                        Trước
+                    </button>
+
+                    <span class="page-current">Trang @CurrentPage / @TotalPages</span>
+
+                    <button class="page-btn"
+                            disabled="@(CurrentPage >= TotalPages)"
+                            @onclick="() => ChangePage(CurrentPage + 1)">
+                        Sau
+                    </button>
+                </div>
+            </div>
+        }
+
     </div>
+
+    @if (ClassToDelete != null)
+    {
+        <div class="modal-backdrop">
+            <div class="modal-box">
+                <h3>Xác nhận xóa lớp học</h3>
+                <p>
+                    Bạn có chắc chắn muốn xóa lớp
+                    <strong>@ClassToDelete.Code - @ClassToDelete.Name</strong> không?
+                </p>
+
+                <div class="modal-actions">
+                    <button class="btn-secondary" @onclick="CancelDelete">Hủy</button>
+                    <button class="btn-delete" @onclick="ExecuteDelete">Xác nhận xóa</button>
+                </div>
+            </div>
+        </div>
+    }
 
 </div>
 
 @code {
-    private string SearchText = "";
-    private string SelectedStatus = "";
+    private string _searchText = "";
+    private string SearchText
+    {
+        get => _searchText;
+        set { _searchText = value; CurrentPage = 1; }
+    }
+
+    private string _selectedSemester = "";
+    private string SelectedSemester
+    {
+        get => _selectedSemester;
+        set { _selectedSemester = value; CurrentPage = 1; }
+    }
+
+    private string _selectedStatus = "";
+    private string SelectedStatus
+    {
+        get => _selectedStatus;
+        set { _selectedStatus = value; CurrentPage = 1; }
+    }
 
     private bool ShowForm = false;
     private string ErrorMessage = "";
 
+    private int CurrentPage = 1;
+    private int PageSize = 5;
+
     private ClassModel NewClass = new();
+    private ClassModel? EditingClass;
+    private ClassModel? ClassToDelete;
 
     private List<ClassModel> Classes = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var apiClasses = await Http.GetFromJsonAsync<List<ClassModel>>("api/classes");
+            if (apiClasses != null && apiClasses.Any())
+            {
+                Classes = apiClasses;
+                return;
+            }
+        }
+        catch
+        {
+            // Dùng dữ liệu mẫu bên dưới nếu API chưa kết nối
+        }
+
+        Classes = new List<ClassModel>
+        {
+            new()
+            {
+                Code = "CNTT01",
+                Name = "Công nghệ thông tin 01",
+                Semester = "1",
+                AcademicYear = "2026-2027",
+                Capacity = 45,
+                StudentCount = 42,
+                Status = "ACTIVE"
+            },
+            new()
+            {
+                Code = "CNTT02",
+                Name = "Công nghệ thông tin 02",
+                Semester = "1",
+                AcademicYear = "2026-2027",
+                Capacity = 45,
+                StudentCount = 38,
+                Status = "ACTIVE"
+            },
+            new()
+            {
+                Code = "KTPM01",
+                Name = "Kỹ thuật phần mềm 01",
+                Semester = "2",
+                AcademicYear = "2026-2027",
+                Capacity = 40,
+                StudentCount = 35,
+                Status = "ACTIVE"
+            },
+            new()
+            {
+                Code = "HTTT01",
+                Name = "Hệ thống thông tin 01",
+                Semester = "3",
+                AcademicYear = "2025-2026",
+                Capacity = 40,
+                StudentCount = 0,
+                Status = "INACTIVE"
+            }
+        };
+    }
 
     private IEnumerable<ClassModel> FilteredClasses =>
         Classes.Where(item =>
@@ -192,13 +354,52 @@
                  SearchText,
                  StringComparison.OrdinalIgnoreCase
              )) &&
+            (string.IsNullOrWhiteSpace(SelectedSemester) ||
+             item.Semester == SelectedSemester) &&
             (string.IsNullOrWhiteSpace(SelectedStatus) ||
              item.Status == SelectedStatus)
         );
 
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling((double)FilteredClasses.Count() / PageSize));
+
+    private IEnumerable<ClassModel> PagedClasses =>
+        FilteredClasses.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+
+    private void ChangePage(int page)
+    {
+        if (page >= 1 && page <= TotalPages)
+        {
+            CurrentPage = page;
+        }
+    }
+
     private void OpenForm()
     {
-        NewClass = new ClassModel();
+        EditingClass = null;
+        NewClass = new ClassModel
+        {
+            Semester = "1",
+            AcademicYear = "2026-2027",
+            Capacity = 40,
+            Status = "ACTIVE"
+        };
+        ErrorMessage = "";
+        ShowForm = true;
+    }
+
+    private void EditClass(ClassModel item)
+    {
+        EditingClass = item;
+        NewClass = new ClassModel
+        {
+            Code = item.Code,
+            Name = item.Name,
+            Semester = item.Semester,
+            AcademicYear = item.AcademicYear,
+            Capacity = item.Capacity,
+            StudentCount = item.StudentCount,
+            Status = item.Status
+        };
         ErrorMessage = "";
         ShowForm = true;
     }
@@ -206,16 +407,23 @@
     private void CloseForm()
     {
         ShowForm = false;
+        EditingClass = null;
         NewClass = new ClassModel();
         ErrorMessage = "";
     }
 
-    private void AddClass()
+    private async Task SaveClass()
     {
         if (string.IsNullOrWhiteSpace(NewClass.Code) ||
             string.IsNullOrWhiteSpace(NewClass.Name))
         {
             ErrorMessage = "Vui lòng nhập mã lớp và tên lớp.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(NewClass.AcademicYear))
+        {
+            ErrorMessage = "Vui lòng nhập năm học.";
             return;
         }
 
@@ -225,31 +433,105 @@
             return;
         }
 
-        if (Classes.Any(x => x.Code.Equals(
-            NewClass.Code.Trim(),
-            StringComparison.OrdinalIgnoreCase)))
+        if (NewClass.StudentCount < 0 || NewClass.StudentCount > NewClass.Capacity)
         {
-            ErrorMessage = "Mã lớp đã tồn tại.";
+            ErrorMessage = "Sĩ số hiện tại phải từ 0 đến sĩ số tối đa.";
             return;
         }
 
-        Classes.Add(new ClassModel
+        if (EditingClass == null)
         {
-            Code = NewClass.Code.Trim(),
-            Name = NewClass.Name.Trim(),
-            Semester = NewClass.Semester,
-            AcademicYear = NewClass.AcademicYear,
-            Capacity = NewClass.Capacity,
-            StudentCount = 0,
-            Status = "ACTIVE"
-        });
+            if (Classes.Any(x => x.Code.Equals(
+                NewClass.Code.Trim(),
+                StringComparison.OrdinalIgnoreCase)))
+            {
+                ErrorMessage = "Mã lớp đã tồn tại.";
+                return;
+            }
+
+            var created = new ClassModel
+            {
+                Code = NewClass.Code.Trim(),
+                Name = NewClass.Name.Trim(),
+                Semester = NewClass.Semester,
+                AcademicYear = NewClass.AcademicYear.Trim(),
+                Capacity = NewClass.Capacity,
+                StudentCount = 0,
+                Status = "ACTIVE"
+            };
+
+            try
+            {
+                await Http.PostAsJsonAsync("api/classes", created);
+            }
+            catch { }
+
+            Classes.Add(created);
+        }
+        else
+        {
+            var updated = new ClassModel
+            {
+                Code = EditingClass.Code,
+                Name = NewClass.Name.Trim(),
+                Semester = NewClass.Semester,
+                AcademicYear = NewClass.AcademicYear.Trim(),
+                Capacity = NewClass.Capacity,
+                StudentCount = NewClass.StudentCount,
+                Status = NewClass.Status
+            };
+
+            try
+            {
+                await Http.PutAsJsonAsync($"api/classes/{EditingClass.Code}", updated);
+            }
+            catch { }
+
+            EditingClass.Name = updated.Name;
+            EditingClass.Semester = updated.Semester;
+            EditingClass.AcademicYear = updated.AcademicYear;
+            EditingClass.Capacity = updated.Capacity;
+            EditingClass.StudentCount = updated.StudentCount;
+            EditingClass.Status = updated.Status;
+        }
 
         CloseForm();
     }
 
-    private void DeleteClass(ClassModel item)
+    private void ConfirmDelete(ClassModel item)
     {
-        Classes.Remove(item);
+        ClassToDelete = item;
+    }
+
+    private void CancelDelete()
+    {
+        ClassToDelete = null;
+    }
+
+    private async Task ExecuteDelete()
+    {
+        if (ClassToDelete == null) return;
+
+        try
+        {
+            await Http.DeleteAsync($"api/classes/{ClassToDelete.Code}");
+        }
+        catch { }
+
+        Classes.Remove(ClassToDelete);
+        if (CurrentPage > TotalPages) CurrentPage = TotalPages;
+        ClassToDelete = null;
+    }
+
+    private string GetSemesterName(string semester)
+    {
+        return semester switch
+        {
+            "1" => "Học kỳ 1",
+            "2" => "Học kỳ 2",
+            "3" => "Học kỳ hè",
+            _ => semester
+        };
     }
 
     private string GetStatusName(string status)
@@ -353,9 +635,19 @@
         color: #334155;
     }
 
+    .btn-edit {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
     .btn-delete {
         background: #fee2e2;
         color: #dc2626;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 7px;
     }
 
     .form-card {
@@ -403,6 +695,13 @@
         border-radius: 20px;
         background: #dcfce7;
         color: #15803d;
+        white-space: nowrap;
+        font-size: 13px;
+    }
+
+    .status-badge.inactive {
+        background: #fee2e2;
+        color: #dc2626;
     }
 
     .empty {
@@ -410,9 +709,89 @@
         color: #94a3b8;
     }
 
+    .pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .page-info {
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .page-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .page-current {
+        color: #334155;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .page-btn {
+        padding: 8px 14px;
+        border: 1px solid #cbd5e1;
+        background: white;
+        color: #334155;
+        border-radius: 7px;
+        cursor: pointer;
+    }
+
+    .page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .modal-box {
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        max-width: 420px;
+        width: 90%;
+        border: 1px solid #e2e8f0;
+    }
+
+    .modal-box h3 {
+        color: #1e293b;
+        margin-bottom: 10px;
+    }
+
+    .modal-box p {
+        color: #475569;
+        margin-bottom: 20px;
+        line-height: 1.5;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
     @media (max-width: 768px) {
         .statistics {
             grid-template-columns: 1fr;
+        }
+
+        .toolbar {
+            flex-direction: column;
         }
     }
 </style>
