@@ -1,7 +1,8 @@
-
 @page "/subjects"
 @using Microsoft.AspNetCore.Authorization
+@using System.Net.Http.Json
 @attribute [Authorize]
+@inject HttpClient Http
 
 <PageTitle>Quản lý môn học</PageTitle>
 
@@ -13,9 +14,15 @@
             <p>Quản lý thông tin môn học và chương trình đào tạo.</p>
         </div>
 
-        <button class="btn-primary" @onclick="OpenCreateForm">
-            + Thêm môn học
-        </button>
+        <div class="header-actions">
+            <a href="/syllabus" class="btn-secondary link-btn">
+                Quản lý Syllabus →
+            </a>
+
+            <button class="btn-primary" @onclick="OpenCreateForm">
+                + Thêm môn học
+            </button>
+        </div>
     </div>
 
     <div class="statistics">
@@ -128,7 +135,7 @@
                 </thead>
 
                 <tbody>
-                    @foreach (var subject in FilteredSubjects)
+                    @foreach (var subject in PagedSubjects)
                     {
                         <tr>
                             <td>@subject.SubjectCode</td>
@@ -149,7 +156,7 @@
                                     </button>
 
                                     <button class="btn-delete"
-                                            @onclick="() => DeleteSubject(subject)">
+                                            @onclick="() => ConfirmDelete(subject)">
                                         Xóa
                                     </button>
 
@@ -158,7 +165,7 @@
                         </tr>
                     }
 
-                    @if (!FilteredSubjects.Any())
+                    @if (!PagedSubjects.Any())
                     {
                         <tr>
                             <td colspan="6" class="empty">
@@ -171,20 +178,77 @@
 
         </div>
 
+        @if (FilteredSubjects.Any())
+        {
+            <div class="pagination">
+                <span class="page-info">
+                    Hiển thị @PagedSubjects.Count() / @FilteredSubjects.Count() môn học
+                </span>
+
+                <div class="page-controls">
+                    <button class="page-btn"
+                            disabled="@(CurrentPage <= 1)"
+                            @onclick="() => ChangePage(CurrentPage - 1)">
+                        Trước
+                    </button>
+
+                    <span class="page-current">Trang @CurrentPage / @TotalPages</span>
+
+                    <button class="page-btn"
+                            disabled="@(CurrentPage >= TotalPages)"
+                            @onclick="() => ChangePage(CurrentPage + 1)">
+                        Sau
+                    </button>
+                </div>
+            </div>
+        }
+
     </div>
+
+    @if (SubjectToDelete != null)
+    {
+        <div class="modal-backdrop">
+            <div class="modal-box">
+                <h3>Xác nhận xóa môn học</h3>
+                <p>
+                    Bạn có chắc chắn muốn xóa môn học
+                    <strong>@SubjectToDelete.SubjectCode - @SubjectToDelete.SubjectName</strong> không?
+                </p>
+
+                <div class="modal-actions">
+                    <button class="btn-secondary" @onclick="CancelDelete">Hủy</button>
+                    <button class="btn-delete" @onclick="ExecuteDelete">Xác nhận xóa</button>
+                </div>
+            </div>
+        </div>
+    }
 
 </div>
 
 @code {
-    private string SearchText = "";
-    private string SelectedStatus = "";
+    private string _searchText = "";
+    private string SearchText
+    {
+        get => _searchText;
+        set { _searchText = value; CurrentPage = 1; }
+    }
+
+    private string _selectedStatus = "";
+    private string SelectedStatus
+    {
+        get => _selectedStatus;
+        set { _selectedStatus = value; CurrentPage = 1; }
+    }
 
     private bool ShowForm = false;
     private string ErrorMessage = "";
 
-    private SubjectModel FormData = new();
+    private int CurrentPage = 1;
+    private int PageSize = 5;
 
+    private SubjectModel FormData = new();
     private SubjectModel? EditingSubject;
+    private SubjectModel? SubjectToDelete;
 
     private List<SubjectModel> Subjects = new()
     {
@@ -222,6 +286,22 @@
         }
     };
 
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var apiSubjects = await Http.GetFromJsonAsync<List<SubjectModel>>("api/subjects");
+            if (apiSubjects != null && apiSubjects.Any())
+            {
+                Subjects = apiSubjects;
+            }
+        }
+        catch
+        {
+            // Giữ nguyên danh sách mẫu mặc định khi API chưa kết nối
+        }
+    }
+
     private IEnumerable<SubjectModel> FilteredSubjects =>
         Subjects.Where(subject =>
             (string.IsNullOrWhiteSpace(SearchText) ||
@@ -236,6 +316,19 @@
             (string.IsNullOrWhiteSpace(SelectedStatus) ||
              subject.Status == SelectedStatus)
         );
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling((double)FilteredSubjects.Count() / PageSize));
+
+    private IEnumerable<SubjectModel> PagedSubjects =>
+        FilteredSubjects.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+
+    private void ChangePage(int page)
+    {
+        if (page >= 1 && page <= TotalPages)
+        {
+            CurrentPage = page;
+        }
+    }
 
     private void OpenCreateForm()
     {
@@ -267,7 +360,7 @@
         ShowForm = true;
     }
 
-    private void SaveSubject()
+    private async Task SaveSubject()
     {
         if (string.IsNullOrWhiteSpace(FormData.SubjectCode) ||
             string.IsNullOrWhiteSpace(FormData.SubjectName))
@@ -289,247 +382,3 @@
                     FormData.SubjectCode.Trim(),
                     StringComparison.OrdinalIgnoreCase
                 )
-            );
-
-            if (codeExists)
-            {
-                ErrorMessage = "Mã môn học đã tồn tại.";
-                return;
-            }
-
-            Subjects.Add(new SubjectModel
-            {
-                SubjectCode = FormData.SubjectCode.Trim(),
-                SubjectName = FormData.SubjectName.Trim(),
-                Credits = FormData.Credits,
-                Description = FormData.Description.Trim(),
-                Status = FormData.Status
-            });
-        }
-        else
-        {
-            EditingSubject.SubjectName = FormData.SubjectName.Trim();
-            EditingSubject.Credits = FormData.Credits;
-            EditingSubject.Description = FormData.Description.Trim();
-            EditingSubject.Status = FormData.Status;
-        }
-
-        CloseForm();
-    }
-
-    private void DeleteSubject(SubjectModel subject)
-    {
-        Subjects.Remove(subject);
-    }
-
-    private void CloseForm()
-    {
-        ShowForm = false;
-        EditingSubject = null;
-        FormData = new SubjectModel();
-        ErrorMessage = "";
-    }
-
-    private string GetStatusName(string status)
-    {
-        return status switch
-        {
-            "ACTIVE" => "Đang hoạt động",
-            "INACTIVE" => "Ngừng hoạt động",
-            _ => status
-        };
-    }
-
-    public class SubjectModel
-    {
-        public string SubjectCode { get; set; } = "";
-        public string SubjectName { get; set; } = "";
-        public int Credits { get; set; } = 3;
-        public string Description { get; set; } = "";
-        public string Status { get; set; } = "ACTIVE";
-    }
-}
-
-<style>
-    .page-container {
-        padding: 28px;
-        background: #f8fafc;
-        min-height: 100vh;
-    }
-
-    .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 25px;
-    }
-
-    .page-header h1 {
-        color: #1e293b;
-        font-size: 26px;
-    }
-
-    .page-header p {
-        color: #64748b;
-    }
-
-    .statistics {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 18px;
-        margin-bottom: 24px;
-    }
-
-    .stat-card, .content-card {
-        background: white;
-        padding: 22px;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-    }
-
-    .stat-card span {
-        color: #64748b;
-    }
-
-    .stat-card h2 {
-        color: #2563eb;
-        font-size: 28px;
-    }
-
-    .toolbar {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 24px;
-    }
-
-    .toolbar input {
-        flex: 1;
-    }
-
-    input, select, textarea {
-        padding: 11px;
-        border: 1px solid #cbd5e1;
-        border-radius: 7px;
-    }
-
-    button {
-        padding: 9px 13px;
-        border: none;
-        border-radius: 7px;
-        cursor: pointer;
-    }
-
-    .btn-primary {
-        background: #2563eb;
-        color: white;
-    }
-
-    .btn-secondary {
-        background: #e2e8f0;
-        color: #334155;
-    }
-
-    .form-card {
-        background: #f8fafc;
-        padding: 22px;
-        border-radius: 10px;
-        max-width: 600px;
-        margin-bottom: 25px;
-    }
-
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        margin: 16px 0;
-    }
-
-    .form-group textarea {
-        min-height: 90px;
-        resize: vertical;
-    }
-
-    .form-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 20px;
-    }
-
-    .error {
-        color: #dc2626;
-    }
-
-    .table-wrapper {
-        overflow-x: auto;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    th, td {
-        padding: 14px;
-        text-align: left;
-        border-bottom: 1px solid #e2e8f0;
-    }
-
-    th {
-        background: #f1f5f9;
-        color: #334155;
-    }
-
-    .status-badge {
-        padding: 6px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        white-space: nowrap;
-    }
-
-    .active {
-        background: #dcfce7;
-        color: #15803d;
-    }
-
-    .inactive {
-        background: #fee2e2;
-        color: #dc2626;
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 7px;
-    }
-
-    .btn-edit {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    .btn-delete {
-        background: #fee2e2;
-        color: #dc2626;
-    }
-
-    .empty {
-        text-align: center;
-        color: #94a3b8;
-        padding: 25px;
-    }
-
-    @media(max-width: 768px) {
-        .statistics {
-            grid-template-columns: 1fr;
-        }
-
-        .page-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 15px;
-        }
-
-        .toolbar {
-            flex-direction: column;
-        }
-    }
-</style>
