@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using CollabSphere.Infrastructure.Persistence;
 using CollabSphere.Infrastructure.Database;
 using CollabSphere.API.Middleware;
+using CollabSphere.API.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +39,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddOpenApi();
+builder.Services.AddSignalR();
 
 var connectionString = builder.Configuration
     .GetConnectionString("DefaultConnection")
@@ -88,6 +90,21 @@ builder.Services
 
         options.Events = new JwtBearerEvents
         {
+
+           OnMessageReceived = context =>
+           {
+               var accessToken = context.Request.Query["access_token"];
+               var path = context.HttpContext.Request.Path;
+
+               if (!string.IsNullOrEmpty(accessToken) &&
+                  path.StartsWithSegments("/hubs/chat"))
+               {
+                  context.Token = accessToken;
+               }
+
+               return Task.CompletedTask;
+            },
+
             OnChallenge = async context =>
             {
                 context.HandleResponse();
@@ -157,5 +174,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.MapHub<ChatHub>("/hubs/chat");
 app.Run();
