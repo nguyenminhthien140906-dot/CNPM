@@ -1,0 +1,868 @@
+@page "/syllabus"
+@using Microsoft.AspNetCore.Authorization
+@using System.Net.Http.Json
+@attribute [Authorize]
+@inject HttpClient Http
+
+<PageTitle>Quản lý Syllabus</PageTitle>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1>Quản lý Syllabus</h1>
+            <p>Quản lý đề cương chi tiết môn học, chuẩn đầu ra và phiên bản áp dụng.</p>
+        </div>
+
+        <div class="header-actions">
+            <a href="/subjects" class="btn-secondary link-btn">
+                ← Danh sách môn học
+            </a>
+
+            <button class="btn-primary" @onclick="OpenCreateForm">
+                + Thêm Syllabus
+            </button>
+        </div>
+    </div>
+
+    <div class="statistics">
+
+        <div class="stat-card">
+            <span>Tổng Syllabus</span>
+            <h2>@Syllabuses.Count</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Đã duyệt</span>
+            <h2>@Syllabuses.Count(x => x.Status == "APPROVED")</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Chờ duyệt</span>
+            <h2>@Syllabuses.Count(x => x.Status == "PENDING")</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Bản nháp</span>
+            <h2>@Syllabuses.Count(x => x.Status == "DRAFT")</h2>
+        </div>
+
+    </div>
+
+    <div class="content-card">
+
+        <div class="toolbar">
+            <input placeholder="Tìm kiếm mã syllabus, mã môn hoặc tên môn..."
+                   @bind="SearchText"
+                   @bind:event="oninput" />
+
+            <select @bind="SelectedStatus">
+                <option value="">Tất cả trạng thái</option>
+                <option value="APPROVED">Đã duyệt</option>
+                <option value="PENDING">Chờ duyệt</option>
+                <option value="DRAFT">Bản nháp</option>
+            </select>
+        </div>
+
+        @if (ShowForm)
+        {
+            <div class="form-card">
+
+                <h3>@(EditingSyllabus == null ? "Thêm Syllabus mới" : "Chỉnh sửa Syllabus")</h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Mã Syllabus</label>
+                        <input @bind="FormData.SyllabusCode"
+                               placeholder="Ví dụ: SYL-CS101"
+                               disabled="@(EditingSyllabus != null)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phiên bản</label>
+                        <input @bind="FormData.Version"
+                               placeholder="Ví dụ: 2026.1" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Mã môn học</label>
+                        <input @bind="FormData.SubjectCode"
+                               placeholder="Ví dụ: CS101" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tên môn học</label>
+                        <input @bind="FormData.SubjectName"
+                               placeholder="Nhập tên môn học" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Mục tiêu & Chuẩn đầu ra (CLO)</label>
+                    <textarea @bind="FormData.Objectives"
+                              placeholder="Mô tả mục tiêu học phần và chuẩn đầu ra...">
+                    </textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Nội dung chính & Hình thức đánh giá</label>
+                    <textarea @bind="FormData.ContentSummary"
+                              placeholder="Tóm tắt các chương/nội dung giảng dạy và tỷ trọng điểm...">
+                    </textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Trạng thái</label>
+                    <select @bind="FormData.Status">
+                        <option value="DRAFT">Bản nháp</option>
+                        <option value="PENDING">Chờ duyệt</option>
+                        <option value="APPROVED">Đã duyệt</option>
+                    </select>
+                </div>
+
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <p class="error">@ErrorMessage</p>
+                }
+
+                <div class="form-actions">
+                    <button class="btn-primary" @onclick="SaveSyllabus">
+                        Lưu Syllabus
+                    </button>
+
+                    <button class="btn-secondary" @onclick="CloseForm">
+                        Hủy
+                    </button>
+                </div>
+
+            </div>
+        }
+
+        <div class="table-wrapper">
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã Syllabus</th>
+                        <th>Môn học</th>
+                        <th>Phiên bản</th>
+                        <th>Mục tiêu / Nội dung</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in PagedSyllabuses)
+                    {
+                        <tr>
+                            <td class="code-cell">@item.SyllabusCode</td>
+                            <td>
+                                <strong>@item.SubjectCode</strong>
+                                <div class="sub-text">@item.SubjectName</div>
+                            </td>
+                            <td>v@item.Version</td>
+                            <td>
+                                <div>@item.Objectives</div>
+                                @if (!string.IsNullOrWhiteSpace(item.ContentSummary))
+                                {
+                                    <div class="sub-text">@item.ContentSummary</div>
+                                }
+                            </td>
+                            <td>
+                                <span class="status-badge @GetStatusClass(item.Status)">
+                                    @GetStatusName(item.Status)
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+
+                                    <button class="btn-edit"
+                                            @onclick="() => EditSyllabus(item)">
+                                        Sửa
+                                    </button>
+
+                                    @if (item.Status != "APPROVED")
+                                    {
+                                        <button class="btn-approve"
+                                                @onclick='() => OpenConfirmModal(item, "APPROVE")'>
+                                            Duyệt
+                                        </button>
+                                    }
+
+                                    <button class="btn-delete"
+                                            @onclick='() => OpenConfirmModal(item, "DELETE")'>
+                                        Xóa
+                                    </button>
+
+                                </div>
+                            </td>
+                        </tr>
+                    }
+
+                    @if (!PagedSyllabuses.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="empty">
+                                Không tìm thấy Syllabus phù hợp.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+
+        @if (FilteredSyllabuses.Any())
+        {
+            <div class="pagination">
+                <span class="page-info">
+                    Hiển thị @PagedSyllabuses.Count() / @FilteredSyllabuses.Count() syllabus
+                </span>
+
+                <div class="page-controls">
+                    <button class="page-btn"
+                            disabled="@(CurrentPage <= 1)"
+                            @onclick="() => ChangePage(CurrentPage - 1)">
+                        Trước
+                    </button>
+
+                    <span class="page-current">Trang @CurrentPage / @TotalPages</span>
+
+                    <button class="page-btn"
+                            disabled="@(CurrentPage >= TotalPages)"
+                            @onclick="() => ChangePage(CurrentPage + 1)">
+                        Sau
+                    </button>
+                </div>
+            </div>
+        }
+
+    </div>
+
+    @if (TargetSyllabus != null)
+    {
+        <div class="modal-backdrop">
+            <div class="modal-box">
+                <h3>@(ConfirmAction == "DELETE" ? "Xác nhận xóa Syllabus" : "Xác nhận phê duyệt Syllabus")</h3>
+                <p>
+                    @if (ConfirmAction == "DELETE")
+                    {
+                        <span>
+                            Bạn có chắc chắn muốn xóa đề cương
+                            <strong>@TargetSyllabus.SyllabusCode (@TargetSyllabus.SubjectName)</strong> không?
+                        </span>
+                    }
+                    else
+                    {
+                        <span>
+                            Xác nhận phê duyệt đề cương <strong>@TargetSyllabus.SyllabusCode</strong>
+                            cho môn <strong>@TargetSyllabus.SubjectCode - @TargetSyllabus.SubjectName</strong>?
+                        </span>
+                    }
+                </p>
+
+                <div class="modal-actions">
+                    <button class="btn-secondary" @onclick="CloseConfirmModal">Hủy</button>
+                    <button class="@(ConfirmAction == "DELETE" ? "btn-delete" : "btn-primary")"
+                            @onclick="ExecuteConfirmedAction">
+                        Xác nhận
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+
+@code {
+    private string _searchText = "";
+    private string SearchText
+    {
+        get => _searchText;
+        set { _searchText = value; CurrentPage = 1; }
+    }
+
+    private string _selectedStatus = "";
+    private string SelectedStatus
+    {
+        get => _selectedStatus;
+        set { _selectedStatus = value; CurrentPage = 1; }
+    }
+
+    private bool ShowForm = false;
+    private string ErrorMessage = "";
+
+    private int CurrentPage = 1;
+    private int PageSize = 5;
+
+    private SyllabusModel FormData = new();
+    private SyllabusModel? EditingSyllabus;
+    private SyllabusModel? TargetSyllabus;
+    private string ConfirmAction = "";
+
+    private List<SyllabusModel> Syllabuses = new()
+    {
+        new()
+        {
+            SyllabusCode = "SYL-CS101",
+            SubjectCode = "CS101",
+            SubjectName = "Lập trình cơ bản",
+            Version = "2026.1",
+            Objectives = "Nắm vững tư duy thuật toán, cấu trúc điều khiển và lập trình hướng thủ tục.",
+            ContentSummary = "Quá trình 30% - Thực hành 30% - Thi cuối kỳ 40%",
+            Status = "APPROVED"
+        },
+        new()
+        {
+            SyllabusCode = "SYL-DB201",
+            SubjectCode = "DB201",
+            SubjectName = "Cơ sở dữ liệu",
+            Version = "2026.1",
+            Objectives = "Thiết kế mô hình ERD, chuẩn hóa dữ liệu và truy vấn SQL thành thạo.",
+            ContentSummary = "Bài tập nhóm 30% - Thực hành SQL 30% - Thi cuối kỳ 40%",
+            Status = "APPROVED"
+        },
+        new()
+        {
+            SyllabusCode = "SYL-SE301",
+            SubjectCode = "SE301",
+            SubjectName = "Công nghệ phần mềm",
+            Version = "2026.2",
+            Objectives = "Áp dụng quy trình Agile/Scrum, phân tích yêu cầu và phát triển dự án PBL.",
+            ContentSummary = "Đồ án nhóm theo Checkpoint 60% - Đánh giá cuối kỳ 40%",
+            Status = "PENDING"
+        },
+        new()
+        {
+            SyllabusCode = "SYL-AI401",
+            SubjectCode = "AI401",
+            SubjectName = "Trí tuệ nhân tạo",
+            Version = "2026.1",
+            Objectives = "Hiểu các giải thuật tìm kiếm, biểu diễn tri thức và học máy cơ bản.",
+            ContentSummary = "Lab thực hành 40% - Tiểu luận & Thi 60%",
+            Status = "DRAFT"
+        }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var apiData = await Http.GetFromJsonAsync<List<SyllabusModel>>("api/syllabuses");
+            if (apiData != null && apiData.Any())
+            {
+                Syllabuses = apiData;
+            }
+        }
+        catch
+        {
+            // Giữ nguyên dữ liệu mẫu mặc định khi API chưa kết nối
+        }
+    }
+
+    private IEnumerable<SyllabusModel> FilteredSyllabuses =>
+        Syllabuses.Where(s =>
+            (string.IsNullOrWhiteSpace(SearchText) ||
+             s.SyllabusCode.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+             s.SubjectCode.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+             s.SubjectName.Contains(SearchText, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(SelectedStatus) ||
+             s.Status == SelectedStatus)
+        );
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling((double)FilteredSyllabuses.Count() / PageSize));
+
+    private IEnumerable<SyllabusModel> PagedSyllabuses =>
+        FilteredSyllabuses.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+
+    private void ChangePage(int page)
+    {
+        if (page >= 1 && page <= TotalPages)
+        {
+            CurrentPage = page;
+        }
+    }
+
+    private void OpenCreateForm()
+    {
+        EditingSyllabus = null;
+        FormData = new SyllabusModel
+        {
+            Version = "2026.1",
+            Status = "DRAFT"
+        };
+        ErrorMessage = "";
+        ShowForm = true;
+    }
+
+    private void EditSyllabus(SyllabusModel item)
+    {
+        EditingSyllabus = item;
+        FormData = new SyllabusModel
+        {
+            SyllabusCode = item.SyllabusCode,
+            SubjectCode = item.SubjectCode,
+            SubjectName = item.SubjectName,
+            Version = item.Version,
+            Objectives = item.Objectives,
+            ContentSummary = item.ContentSummary,
+            Status = item.Status
+        };
+        ErrorMessage = "";
+        ShowForm = true;
+    }
+
+    private async Task SaveSyllabus()
+    {
+        if (string.IsNullOrWhiteSpace(FormData.SyllabusCode) ||
+            string.IsNullOrWhiteSpace(FormData.SubjectCode) ||
+            string.IsNullOrWhiteSpace(FormData.SubjectName))
+        {
+            ErrorMessage = "Vui lòng nhập đầy đủ mã Syllabus, mã môn và tên môn học.";
+            return;
+        }
+
+        if (EditingSyllabus == null)
+        {
+            bool exists = Syllabuses.Any(x =>
+                x.SyllabusCode.Equals(FormData.SyllabusCode.Trim(), StringComparison.OrdinalIgnoreCase));
+
+            if (exists)
+            {
+                ErrorMessage = "Mã Syllabus đã tồn tại.";
+                return;
+            }
+
+            var created = new SyllabusModel
+            {
+                SyllabusCode = FormData.SyllabusCode.Trim(),
+                SubjectCode = FormData.SubjectCode.Trim(),
+                SubjectName = FormData.SubjectName.Trim(),
+                Version = string.IsNullOrWhiteSpace(FormData.Version) ? "2026.1" : FormData.Version.Trim(),
+                Objectives = FormData.Objectives.Trim(),
+                ContentSummary = FormData.ContentSummary.Trim(),
+                Status = FormData.Status
+            };
+
+            try
+            {
+                await Http.PostAsJsonAsync("api/syllabuses", created);
+            }
+            catch { }
+
+            Syllabuses.Insert(0, created);
+        }
+        else
+        {
+            var updated = new SyllabusModel
+            {
+                SyllabusCode = EditingSyllabus.SyllabusCode,
+                SubjectCode = FormData.SubjectCode.Trim(),
+                SubjectName = FormData.SubjectName.Trim(),
+                Version = string.IsNullOrWhiteSpace(FormData.Version) ? "2026.1" : FormData.Version.Trim(),
+                Objectives = FormData.Objectives.Trim(),
+                ContentSummary = FormData.ContentSummary.Trim(),
+                Status = FormData.Status
+            };
+
+            try
+            {
+                await Http.PutAsJsonAsync($"api/syllabuses/{EditingSyllabus.SyllabusCode}", updated);
+            }
+            catch { }
+
+            EditingSyllabus.SubjectCode = updated.SubjectCode;
+            EditingSyllabus.SubjectName = updated.SubjectName;
+            EditingSyllabus.Version = updated.Version;
+            EditingSyllabus.Objectives = updated.Objectives;
+            EditingSyllabus.ContentSummary = updated.ContentSummary;
+            EditingSyllabus.Status = updated.Status;
+        }
+
+        CloseForm();
+    }
+
+    private void OpenConfirmModal(SyllabusModel item, string action)
+    {
+        TargetSyllabus = item;
+        ConfirmAction = action;
+    }
+
+    private void CloseConfirmModal()
+    {
+        TargetSyllabus = null;
+        ConfirmAction = "";
+    }
+
+    private async Task ExecuteConfirmedAction()
+    {
+        if (TargetSyllabus == null) return;
+
+        if (ConfirmAction == "DELETE")
+        {
+            try
+            {
+                await Http.DeleteAsync($"api/syllabuses/{TargetSyllabus.SyllabusCode}");
+            }
+            catch { }
+
+            Syllabuses.Remove(TargetSyllabus);
+            if (CurrentPage > TotalPages) CurrentPage = TotalPages;
+        }
+        else if (ConfirmAction == "APPROVE")
+        {
+            try
+            {
+                await Http.PatchAsJsonAsync($"api/syllabuses/{TargetSyllabus.SyllabusCode}/status", new { status = "APPROVED" });
+            }
+            catch { }
+
+            TargetSyllabus.Status = "APPROVED";
+        }
+
+        CloseConfirmModal();
+    }
+
+    private void CloseForm()
+    {
+        ShowForm = false;
+        EditingSyllabus = null;
+        FormData = new SyllabusModel();
+        ErrorMessage = "";
+    }
+
+    private string GetStatusName(string status) => status switch
+    {
+        "APPROVED" => "Đã duyệt",
+        "PENDING" => "Chờ duyệt",
+        "DRAFT" => "Bản nháp",
+        _ => status
+    };
+
+    private string GetStatusClass(string status) => status switch
+    {
+        "APPROVED" => "approved",
+        "PENDING" => "pending",
+        _ => "draft"
+    };
+
+    public class SyllabusModel
+    {
+        public string SyllabusCode { get; set; } = "";
+        public string SubjectCode { get; set; } = "";
+        public string SubjectName { get; set; } = "";
+        public string Version { get; set; } = "2026.1";
+        public string Objectives { get; set; } = "";
+        public string ContentSummary { get; set; } = "";
+        public string Status { get; set; } = "DRAFT";
+    }
+}
+
+<style>
+    .page-container {
+        padding: 28px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .page-header h1 {
+        color: #1e293b;
+        font-size: 26px;
+    }
+
+    .page-header p {
+        color: #64748b;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .link-btn {
+        padding: 9px 13px;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .statistics {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card, .content-card {
+        background: white;
+        padding: 22px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+    }
+
+    .stat-card span {
+        color: #64748b;
+    }
+
+    .stat-card h2 {
+        color: #2563eb;
+        font-size: 28px;
+    }
+
+    .toolbar {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .toolbar input {
+        flex: 1;
+    }
+
+    input, select, textarea {
+        padding: 11px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+    }
+
+    button {
+        padding: 9px 13px;
+        border: none;
+        border-radius: 7px;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: #2563eb;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .form-card {
+        background: #f8fafc;
+        padding: 22px;
+        border-radius: 10px;
+        max-width: 680px;
+        margin-bottom: 25px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin: 12px 0;
+    }
+
+    .form-group textarea {
+        min-height: 85px;
+        resize: vertical;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 18px;
+    }
+
+    .error {
+        color: #dc2626;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 14px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    th {
+        background: #f1f5f9;
+        color: #334155;
+    }
+
+    .code-cell {
+        font-weight: 600;
+        color: #1e293b;
+        white-space: nowrap;
+    }
+
+    .sub-text {
+        color: #64748b;
+        font-size: 13px;
+        margin-top: 3px;
+    }
+
+    .status-badge {
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .approved {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .pending {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    .draft {
+        background: #e2e8f0;
+        color: #475569;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 7px;
+    }
+
+    .btn-edit {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .btn-approve {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .btn-delete {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .empty {
+        text-align: center;
+        color: #94a3b8;
+        padding: 25px;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .page-info {
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .page-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .page-current {
+        color: #334155;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .page-btn {
+        padding: 8px 14px;
+        border: 1px solid #cbd5e1;
+        background: white;
+        color: #334155;
+        border-radius: 7px;
+        cursor: pointer;
+    }
+
+    .page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .modal-box {
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        max-width: 420px;
+        width: 90%;
+        border: 1px solid #e2e8f0;
+    }
+
+    .modal-box h3 {
+        color: #1e293b;
+        margin-bottom: 10px;
+    }
+
+    .modal-box p {
+        color: #475569;
+        margin-bottom: 20px;
+        line-height: 1.5;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    @media(max-width: 768px) {
+        .statistics {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .toolbar {
+            flex-direction: column;
+        }
+    }
+</style>
