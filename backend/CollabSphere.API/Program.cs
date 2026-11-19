@@ -43,6 +43,12 @@ builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
 builder.Services.AddScoped<NotificationService>();
 
+builder.Services.AddHttpClient("FlaskAI", client =>
+{
+    client.BaseAddress = new Uri("http://127.0.0.1:5001");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
 var connectionString = builder.Configuration
     .GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException(
