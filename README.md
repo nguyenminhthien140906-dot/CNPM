@@ -843,10 +843,4 @@ Các hướng phát triển tiếp theo của CollabSphere:
 
 ---
 
-## Bản quyền và đóng góp
-
-CollabSphere là dự án phát triển phần mềm phục vụ mục tiêu học tập và thực hành xây dựng hệ thống. Các thành viên tham gia cần tuân thủ quy ước mã nguồn, tài liệu và quy trình cộng tác của repository.
-
----
-
 **CollabSphere — Học tập thông qua dự án, cộng tác để phát triển.**
