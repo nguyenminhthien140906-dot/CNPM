@@ -1,83 +1,114 @@
-CollabSphere (COSRE)
-Hệ thống hỗ trợ học tập phương pháp Project-Based Learning (PBL)
-CollabSphere là hệ thống hỗ trợ tổ chức, quản lý và thực hiện hoạt động học tập theo dự án. Nền tảng hướng dẫn kết nối quản trị viên, bộ phận quản lý học vụ, học viên và sinh viên trong toàn bộ quá trình học tập: từ quản lý môn học, đề kim cương và lớp học đến tổ chức dự án, làm việc nhóm, thực hiện nhiệm vụ, sản phẩm và đánh giá kết quả.
 
-Dự án được xây dựng theo hướng Học tập dựa trên dự án (PBL) định hướng . Thầy chỉ tiếp tục nhận thức kiến ​​thức một chiều, sinh viên tham gia giải quyết vấn đề, phân phối hợp lý các thành viên trong nhóm và tạo ra các sản phẩm học tập cụ thể. Giảng viên theo dõi tiến trình, hướng dẫn và đánh giá quá trình thực hiện.
-Dự án tên: CollabSphere 
-Tên viết tắt: COSRE 
-Định hướng: Nền tảng hỗ trợ học tập và cộng tác theo dự án (PBL)
+# CollabSphere (COSRE)
 
-Mục lục
-- 1. Giới thiệu dự án
-- 2. Mục tiêu
-- 3. Đối tượng sử dụng
-- 4. Phạm vi chức năng
-- 5. Công nghệ và nền tảng
-- 6. Kiến trúc hệ thống
-- 7. Cấu trúc thư mục
-- 8. Cơ sở dữ liệu thiết kế
-- 9. Phần phụ trợ và API
-- 10. Giao diện người dùng
-- 11. Cài đặt môi trường
-- 12. Khởi tạo và chạy Backend
-- 13. Kiểm tra API
-- 14. vật liệu mẫu
-- 15. Kiểm thử
-- 16. Quy trình phát triển và đóng góp ý kiến
-- 17. Tài liệu liên quan
-- 18. Phạm vi phát triển khai hiện tại
-- 19. Phát triển định hướng
-1. Giới thiệu dự án
-Trong quá trình học tập theo dự án, học viên và sinh viên cần phối hợp nhiều hoạt động khác nhau như quản lý lớp, chia nhóm, giao nhiệm vụ, theo dõi tiến độ, trao đổi tài liệu và đánh giá sản phẩm. Nếu hoạt động này được thực hiện trên nhiều công cụ phân tách, việc theo dõi tiến trình và tổng hợp thông tin có thể trở nên khó khăn.
+### Hệ thống hỗ trợ học tập theo phương pháp Project-Based Learning (PBL)
 
-CollabSphere được định hướng xây dựng thành một nền tảng tập tin để hỗ trợ các hoạt động trên. Hệ thống cung cấp môi trường quản lý dịch vụ học tập và không có cộng tác, giúp các bên tham gia theo dõi thông tin liên quan đến dự án trong cùng một hệ thống.
-1.1. Vấn đề cần giải quyết
+CollabSphere là hệ thống hỗ trợ tổ chức, quản lý và thực hiện hoạt động học tập theo dự án. Nền tảng hướng đến việc kết nối quản trị viên, bộ phận quản lý học vụ, giảng viên và sinh viên trong toàn bộ quá trình học tập: từ quản lý môn học, đề cương và lớp học đến tổ chức dự án, làm việc nhóm, thực hiện nhiệm vụ, nộp sản phẩm và đánh giá kết quả.
+
+Dự án được xây dựng theo định hướng **Project-Based Learning (PBL)**. Thay vì chỉ tiếp nhận kiến thức một chiều, sinh viên tham gia giải quyết vấn đề, phối hợp với các thành viên trong nhóm và tạo ra sản phẩm học tập cụ thể. Giảng viên theo dõi tiến độ, hướng dẫn và đánh giá quá trình thực hiện.
+
+> **Tên dự án:** CollabSphere  
+> **Tên viết tắt:** COSRE  
+> **Định hướng:** Nền tảng hỗ trợ học tập và cộng tác theo dự án (PBL)
+
+---
+
+## Mục lục
+
+- [1. Giới thiệu dự án](#1-giới-thiệu-dự-án)
+- [2. Mục tiêu](#2-mục-tiêu)
+- [3. Đối tượng sử dụng](#3-đối-tượng-sử-dụng)
+- [4. Phạm vi chức năng](#4-phạm-vi-chức-năng)
+- [5. Công nghệ và nền tảng](#5-công-nghệ-và-nền-tảng)
+- [6. Kiến trúc hệ thống](#6-kiến-trúc-hệ-thống)
+- [7. Cấu trúc thư mục](#7-cấu-trúc-thư-mục)
+- [8. Thiết kế cơ sở dữ liệu](#8-thiết-kế-cơ-sở-dữ-liệu)
+- [9. Backend và API](#9-backend-và-api)
+- [10. Frontend](#10-frontend)
+- [11. Cài đặt môi trường](#11-cài-đặt-môi-trường)
+- [12. Khởi tạo và chạy Backend](#12-khởi-tạo-và-chạy-backend)
+- [13. Kiểm tra API](#13-kiểm-tra-api)
+- [14. Dữ liệu mẫu](#14-dữ-liệu-mẫu)
+- [15. Kiểm thử](#15-kiểm-thử)
+- [16. Quy trình phát triển và đóng góp](#16-quy-trình-phát-triển-và-đóng-góp)
+- [17. Tài liệu liên quan](#17-tài-liệu-liên-quan)
+- [18. Phạm vi triển khai hiện tại](#18-phạm-vi-triển-khai-hiện-tại)
+- [19. Định hướng phát triển](#19-định-hướng-phát-triển)
+
+---
+
+## 1. Giới thiệu dự án
+
+Trong quá trình học tập theo dự án, giảng viên và sinh viên cần phối hợp qua nhiều hoạt động khác nhau như quản lý lớp, chia nhóm, giao nhiệm vụ, theo dõi tiến độ, trao đổi tài liệu và đánh giá sản phẩm. Nếu các hoạt động này được thực hiện trên nhiều công cụ tách biệt, việc theo dõi tiến độ và tổng hợp thông tin có thể trở nên khó khăn.
+
+CollabSphere được định hướng xây dựng thành một nền tảng tập trung để hỗ trợ các hoạt động trên. Hệ thống cung cấp môi trường quản lý học vụ và không gian cộng tác, giúp các bên tham gia theo dõi thông tin liên quan đến dự án trong cùng một hệ thống.
+
+### 1.1. Vấn đề cần giải quyết
+
 - Thông tin môn học, đề cương và lớp học cần được tổ chức thống nhất.
-- Hoạt động học tập theo dự án cần có mục tiêu, phạm vi và sản phẩm rõ ràng.
-- Nhóm thành viên cần biết nhiệm vụ, người phụ trách và thời gian thực hiện.
-- Giảng viên cần theo dõi tiến trình và đánh giá kết quả của cá nhân hoặc nhóm.
+- Hoạt động học tập theo dự án cần có mục tiêu, phạm vi và sản phẩm đầu ra rõ ràng.
+- Thành viên nhóm cần biết nhiệm vụ, người phụ trách và thời hạn thực hiện.
+- Giảng viên cần theo dõi tiến độ và đánh giá kết quả của cá nhân hoặc nhóm.
 - Quá trình trao đổi, chia sẻ tài nguyên và thông báo cần được tập trung.
-- Người học cần có thêm công cụ hỗ trợ hỗ trợ và giải đáp trong quá trình thực hiện dự án.
-1.2. Giải pháp định hướng
-CollabSphere hướng dẫn kết nối các hoạt động quản lý học tập, tổ chức dự án, cộng tác nhóm và đánh giá học tập. Các chức năng được chia thành từng nhóm dịch vụ để thuận tiện cho việc phân tích, phát triển, kiểm tra và mở rộng.
-2. Mục tiêu
+- Người học cần có thêm công cụ hỗ trợ tra cứu và giải đáp trong quá trình thực hiện dự án.
+
+### 1.2. Định hướng giải pháp
+
+CollabSphere hướng đến việc kết nối các hoạt động quản lý học vụ, tổ chức dự án, cộng tác nhóm và đánh giá học tập. Các chức năng được chia thành từng nhóm nghiệp vụ để thuận tiện cho việc phân tích, phát triển, kiểm thử và mở rộng.
+
+---
+
+## 2. Mục tiêu
+
 Dự án hướng đến các mục tiêu sau:
-1. Tập trung hóa thông tin học tập: quản lý tài khoản, môn học, đề cương và lớp học trên một nền tảng.
-2. Hỗ trợ tổ chức dự án: tạo dự án, xác định mục tiêu, phạm vi, thời gian và sản phẩm đầu ra.
-3. Tăng cường nhóm làm việc: hỗ trợ nhóm tổ chức, quản lý thành viên và phân công công việc.
-4. Theo dõi tiến trình: quản lý nhiệm vụ, cột đèn, kiểm tra và trạng thái thực hiện.
-5. Hỗ trợ trao đổi: tạo môi trường giao tiếp tiếp theo, trình bày và chia sẻ dự án tài nguyên tài nguyên.
-6. Hỗ trợ đánh giá: lưu trữ bài viết, kết quả đánh giá và phản hồi.
-7. Hỗ trợ người học: công cụ AI định hướng cụ thể để hỗ trợ tìm kiếm thông tin và giải đáp thắc mắc.
-8. Bảo đảm khả năng mở rộng: phân chia hệ thống thành các lớp và nhóm chức năng có trách nhiệm rõ ràng.
-3. Đối tượng sử dụng
-Đối tượng	Sử dụng trò chơi và phạm vi
-Quản trị viên (ADMIN)	Quản lý tài khoản, vai trò và các quản trị thông tin của hệ thống.
-Trưởng bộ phận (HEAD)	Tham gia các nghiệp vụ quản lý và phê duyệt theo phân quyền.
-Nhân viên học vụ (STAFF)	Quản lý thông tin môn học, đề cương, lớp học và phân công học vụ.
-Giảng viên (LECTURER)	Theo dõi lớp học, tổ chức học tập, hướng dẫn dự án và đánh giá kết quả.
-Sinh viên (STUDENT)	Tham gia lớp, làm việc nhóm, thực hiện nhiệm vụ, trao đổi và phụ sản phẩm.
 
+1. **Tập trung hóa thông tin học tập:** quản lý tài khoản, môn học, đề cương và lớp học trên một nền tảng.
+2. **Hỗ trợ tổ chức dự án:** tạo dự án, xác định mục tiêu, phạm vi, thời gian và sản phẩm đầu ra.
+3. **Tăng cường làm việc nhóm:** hỗ trợ tổ chức nhóm, quản lý thành viên và phân công công việc.
+4. **Theo dõi tiến độ:** quản lý nhiệm vụ, cột mốc, điểm kiểm tra và trạng thái thực hiện.
+5. **Hỗ trợ trao đổi:** tạo môi trường giao tiếp, họp và chia sẻ tài nguyên phục vụ dự án.
+6. **Hỗ trợ đánh giá:** lưu trữ bài nộp, kết quả đánh giá và phản hồi.
+7. **Hỗ trợ người học:** định hướng tích hợp công cụ AI để hỗ trợ tìm kiếm thông tin và giải đáp thắc mắc.
+8. **Bảo đảm khả năng mở rộng:** phân chia hệ thống thành các lớp và nhóm chức năng có trách nhiệm rõ ràng.
 
-Quyền truy cập được kiểm soát Kiểm soát trò chơi. Phạm vi quyền cụ thể của từng chức năng cần thiết vào tài liệu nghiệp vụ và chính sách phân quyền được phát triển trong API.
-4. Phạm vi chức năng
-Hệ thống được phân chia thành 12 nhóm chức năng (FE01–FE12). Đây là cách phân nhóm nghiệp vụ của dự án; không có định nghĩa toàn bộ API và quy trình của tất cả các nhóm.
-Mã	Nhóm chức năng	Nội dung
-FE01	Quản lý người dùng tài khoản	Tài khoản, thông tin cá nhân, trò chơi và xác thực.
-FE02	Quản lý môn học và đề cương	Thông tin môn học, phiên bản và nội dung đề cương.
-FE03	quản lý lớp học	Tạo và cập nhật lớp, phân công học viên, bổ sung hoặc xóa sinh viên khỏi lớp.
-FE04	quản lý dự án	Xây dựng dự án, mục tiêu, phạm vi, thời gian và sản phẩm đầu ra.
-FE05	Quản lý nhóm và không làm việc	Tổ chức nhóm, thành viên và khu vực làm việc của nhóm.
-FE06	Quản lý cột cột và điểm kiểm tra	Thiết lập tiến độ và các điểm kiểm tra trong dự án.
-FE07	Giao tiếp và tổ chức cuộc họp	Trao đổi thông tin và quản lý hoạt động.
-FE08	Quản lý tài nguyên học tập	Chia sẻ và quản lý tài liệu, tài nguyên phục vụ học tập.
-FE09	Thực thi công cụ cộng thời gian	Hỗ trợ các hoạt động cộng đồng trong quá trình làm việc của nhóm.
-FE10	Đánh giá và phản hồi	Quản lý bài viết, đánh giá và nhận xét.
-FE11	Hỗ trợ AI tập học	Hỗ trợ đào tạo, giải đáp và một số tác vụ học tập.
-FE12	bảo lý thông báo	Thông báo về nhiệm vụ, tiến trình và hoạt động liên quan.
+---
 
+## 3. Đối tượng sử dụng
 
-4.1. Luồng thông thường của chủ sở hữu
+| Đối tượng | Vai trò và phạm vi sử dụng |
+|---|---|
+| **Quản trị viên (ADMIN)** | Quản lý tài khoản, vai trò và các thông tin quản trị của hệ thống. |
+| **Trưởng bộ phận (HEAD)** | Tham gia các nghiệp vụ quản lý và phê duyệt theo phân quyền. |
+| **Nhân viên học vụ (STAFF)** | Quản lý thông tin môn học, đề cương, lớp học và phân công học vụ. |
+| **Giảng viên (LECTURER)** | Theo dõi lớp học, tổ chức hoạt động học tập, hướng dẫn dự án và đánh giá kết quả. |
+| **Sinh viên (STUDENT)** | Tham gia lớp, làm việc nhóm, thực hiện nhiệm vụ, trao đổi và nộp sản phẩm. |
+
+Quyền truy cập được kiểm soát theo vai trò. Phạm vi quyền cụ thể của từng chức năng cần căn cứ vào tài liệu nghiệp vụ và chính sách phân quyền được triển khai trong API.
+
+---
+
+## 4. Phạm vi chức năng
+
+Hệ thống được phân chia thành 12 nhóm chức năng (FE01–FE12). Đây là cách phân nhóm nghiệp vụ của dự án; không có nghĩa toàn bộ API và quy trình của tất cả nhóm đã hoàn thiện.
+
+| Mã | Nhóm chức năng | Nội dung |
+|---|---|---|
+| **FE01** | Quản lý tài khoản người dùng | Tài khoản, thông tin cá nhân, vai trò và xác thực. |
+| **FE02** | Quản lý môn học và đề cương | Thông tin môn học, phiên bản và nội dung đề cương. |
+| **FE03** | Quản lý lớp học | Tạo và cập nhật lớp, phân công giảng viên, thêm hoặc xóa sinh viên khỏi lớp. |
+| **FE04** | Quản lý dự án | Xây dựng dự án, mục tiêu, phạm vi, thời gian và sản phẩm đầu ra. |
+| **FE05** | Quản lý nhóm và không gian làm việc | Tổ chức nhóm, thành viên và khu vực làm việc của nhóm. |
+| **FE06** | Quản lý cột mốc và điểm kiểm tra | Thiết lập mốc tiến độ và các điểm kiểm tra trong dự án. |
+| **FE07** | Giao tiếp và tổ chức cuộc họp | Trao đổi thông tin và quản lý hoạt động họp. |
+| **FE08** | Quản lý tài nguyên học tập | Chia sẻ và quản lý tài liệu, tài nguyên phục vụ học tập. |
+| **FE09** | Công cụ cộng tác thời gian thực | Hỗ trợ các hoạt động cộng tác trong quá trình làm việc nhóm. |
+| **FE10** | Đánh giá và phản hồi | Quản lý bài nộp, đánh giá và nhận xét. |
+| **FE11** | Hỗ trợ học tập bằng AI | Hỗ trợ tra cứu, giải đáp và một số tác vụ học tập. |
+| **FE12** | Quản lý thông báo | Thông báo về nhiệm vụ, tiến độ và hoạt động liên quan. |
+
+### 4.1. Luồng nghiệp vụ tổng quát
+
+```text
 Quản lý tài khoản và phân quyền
               |
               v
@@ -103,29 +134,43 @@ Nộp sản phẩm và đánh giá
               |
               v
 Phản hồi và tổng hợp kết quả
-Luồng trên mô tả tổng thể dịch vụ định hướng. Trình tự thực thi có thể thay đổi quy trình tùy chỉnh và quyền của từng trò chơi.
-5. Công nghệ và nền tảng
-Công nghệ dưới đây đã được ghi nhận từ cấu hình và nguồn mã hiện có trong kho lưu trữ. Các dịch vụ chưa có cấu hình hoặc hợp nhất dịch vụ được đánh dấu là định hướng, không được xem là hành động đã được vận hành của các thành phần.
-Thành phần	Công nghệ / công cụ	Vai trò
-API Backend	API Web ASP.NET Core	Tiếp nhận và xử lý yêu cầu HTTP.
-Ngôn ngữ Backend	C#	Triển khai API và dịch vụ phía máy chủ.
-Nền tảng .NET	.NET 10	Thời gian chạy và khung của Backend của dự án.
-ORM	Entity Framework Core	Thực thể ánh sáng và dữ liệu hoạt động.
-Nhà cung cấp cơ sở dữ liệu	MySql.EntityFrameworkCore	Kết nối EF Core với MySQL.
-Trình điều khiển cơ sở dữ liệu	MySqlConnector	Thực hiện các lệnh SQL và Migration.
-Sở hữu dữ liệu	MySQL 8.0+	Lưu trữ hệ thống dữ liệu.
-Xé thực	JWT Bearer	Xác thực yêu cầu bằng mã thông báo truy cập.
-Mã bảo hiểm	ASP.NET Identity PasswordHasher	Băm và kiểm tra mật khẩu.
-Giao tiếp thời gian tiếp theo	Gói SignalR có trong nguồn mã hóa	Hỗ trợ thực hiện kết nối thời gian ở phía máy khách/máy chủ.
-Tác nhân AI	Python	Mô-đun AI được tổ chức riêng trong backend/ai-agent/ .
-Giao diện người dùng	JSX và các thành phần .razor /C#	Hiện tại giao diện mã đang ở trạng thái kết hợp/chuyển đổi.
-bảo lý mã nguồn	Git, GitHub	Quản lý phiên bản và cộng đồng phát triển.
+```
 
+Luồng trên mô tả định hướng nghiệp vụ tổng thể. Trình tự thực tế có thể thay đổi tùy quy trình và quyền của từng vai trò.
 
-Lưu ý: Repository hiện có mã nguồn và cấu hình cho một số công nghệ, nhưng điều đó không đồng nghĩa với mọi dịch vụ đã được cấu hình đầy đủ hoặc đang hoạt động. Các nền tảng như AWS Bedrock, Azure, Cloudinary hay Upstash chỉ nên được xem là lựa chọn hợp lý khi có cấu hình và phát triển mã tương ứng.
-6. Kiến trúc hệ thống
-6.1. Kiến trúc tổng quan
-Phần cuối được chia thành bốn dự án theo phân lớp hướng dẫn, gần với Clean Architecture. Mỗi dự án đảm nhận một nhóm trách nhiệm riêng.
+---
+
+## 5. Công nghệ và nền tảng
+
+Các công nghệ dưới đây được ghi nhận từ cấu hình và mã nguồn hiện có trong repository. Những dịch vụ chưa có cấu hình hoặc tích hợp thực tế được đánh dấu là định hướng, không xem là thành phần đã vận hành.
+
+| Thành phần | Công nghệ / công cụ | Vai trò |
+|---|---|---|
+| Backend API | ASP.NET Core Web API | Tiếp nhận và xử lý yêu cầu HTTP. |
+| Ngôn ngữ Backend | C# | Triển khai API và nghiệp vụ phía máy chủ. |
+| Nền tảng .NET | .NET 10 | Runtime và framework của các project Backend. |
+| ORM | Entity Framework Core | Ánh xạ entity và thao tác dữ liệu. |
+| Database provider | `MySql.EntityFrameworkCore` | Kết nối EF Core với MySQL. |
+| Database driver | `MySqlConnector` | Thực thi các lệnh SQL và migration. |
+| Cơ sở dữ liệu | MySQL 8.0+ | Lưu trữ dữ liệu hệ thống. |
+| Xác thực | JWT Bearer | Xác thực request bằng access token. |
+| Mã hóa mật khẩu | ASP.NET Identity PasswordHasher | Băm và kiểm tra mật khẩu. |
+| Giao tiếp thời gian thực | SignalR package có trong mã nguồn | Hỗ trợ kết nối thời gian thực ở phía client/server. |
+| AI Agent | Python | Module AI được tổ chức riêng trong `backend/ai-agent/`. |
+| Frontend | JSX và các thành phần `.razor`/C# | Mã giao diện hiện có đang ở trạng thái kết hợp/chuyển đổi. |
+| Quản lý mã nguồn | Git, GitHub | Quản lý phiên bản và cộng tác phát triển. |
+
+**Lưu ý:** Repository hiện có mã nguồn và cấu hình cho một số công nghệ, nhưng điều đó không đồng nghĩa mọi dịch vụ đã được cấu hình đầy đủ hoặc đang hoạt động. Các nền tảng như AWS Bedrock, Azure, Cloudinary hay Upstash chỉ nên được xem là lựa chọn tích hợp khi có cấu hình và mã triển khai tương ứng.
+
+---
+
+## 6. Kiến trúc hệ thống
+
+### 6.1. Kiến trúc tổng quan
+
+Backend được chia thành bốn project theo hướng phân lớp, gần với Clean Architecture. Mỗi project đảm nhiệm một nhóm trách nhiệm riêng.
+
+```text
                     Người dùng
                         |
                         v
@@ -146,7 +191,11 @@ Phần cuối được chia thành bốn dự án theo phân lớp hướng dẫ
                               MySQL
 
        AI Agent (Python) - module riêng trong backend/ai-agent
-Sơ đồ có thể hiển thị chính các thành phần. Hệ thống phụ thuộc có thể giữa các Backend của dự án được mô tả như sau:
+```
+
+Sơ đồ thể hiện các thành phần chính. Quan hệ phụ thuộc cụ thể giữa các project Backend được mô tả như sau:
+
+```text
 CollabSphere.API
    |                 \
    v                  v
@@ -154,23 +203,33 @@ Application       Infrastructure
    |                  |
    v                  v
 Domain <---------- Domain
-6.2. Các lớp Backend
-Dự án	Trách	Thành phần tiêu biểu
-CollabSphere.API	Giao tiếp HTTP, bộ điều khiển, xác thực, phân quyền và khởi động ứng dụng.	Bộ điều khiển, phần mềm trung gian, dịch vụ JWT, Program.cs.
-CollabSphere.Application	DTO, giao diện và các thành phần phân phối ứng dụng nghiệp vụ.	Các DTO xác thực, giao diện dịch vụ, các trường hợp sử dụng.
-CollabSphere.Domain	Mô hình nghiệp vụ cốt lõi, thực thể, enum, ngoại lệ và đối tượng giá trị.	Entities.cs, Enums.cs, Exceptions.cs
-CollabSphere.Infrastructure	Kết nối dữ liệu, ánh xạ, kho lưu trữ, dịch vụ và khởi chạy di chuyển/hạt giống.	Persistence.cs, Configurations.cs, Repositories.cs, MigrationEnvironment.cs.
+```
 
+### 6.2. Các lớp Backend
 
-6.3. Luồng xử lý một yêu cầu
+| Project | Trách nhiệm | Thành phần tiêu biểu |
+|---|---|---|
+| `CollabSphere.API` | Giao tiếp HTTP, controller, xác thực, phân quyền và khởi động ứng dụng. | Controllers, Middleware, JWT service, Program.cs. |
+| `CollabSphere.Application` | DTO, interface và các thành phần điều phối nghiệp vụ ứng dụng. | Auth DTOs, service interfaces, use cases. |
+| `CollabSphere.Domain` | Mô hình nghiệp vụ cốt lõi, entity, enum, exception và value object. | Entities.cs, Enums.cs, Exceptions.cs. |
+| `CollabSphere.Infrastructure` | Kết nối dữ liệu, mapping, repository, dịch vụ và khởi chạy migration/seed. | Persistence.cs, Configurations.cs, Repositories.cs, MigrationEnvironment.cs. |
+
+### 6.3. Luồng xử lý một request
+
 1. Người dùng thao tác trên giao diện.
-2. Frontend gửi yêu cầu đến endpoint của CollabSphere.API .
-3. API kiểm tra đầu vào dữ liệu và xác thực/phân quyền nếu điểm cuối yêu cầu.
-4. Thành phần ứng dụng hoặc điều phối nghiệp vụ.
-5. Cơ sở hạ tầng truy cập MySQL thông qua các thành phần truy cập dữ liệu.
+2. Frontend gửi request đến endpoint của `CollabSphere.API`.
+3. API kiểm tra dữ liệu đầu vào và xác thực/phân quyền nếu endpoint yêu cầu.
+4. Thành phần ứng dụng thực hiện hoặc điều phối nghiệp vụ.
+5. Infrastructure truy cập MySQL thông qua các thành phần truy cập dữ liệu.
 6. API trả kết quả theo định dạng JSON cho Frontend.
-7. Cấu trúc thư mục
-Cấu trúc dưới đây được rút gọn từ kho lưu trữ để có thể thực hiện các lĩnh vực chính:
+
+---
+
+## 7. Cấu trúc thư mục
+
+Cấu trúc dưới đây được rút gọn từ repository để thể hiện các khu vực chính:
+
+```text
 CNPM/
 │
 ├── README.md
@@ -229,8 +288,7 @@ CNPM/
 │   ├── tests/
 │   ├── ai-agent/
 │   ├── CollabSphere.Backend.sln
-│   ├── CollabSphere.sln
-│   └── README.md
+│   └── CollabSphere.sln
 │
 ├── frontend/
 │   ├── public/
@@ -251,351 +309,544 @@ CNPM/
     ├── design-system/
     ├── prototypes/
     └── wireframes/
-7.1. Vai trò từng thư mục
-Thư mục	Nội dung
-docs/	Yêu cầu tài liệu, mô tả chức năng, hợp đồng API và dự án cấu trúc.
-cơ sở dữ liệu/	ERD, tổng hợp lược đồ, di chuyển, cơ sở dữ liệu hỗ trợ hạt giống và tập lệnh.
-backend/CollabSphere.API/	API Web, bộ điều khiển, phần mềm trung gian, xác thực và cấu hình ứng dụng.
-backend/CollabSphere.Application/	DTO, giao diện, trường hợp sử dụng và thành phần ứng dụng.
-backend/CollabSphere.Domain/	Entity và quy tắc nghiệp vụ cốt lõi.
-backend/CollabSphere.Infrastructure/	Tính bền vững, ánh xạ, kho lưu trữ, dịch vụ, di chuyển và dữ liệu gốc.
-backend/ai-agent/	Mô-đun AI viết bằng Python, được tách riêng khỏi .NET dự án.
-backend/tests/	Đã có API kiểm tra tập lệnh.
-giao diện người dùng/	Mã giao diện, thành phần, trang, tuyến đường, dịch vụ và tài nguyên tĩnh.
-figma/	Tài nguyên thiết kế, hệ thống thiết kế, nguyên mẫu và wireframe.
+```
 
+### 7.1. Vai trò từng thư mục
 
-8. Cơ sở dữ liệu thiết kế
-8.1. Hệ thống quản trị và quy ước
-Cơ sở dữ liệu sử dụng MySQL 8.0 trở lên , với bộ ký tự utf8mb4 và collation utf8mb4_unicode_ci . Bảng sử dụng InnoDB để hỗ trợ khóa và giao dịch.
+| Thư mục | Nội dung |
+|---|---|
+| `docs/` | Tài liệu yêu cầu, mô tả chức năng, API contract và cấu trúc dự án. |
+| `database/` | ERD, schema tổng hợp, migration, seed và script hỗ trợ database. |
+| `backend/CollabSphere.API/` | Web API, controller, middleware, xác thực và cấu hình ứng dụng. |
+| `backend/CollabSphere.Application/` | DTO, interface, use case và thành phần ứng dụng. |
+| `backend/CollabSphere.Domain/` | Entity và quy tắc nghiệp vụ cốt lõi. |
+| `backend/CollabSphere.Infrastructure/` | Persistence, mapping, repository, service, migration và seed. |
+| `backend/ai-agent/` | Module AI viết bằng Python, được tách riêng khỏi các project .NET. |
+| `backend/tests/` | Script kiểm thử API hiện có. |
+| `frontend/` | Mã giao diện, component, trang, route, service và tài nguyên tĩnh. |
+| `figma/` | Tài nguyên thiết kế, design system, prototype và wireframe. |
 
-Cơ sở dữ liệu có tên mặc định:
+---
+
+## 8. Thiết kế cơ sở dữ liệu
+
+### 8.1. Hệ quản trị và quy ước
+
+Cơ sở dữ liệu sử dụng **MySQL 8.0 trở lên**, với bộ ký tự `utf8mb4` và collation `utf8mb4_unicode_ci`. Các bảng sử dụng InnoDB để hỗ trợ khóa ngoại và giao dịch.
+
+Database có tên mặc định:
+
+```sql
 CREATE DATABASE collabsphere
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
-8.2. Dữ liệu nhóm
-Các bảng được chia thành các nhóm dịch vụ:
-Nhóm	vật liệu tiêu biểu
-Định danh và học vụ	vai trò , người dùng , sinh viên , giảng viên , môn học , giáo trình, lớp học , sinh viên lớp học , giảng viên lớp học
-Dự án và nhóm	dự án , nhóm , thành viên nhóm
-Tiến độ và sự thay đổi	các mốc quan trọng , các điểm kiểm tra , nhiệm vụ , người được giao nhiệm vụ , bài nộp
-Tài nguyên và giao tiếp	tài nguyên , cuộc họp , người tham dự cuộc họp , tin nhắn
-Không gian làm	không gian làm việc , ảnh chụp bảng trắng , tài liệu không gian làm việc , phiên bản tài liệu
-Đánh giá, thông báo và AI	đánh giá , thông báo , cuộc hội thoại AI , tin nhắn AI
+```
 
+### 8.2. Nhóm dữ liệu
 
-8.3. Quản lý cấu trúc bằng SQL Migration
-Kho lưu trữ hiện có các lần di chuyển được đánh số từ 001 đến 007 :
-Phiên bản	Di chuyển tên	Phạm vi
-001	identity_academic	User, vai trò trò chơi và dữ liệu học tập.
-002	projects_teams	Dự án, nhóm và nhóm thành viên.
-003	progress_tasks_submissions	Cột cột, điểm kiểm tra, nhiệm vụ và bài học.
-004	tài nguyên_truyền thông	Tài nguyên, cuộc họp và tin nhắn.
-005	workspaces_documents	Không có công việc, bảng cộng và tài liệu.
-006	evaluations_notifications_ai	Đánh giá, thông báo và hội thoại AI.
-007	seed_roles	Thêm mặc định các vai trò.
+Các bảng được chia thành những nhóm nghiệp vụ:
 
+| Nhóm | Dữ liệu tiêu biểu |
+|---|---|
+| Định danh và học vụ | `roles`, `users`, `students`, `lecturers`, `subjects`, `syllabi`, `study_classes`, `class_students`, `class_lecturers` |
+| Dự án và nhóm | `projects`, `teams`, `team_members` |
+| Tiến độ và nhiệm vụ | `milestones`, `checkpoints`, `tasks`, `task_assignees`, `submissions` |
+| Tài nguyên và giao tiếp | `resources`, `meetings`, `meeting_participants`, `messages` |
+| Không gian làm việc | `workspaces`, `whiteboard_snapshots`, `workspace_documents`, `document_versions` |
+| Đánh giá, thông báo và AI | `evaluations`, `notifications`, `ai_conversations`, `ai_messages` |
 
-Phần cuối sử dụng bộ riêng di chuyển SQL chạy trong CollabSphere.Infrastructure/Database/MigrationEnvironment.cs . Tệp *.up.sql được sắp xếp theo tên và chỉ được áp dụng nếu chưa có phiên bản trong bảng lược đồ_migrations .
+### 8.3. Quản lý cấu trúc bằng SQL Migration
 
-Quy tắc quan trọng khi cập nhật cơ sở dữ liệu:
-- Không thể chỉnh sửa quá trình di chuyển đã được áp dụng trên môi trường chung.
-- Khi cần thay đổi cấu hình, tạo mới di chuyển theo thứ tự tiếp theo.
-- File .down.sql đã được lưu để tham khảo hoặc chạy thủ công; Phần cuối không tự động chạy rollback.
-- Không sử dụng đồng thời EnsureCreated() hoặc Database.Migrate() cho lược đồ đang được quản lý bằng cách riêng biệt di chuyển SQL.
-- Nên sao lưu dữ liệu trước khi chạy thay đổi lược đồ trên môi trường có quan trọng về dữ liệu.
-8.4. Cơ sở dữ liệu Các bước
-/ thư tín	Mục đích
-database/01-erd.md	Mô tả thực tế, thuộc tính và quan hệ dữ liệu.
-database/schema.sql	Schema MySQL tổng hợp để tham khảo hoặc khởi tạo theo hướng dẫn phù hợp.
-cơ sở dữ liệu/di chuyển/phiên bản/	Việc di chuyển tệp tăng/giảm cấu hình theo phiên bản.
-database/migrations/MigrationEnvironment.cs	Quá trình di chuyển được sử dụng bởi Backend.
-cơ sở dữ liệu/hạt giống/	Phát triển và kiểm tra mẫu dữ liệu.
-database/scripts/run_mysql.sh	Hỗ trợ tập lệnh hoạt động với MySQL.
+Repository hiện có các migration được đánh số từ `001` đến `007`:
 
+| Phiên bản | Tên migration | Phạm vi |
+|---|---|---|
+| 001 | `identity_academic` | Người dùng, vai trò và dữ liệu học vụ. |
+| 002 | `projects_teams` | Dự án, nhóm và thành viên nhóm. |
+| 003 | `progress_tasks_submissions` | Cột mốc, điểm kiểm tra, nhiệm vụ và bài nộp. |
+| 004 | `resources_communication` | Tài nguyên, cuộc họp và tin nhắn. |
+| 005 | `workspaces_documents` | Không gian làm việc, bảng cộng tác và tài liệu. |
+| 006 | `evaluations_notifications_ai` | Đánh giá, thông báo và hội thoại AI. |
+| 007 | `seed_roles` | Thêm các vai trò mặc định. |
 
-Trong quá trình chạy Hiện tại cuối cùng, quá trình di chuyển là lược đồ tạo cơ sở khởi động chính. Không thể chạy đồng thời lược đồ.sql rồi chạy lại toàn bộ quá trình di chuyển trên cùng một cơ sở dữ liệu trống, vì có thể dẫn đến tồn tại lỗi bảng.
-9. Phần phụ trợ và API
-9.1. Tổng quan
-Phần cuối được phát triển bằng ASP.NET Core Web API trên .NET 10. Dữ liệu được truy cập thông qua nhà cung cấp Entity Framework Core và MySQL. Một số hoạt động khởi động cơ sở dữ liệu sử dụng MySqlConnector để chạy quá trình di chuyển tệp SQL.
-9.2. Các thành phần chính
-- Bộ điều khiển: tiếp tục nhận yêu cầu và trả lời phản hồi.
-- Hợp đồng / DTO: xác định yêu cầu và phản hồi dữ liệu.
-- Dịch vụ: xử lý các ứng dụng tác vụ như xác thực và tạo mã thông báo.
-- Middleware: xử lý lỗi chưa được xử lý ở tầng yêu cầu.
-- Persistence: định nghĩa DbContext và DbSet.
-- Cấu hình: thực thể ánh sáng với cơ sở dữ liệu bảng, cột và cưỡng bức.
-- Repositories: cung cấp lớp truy cập chung cho dữ liệu.
-- MigrationEnvironment: kiểm tra và áp dụng Migration.
-- DatabaseSeder: chuẩn hóa mẫu dữ liệu trong môi trường phát triển.
-9.3. API hiện có
-Theo phần cuối nguồn mã hóa trong kho lưu trữ, các bộ điều khiển hiện có:
-Bộ điều khiển	Nhóm endpoint / trách nhiệm
-AuthController	Đăng nhập và thông tin người dùng hiện tại.
-AdminController	Quản trị điểm cuối và kiểm tra quyền quản trị.
-SubjectsController	Quản lý môn học.
-SyllabiController	Quản lý đề cương môn học.
-StudyClassesController	Quản lý lớp học.
-ClassAssignmentsController	Phân chia công viên và sinh viên vào lớp.
-NotificationsController	Điểm cuối thông báo
+Backend sử dụng bộ chạy SQL migration riêng trong `CollabSphere.Infrastructure/Database/MigrationEnvironment.cs`. Các file `*.up.sql` được sắp xếp theo tên và chỉ áp dụng nếu phiên bản chưa có trong bảng `schema_migrations`.
 
+**Quy tắc quan trọng khi cập nhật database:**
 
-Ngoài ra, API có các Hub server kết nối thời gian thực và hệ thống điểm cuối để kiểm tra trạng thái ứng dụng/cơ sở dữ liệu. Chi tiết lộ trình, yêu cầu, phản hồi và quyền truy cập cần xem trong backend/README.md và docs/API-CONTRACT-GUIDE.md .
-9.4. Xác thực và phân quyền
-Phần cuối sử dụng JWT Bearer. Sau khi đăng nhập thành công, khách hàng nhận mã thông báo truy cập và gửi mã thông báo trong tiêu đề của các yêu cầu cần xác thực:
+- Không chỉnh sửa migration đã được áp dụng trên môi trường dùng chung.
+- Khi cần thay đổi cấu trúc, tạo migration mới với số thứ tự tiếp theo.
+- File `.down.sql` hiện được lưu để tham khảo hoặc chạy thủ công; Backend không tự động chạy rollback.
+- Không dùng đồng thời `EnsureCreated()` hoặc `Database.Migrate()` cho schema đang được quản lý bằng bộ SQL migration riêng.
+- Nên sao lưu dữ liệu trước khi chạy thay đổi schema trên môi trường có dữ liệu quan trọng.
+
+### 8.4. Các tệp database
+
+| Tệp / thư mục | Mục đích |
+|---|---|
+| `database/01-erd.md` | Mô tả thực thể, thuộc tính và quan hệ dữ liệu. |
+| `database/schema.sql` | Schema MySQL tổng hợp để tham khảo hoặc khởi tạo theo hướng dẫn phù hợp. |
+| `database/migrations/versions/` | Các file migration tăng/giảm cấu trúc theo phiên bản. |
+| `database/migrations/MigrationEnvironment.cs` | Bộ chạy migration được sử dụng bởi Backend. |
+| `database/seeds/` | Dữ liệu mẫu phục vụ phát triển và kiểm thử. |
+| `database/scripts/run_mysql.sh` | Script hỗ trợ thao tác với MySQL. |
+
+Trong quy trình chạy Backend hiện tại, migration là cơ chế khởi tạo schema chính. Không chạy đồng thời `schema.sql` rồi lại chạy toàn bộ migration trên cùng một database trống, vì có thể dẫn đến lỗi bảng đã tồn tại.
+
+---
+
+## 9. Backend và API
+
+### 9.1. Tổng quan
+
+Backend được phát triển bằng ASP.NET Core Web API trên .NET 10. Dữ liệu được truy cập thông qua Entity Framework Core và MySQL provider. Một số thao tác khởi tạo database sử dụng `MySqlConnector` để chạy file SQL migration.
+
+### 9.2. Các thành phần chính
+
+- **Controllers:** tiếp nhận request và trả response.
+- **Contracts / DTOs:** định nghĩa dữ liệu request và response.
+- **Services:** xử lý các tác vụ ứng dụng như xác thực và tạo token.
+- **Middleware:** xử lý lỗi chưa được xử lý ở tầng request.
+- **Persistence:** định nghĩa DbContext và DbSet.
+- **Configurations:** ánh xạ entity với bảng, cột và ràng buộc database.
+- **Repositories:** cung cấp lớp truy cập dữ liệu dùng chung.
+- **MigrationEnvironment:** kiểm tra và áp dụng migration.
+- **DatabaseSeeder:** chuẩn bị dữ liệu mẫu trong môi trường phát triển.
+
+### 9.3. API hiện có
+
+Theo mã nguồn Backend trong repository, các controller hiện có gồm:
+
+| Controller | Nhóm endpoint / trách nhiệm |
+|---|---|
+| `AuthController` | Đăng nhập và thông tin người dùng hiện tại. |
+| `AdminController` | Endpoint quản trị và kiểm tra quyền quản trị. |
+| `SubjectsController` | Quản lý môn học. |
+| `SyllabiController` | Quản lý đề cương môn học. |
+| `StudyClassesController` | Quản lý lớp học. |
+| `ClassAssignmentsController` | Phân công giảng viên và sinh viên vào lớp. |
+| `NotificationsController` | Endpoint thông báo. |
+
+Ngoài ra, API có các Hub phục vụ kết nối thời gian thực và endpoint hệ thống để kiểm tra trạng thái ứng dụng/database. Chi tiết route, request, response và quyền truy cập cần xem trong `backend/README.md` và `docs/API-CONTRACT-GUIDE.md`.
+
+### 9.4. Xác thực và phân quyền
+
+Backend sử dụng JWT Bearer. Sau khi đăng nhập thành công, client nhận access token và gửi token trong header của các request cần xác thực:
+
+```http
 Authorization: Bearer <access-token>
-Vai trò mã hóa đang được sử dụng trong Phần cuối:
-Mã vai trò	Ý nghĩa
-QUẢN TRỊ VIÊN	Quản trị viên
-ĐẦU TRANG	Trưởng bộ
-NHÂN VIÊN	nhân viên học vụ
-GIẢNG VIÊN	Giảng viên
-HỌC SINH	Sinh viên
+```
 
+Các mã vai trò đang được sử dụng trong Backend:
 
-Mật khẩu được xử lý bằng ASP.NET Identity PassHasher; không lưu mật khẩu dạng văn bản tĩnh trong cơ sở dữ liệu.
-10. Giao diện người dùng
-Frontend thư mục / chứa giao diện và các thành phần dịch vụ tương thích với Backend.
-10.1. Thành phần của nhóm
-Thư mục	Trách
-tài sản/	Icon, hình ảnh và CSS.
-các thành phần/	Giao diện thành phần được sử dụng lại như bảng, modal, nút, biểu mẫu và nội dung thẻ.
-ngữ cảnh/	Trạng thái chung như xác thực và thông báo.
-hooks/	Các dịch vụ được quản lý trạng thái và giao diện dữ liệu.
-trang/	Các trang có chức năng như đăng nhập, lớp học, môn học, dự án, nhóm và nhiệm vụ.
-routes/	Khai báo điều hướng và kiểm soát lộ trình theo trạng thái/quyền.
-dịch vụ/	Client call API và các dịch vụ theo nghiệp vụ.
-tiện ích/	Hằng số, dữ liệu định dạng và kiểm tra đầu vào.
-công khai/	Tài nguyên được phục vụ trực tiếp.
+| Mã vai trò | Ý nghĩa |
+|---|---|
+| `ADMIN` | Quản trị viên |
+| `HEAD` | Trưởng bộ phận |
+| `STAFF` | Nhân viên học vụ |
+| `LECTURER` | Giảng viên |
+| `STUDENT` | Sinh viên |
 
+Mật khẩu được xử lý bằng ASP.NET Identity PasswordHasher; không lưu mật khẩu dạng văn bản thuần trong database.
 
-10.2. Source code trạng thái
-Frontend hiện chứa các tệp .jsx , .razor và .cs . Vì vậy, không nên mô tả giao diện người dùng là một ứng dụng React mực hoặc một ứng dụng Blazor đã hoàn thiện. Đây là khu vực đang có bộ kết hợp/chuyển đổi nguồn mã hóa.
+---
 
-frontend/package.json hiện chưa khai báo đầy đủ các tập lệnh chạy giao diện ứng dụng. Do đó, npm run dev chỉ có thể sử dụng sau khi gói và cấu hình giao diện người dùng tương thích hoàn thiện. Không thể xem đủ gói cài đặt npm để khởi chạy toàn bộ hiện tại giao diện.
-11. Cài đặt môi trường
-11.1. Yêu cầu
-Công cụ	Công bản / yêu cầu
-Git	Phiên bản phù hợp với hệ điều hành.
-SDK .NET	.NET 10 SDK
-Máy chủ MySQL	MySQL 8.0 trở lên.
-Máy khách MySQL	MySQL Workbench hoặc MySQL CLI để quản lý cơ sở dữ liệu.
-IDE	Visual Studio hoặc Visual Studio Code.
-PowerShell	Khuyến nghị nếu chạy thử tập lệnh .ps1 .
-Python	Chỉ cần phát triển hoặc chạy module backend/ai-agent/ .
+## 10. Frontend
 
+Thư mục `frontend/` chứa giao diện và các thành phần phục vụ tương tác với Backend.
+
+### 10.1. Các nhóm thành phần
+
+| Thư mục | Trách nhiệm |
+|---|---|
+| `assets/` | Icon, hình ảnh và CSS. |
+| `components/` | Thành phần giao diện dùng lại như bảng, modal, nút, form và thẻ nội dung. |
+| `contexts/` | Trạng thái dùng chung như xác thực và thông báo. |
+| `hooks/` | Các service quản lý trạng thái và dữ liệu giao diện. |
+| `pages/` | Các trang theo chức năng như đăng nhập, lớp học, môn học, dự án, nhóm và nhiệm vụ. |
+| `routes/` | Khai báo điều hướng và kiểm soát route theo trạng thái/quyền. |
+| `services/` | Client gọi API và các service theo nghiệp vụ. |
+| `utils/` | Hằng số, định dạng dữ liệu và kiểm tra đầu vào. |
+| `public/` | Tài nguyên tĩnh được phục vụ trực tiếp. |
+
+### 10.2. Trạng thái mã nguồn
+
+Frontend hiện chứa đồng thời các tệp `.jsx`, `.razor` và `.cs`. Vì vậy, không nên mô tả frontend là một ứng dụng React thuần hoặc một ứng dụng Blazor đã hoàn chỉnh. Đây là khu vực đang có mã nguồn kết hợp/chuyển đổi.
+
+`frontend/package.json` hiện chưa khai báo đầy đủ các script chạy ứng dụng giao diện. Do đó, lệnh `npm run dev` chỉ có thể sử dụng sau khi package và cấu hình frontend tương ứng được hoàn thiện. Không nên xem việc cài npm package là đủ để khởi chạy toàn bộ giao diện hiện tại.
+
+---
+
+## 11. Cài đặt môi trường
+
+### 11.1. Yêu cầu
+
+| Công cụ | Phiên bản / yêu cầu |
+|---|---|
+| Git | Phiên bản phù hợp với hệ điều hành. |
+| .NET SDK | .NET 10 SDK. |
+| MySQL Server | MySQL 8.0 trở lên. |
+| MySQL client | MySQL Workbench hoặc MySQL CLI để quản lý database. |
+| IDE | Visual Studio hoặc Visual Studio Code. |
+| PowerShell | Khuyến nghị nếu chạy script kiểm thử `.ps1`. |
+| Python | Chỉ cần khi phát triển hoặc chạy module `backend/ai-agent/`. |
 
 Kiểm tra cài đặt:
+
+```bash
 git --version
 dotnet --version
 mysql --version
-11.2. Tải mã nguồn
+```
+
+### 11.2. Tải source code
+
+```bash
 git clone https://github.com/nguyenminhthien140906-dot/CNPM.git
 cd CNPM
-Nếu đã tải ZIP từ GitHub, hãy giải nén mã nguồn và mở terminal tại thư mục gốc CNPM .
-12. Khởi tạo và chạy Backend
-Các bước sau được căn cứ theo hướng dẫn trong backend/README.md .
-Bước 1. Tạo cơ sở dữ liệu
+```
+
+Nếu đã tải ZIP từ GitHub, giải nén source code và mở terminal tại thư mục gốc `CNPM`.
+
+---
+
+## 12. Khởi tạo và chạy Backend
+
+Các bước sau được căn cứ theo hướng dẫn trong `backend/README.md`.
+
+### Bước 1. Tạo database
+
 Mở MySQL Workbench hoặc MySQL CLI và chạy:
+
+```sql
 CREATE DATABASE collabsphere
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
-Chỉ tạo cơ sở dữ liệu trống. Phần cuối sẽ tự động áp dụng việc di chuyển tệp để tạo bảng.
-Bước 2. Move to project API
-cd backend/CollabSphere.API
-Bước 3. Cấu hình User Secrets
-Bí mật người dùng được sử dụng để lưu thông tin nhạy cảm trong môi trường phát triển, tránh ghi mật khẩu cơ sở dữ liệu và khóa JWT trực tiếp vào mã nguồn.
+```
 
-Windows PowerShell:
+Chỉ tạo database rỗng. Backend sẽ tự áp dụng các file migration để tạo bảng.
+
+### Bước 2. Di chuyển đến project API
+
+```bash
+cd backend/CollabSphere.API
+```
+
+### Bước 3. Cấu hình User Secrets
+
+User Secrets được dùng để lưu thông tin nhạy cảm trong môi trường phát triển, tránh ghi mật khẩu database và khóa JWT trực tiếp vào source code.
+
+**Windows PowerShell:**
+
+```powershell
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3306;Database=collabsphere;User=root;Password=MAT_KHAU_MYSQL;"
 dotnet user-secrets set "Jwt:Key" ([Convert]::ToBase64String((1..48 | ForEach-Object { Get-Random -Maximum 256 })))
 dotnet user-secrets set "Seed:DefaultPassword" "Collab@12345"
-Thay đổi MAT_KHAU_MYSQL bằng MySQL mật khẩu đang được sử dụng trên máy chủ. Mẫu mật khẩu ở trên chỉ dành riêng cho môi trường phát triển; khi phát triển khai thực, hãy sử dụng mật khẩu riêng và bảo mật.
+```
 
-Nếu sử dụng PowerShell, hãy chạy từng lệnh tại backend/CollabSphere.API thư mục .
-Bước 4. Chọn môi trường Development
+Thay `MAT_KHAU_MYSQL` bằng mật khẩu MySQL đang sử dụng trên máy. Mật khẩu mẫu ở trên chỉ dành cho môi trường phát triển; khi triển khai thật, hãy dùng mật khẩu riêng và bảo mật.
+
+Nếu sử dụng PowerShell, chạy từng lệnh tại thư mục `backend/CollabSphere.API`.
+
+### Bước 4. Chọn môi trường Development
+
 Trong PowerShell:
+
+```powershell
 $env:ASPNETCORE_ENVIRONMENT = "Development"
-Seed mẫu dữ liệu được chạy chỉ trong môi trường Development và khi cấu hình Seed:DefaultPassword .
-Bước 5. Khôi phục và xây dựng
-Đang ở backend/CollabSphere.API thư mục thư mục , chạy:
+```
+
+Seed dữ liệu mẫu chỉ chạy trong môi trường `Development` và khi đã cấu hình `Seed:DefaultPassword`.
+
+### Bước 5. Restore và build
+
+Đang ở thư mục `backend/CollabSphere.API`, chạy:
+
+```powershell
 dotnet restore
 dotnet build
-Bước 6. Chạy API
+```
+
+### Bước 6. Chạy API
+
+```powershell
 dotnet run --urls "http://localhost:5000"
-Nếu khởi động thành công, terminal sẽ hiển thị địa chỉ ứng dụng đang lắng nghe. Giữ thiết bị đầu cuối này mở trong quá trình kiểm tra thời gian.
-Bước 7. Kiểm tra trạng thái
-Mở trình duyệt hoặc gửi yêu cầu:
+```
+
+Nếu khởi động thành công, terminal sẽ hiển thị địa chỉ ứng dụng đang lắng nghe. Giữ terminal này mở trong thời gian kiểm thử.
+
+### Bước 7. Kiểm tra trạng thái
+
+Mở trình duyệt hoặc gửi request:
+
+```http
 GET http://localhost:5000/api/system/status
-Kiểm tra ánh xạ tra cứu và cơ sở dữ liệu kết nối:
+```
+
+Kiểm tra mapping và kết nối database:
+
+```http
 GET http://localhost:5000/api/system/database-check
-Điểm cuối này được mô tả trong Phần cuối tài liệu. Nếu sử dụng một cổng khác, thay thế 5000 cổng sẽ được hiển thị trong thiết bị đầu cuối.
-Lưu ý khi bắt đầu
-- Tài khoản MySQL phải có quyền tạo bảng và ghi dữ liệu trong cơ sở dữ liệu cộng tác .
-- Jwt:Key phải là hợp lệ Base64 chuỗi và giải mã tối thiểu 32 byte.
-- Không cam kết Bí mật người dùng hoặc thông tin xác thực lên GitHub.
-- Nếu quá trình di chuyển bị lỗi ở giữa, cần đọc di chuyển tên và thông báo lỗi trước khi xử lý cơ sở dữ liệu.
-- Trên cơ sở dữ liệu đã có dữ liệu, không tự động xóa cơ sở dữ liệu để sửa lỗi. Hãy sao lưu và xác định nhân vật trước đó.
-13. Kiểm tra API
-Có thể sử dụng Postman, Curl hoặc công cụ HTTP bất kỳ để kiểm tra API.
-13.1. Kiểm tra hệ thống trạng thái
+```
+
+Các endpoint này được mô tả trong tài liệu Backend. Nếu sử dụng cổng khác, thay `5000` bằng cổng được hiển thị trong terminal.
+
+### Lưu ý khi khởi chạy
+
+- Tài khoản MySQL phải có quyền tạo bảng và ghi dữ liệu trong database `collabsphere`.
+- `Jwt:Key` phải là chuỗi Base64 hợp lệ và giải mã được tối thiểu 32 byte.
+- Không commit User Secrets hoặc thông tin xác thực lên GitHub.
+- Nếu migration lỗi giữa chừng, cần đọc tên migration và thông báo lỗi trước khi xử lý database.
+- Trên database đã có dữ liệu, không tự ý xóa database để sửa lỗi. Hãy sao lưu và xác định nguyên nhân trước.
+
+---
+
+## 13. Kiểm tra API
+
+Có thể sử dụng Postman, curl hoặc công cụ HTTP bất kỳ để kiểm tra API.
+
+### 13.1. Kiểm tra trạng thái hệ thống
+
+```bash
 curl http://localhost:5000/api/system/status
-13.2. Đăng nhập
+```
+
+### 13.2. Đăng nhập
+
+```http
 POST http://localhost:5000/api/auth/login
 Content-Type: application/json
-Minh họa thân bài:
+```
+
+Body minh họa:
+
+```json
 {
   "usernameOrEmail": "admin",
   "password": "Collab@12345"
 }
-Tài khoản và mật khẩu hợp lệ nếu mẫu dữ liệu đã được gieo thành công và trùng lặp mật khẩu với Seed:DefaultPassword được cấu hình trên máy chủ.
-13.3. Gửi yêu cầu xác thực
-Sau khi nhận access token, add header:
+```
+
+Tài khoản và mật khẩu chỉ hợp lệ nếu dữ liệu mẫu đã được seed thành công và mật khẩu trùng với `Seed:DefaultPassword` được cấu hình trên máy.
+
+### 13.3. Gửi request có xác thực
+
+Sau khi nhận access token, thêm header:
+
+```http
 Authorization: Bearer <access-token>
-13.4. Một số điểm cuối được mô tả trong Phần cuối
-Phương thức	Điểm cuối	Mục đích
-GET	/api/system/status	Kiểm tra trạng thái ứng dụng và cơ sở dữ liệu.
-GET	/api/system/database-check	Kiểm tra cơ sở dữ liệu kết nối và ánh xạ.
-BÀI ĐĂNG	/api/auth/login	Đăng nhập
-GET	/api/auth/me	Lấy thông tin người dùng từ token.
-GET	/api/subjects	Nhận danh sách môn học.
-GET	/api/syllabi	Truy xuất đề cương theo API được phát triển khai.
-GET	/api/classes	Xuất bản danh sách lớp theo API được phát triển khai.
+```
 
+### 13.4. Một số endpoint được mô tả trong Backend
 
-Đây là danh sách tham khảo từ Backend hiện có; xem backend/README.md để biết đầy đủ thông số, nội dung yêu cầu, phản hồi và quyền của từng điểm cuối.
-14. vật liệu mẫu
-Các tập tin hạt giống nằm ở cơ sở dữ liệu/hạt giống/ :
-Tệp	Nội dung
-001_seed_roles.sql	Các vai trò mặc định.
-002_seed_users.sql	Tài khoản mẫu theo các trò chơi.
-003_seed_subjects.sql	vật liệu môn học.
-004_seed_syllabi.sql	vật liệu đề cập.
-005_seed_classes.sql	Lớp học dữ liệu và công cụ phân tích.
+| Method | Endpoint | Mục đích |
+|---|---|---|
+| `GET` | `/api/system/status` | Kiểm tra trạng thái ứng dụng và database. |
+| `GET` | `/api/system/database-check` | Kiểm tra kết nối và mapping database. |
+| `POST` | `/api/auth/login` | Đăng nhập. |
+| `GET` | `/api/auth/me` | Lấy thông tin người dùng từ token. |
+| `GET` | `/api/subjects` | Lấy danh sách môn học. |
+| `GET` | `/api/syllabi` | Truy xuất đề cương theo API được triển khai. |
+| `GET` | `/api/classes` | Truy xuất danh sách lớp theo API được triển khai. |
 
+Đây là danh sách tham khảo từ Backend hiện có; xem `backend/README.md` để biết đầy đủ tham số, request body, response và quyền của từng endpoint.
 
-Seed được gọi backend trong môi trường Development khi có cấu hình Seed:DefaultPassword .
+---
 
-Một số mẫu tài khoản được mô tả trong backend/README.md :
-Tên người dùng	Email	Vai trò
-quản trị viên	admin@collabsphere.local	QUẢN TRỊ VIÊN
-head01	head01@collabsphere.local	ĐẦU TRANG
-staff01	staff01@collabsphere.local	NHÂN VIÊN
-giảng viên01	lecture01@collabsphere.local	GIẢNG VIÊN
-student01	student01@collabsphere.local	HỌC SINH
-sinh viên02	student02@collabsphere.local	HỌC SINH
+## 14. Dữ liệu mẫu
 
+Các file seed nằm tại `database/seeds/`:
 
-Mật khẩu được sử dụng để đăng nhập là Seed có giá trị:DefaultPassword được cấu hình trên máy phát triển. Không sử dụng mẫu tài khoản này trong môi trường thật.
+| File | Nội dung |
+|---|---|
+| `001_seed_roles.sql` | Các vai trò mặc định. |
+| `002_seed_users.sql` | Tài khoản mẫu theo các vai trò. |
+| `003_seed_subjects.sql` | Dữ liệu môn học. |
+| `004_seed_syllabi.sql` | Dữ liệu đề cương. |
+| `005_seed_classes.sql` | Dữ liệu lớp học và phân công liên quan. |
 
-Lưu ý: File user có nội dung giữ chỗ cho mật khẩu băm. Không chạy tệp riêng trực tiếp trong MySQL Workbench để tạo thông tin đăng nhập tài khoản; hãy để DatabaseSeeder xử lý quy trình của Backend.
-15. Kiểm thử
-Kho lưu trữ hiện có API kiểm tra tập lệnh:
+Seed được Backend gọi trong môi trường `Development` khi có cấu hình `Seed:DefaultPassword`.
+
+Một số tài khoản mẫu được mô tả trong `backend/README.md`:
+
+| Username | Email | Vai trò |
+|---|---|---|
+| `admin` | `admin@collabsphere.local` | ADMIN |
+| `head01` | `head01@collabsphere.local` | HEAD |
+| `staff01` | `staff01@collabsphere.local` | STAFF |
+| `lecturer01` | `lecturer01@collabsphere.local` | LECTURER |
+| `student01` | `student01@collabsphere.local` | STUDENT |
+| `student02` | `student02@collabsphere.local` | STUDENT |
+
+Mật khẩu dùng để đăng nhập là giá trị `Seed:DefaultPassword` được cấu hình trên máy phát triển. Không sử dụng các tài khoản mẫu này trong môi trường thật.
+
+**Lưu ý:** File seed người dùng có nội dung placeholder cho password hash. Không chạy riêng file đó trực tiếp trong MySQL Workbench để tạo tài khoản đăng nhập; hãy để `DatabaseSeeder` xử lý theo quy trình của Backend.
+
+---
+
+## 15. Kiểm thử
+
+Repository hiện có script kiểm thử API:
+
+```text
 backend/tests/api-smoke-test.ps1
-Có thể chạy PowerShell sau khi khởi động Backend:
+```
+
+Có thể chạy bằng PowerShell sau khi Backend đã khởi động:
+
+```powershell
 .\backend\tests\api-smoke-test.ps1
-Nếu tập lệnh yêu cầu tham số hoặc URL cơ sở riêng, hãy kiểm tra tệp nội dung trước khi chạy.
-15.1. Phạm vi cần kiểm tra
+```
+
+Nếu script cần tham số hoặc base URL riêng, kiểm tra nội dung file trước khi chạy.
+
+### 15.1. Phạm vi cần kiểm thử
+
 - Đăng nhập với thông tin hợp lệ và không hợp lệ.
-- Kiểm tra mã thông báo còn hạn, hết hạn và mã thông báo không hợp lệ.
+- Kiểm tra token còn hạn, hết hạn và token không hợp lệ.
 - Kiểm tra quyền truy cập theo từng vai trò.
-- Tạo, xem, cập nhật và xóa dữ liệu học tập theo quyền.
-- Kiểm tra mã hóa trùng lặp dữ liệu và dữ liệu không hợp lệ.
-- Kiểm tra ngoại khóa và kích hoạt dữ liệu.
+- Tạo, xem, cập nhật và xóa dữ liệu học vụ theo quyền.
+- Kiểm tra dữ liệu trùng mã và dữ liệu không hợp lệ.
+- Kiểm tra khóa ngoại và ràng buộc dữ liệu.
 - Kiểm tra kết nối giữa Frontend, API và MySQL.
-- Kiểm tra quá trình xử lý lỗi khi cơ sở dữ liệu không khả dụng.
-15.2. Đã hoàn thành quy tắc xác thực
-Một chức năng sẽ được đánh dấu hoàn thành khi:
+- Kiểm tra xử lý lỗi khi database không khả dụng.
+
+### 15.2. Nguyên tắc xác nhận hoàn thành
+
+Một chức năng chỉ nên được đánh dấu hoàn thành khi:
+
 1. Có mô tả yêu cầu và quy tắc nghiệp vụ.
-2. Có phần khai triển tương ứng.
-3. Có kiểm tra quyền truy cập nếu có chức năng yêu cầu quyền.
-4. Kiểm tra các trường hợp lệ thành công và thất bại.
+2. Có phần triển khai tương ứng.
+3. Có kiểm tra quyền truy cập nếu chức năng yêu cầu phân quyền.
+4. Có kiểm thử các trường hợp thành công và thất bại.
 5. Kết quả được đối chiếu với yêu cầu ban đầu.
-16. Quy trình phát triển và đóng góp ý kiến
-Để hạn chế xung đột khi nhiều thành viên cùng làm việc, nên quy trình thống nhất sau:
-16.1. Quy trình thực thi chức năng
-1. Đọc các chức năng tài liệu tương ứng trong docs/ .
-2. Xác định vai trò sử dụng, đầu vào dữ liệu, kết quả và quy tắc nghiệp vụ.
-3. Kiểm tra ERD và các liên kết bảng trong cơ sở dữ liệu/ .
-4. Nếu cần thay đổi cơ sở dữ liệu, hãy tạo mới di chuyển.
-5. Triển khai Domain/Application/Infrastructure/API theo tinh thần trách nhiệm từng lớp.
-6. Kết nối giao diện với API theo hợp đồng API.
-7. Kiểm tra và cập nhật tài liệu.
-8. Tạo yêu cầu kéo để kiểm tra trước khi hợp nhất vào nhánh chính.
-16.2. Quy tắc làm việc với cơ sở dữ liệu
-- Bảng tên, cột tên và kiểu dữ liệu thấp nhất trước khi khai báo.
-- Mọi thay đổi lược đồ cần có sự di chuyển tương ứng.
-- Quá trình di chuyển không tự động sửa đổi trên môi trường dùng chung.
-- Không xác nhận mật khẩu, khóa JWT hoặc kết nối thông tin thật.
-- Cập nhật ERD và tài liệu khi thay đổi hệ thống dữ liệu.
-16.3. Quy tắc làm việc với API
-- Sử dụng điểm cuối và dữ liệu cấu trúc mới nhất trong hợp đồng API.
-- Kiểm tra tính xác thực và phân quyền ở các điểm cuối cần bảo vệ.
-- Trả lại trạng thái HTTP phù hợp.
-- Không trả lời cảm biến thông tin trong phản hồi hoặc nhật ký.
-- Cập nhật tài liệu khi thay đổi lộ trình hoặc yêu cầu/phản hồi.
-16.4. Git cơ bản
+
+---
+
+## 16. Quy trình phát triển và đóng góp
+
+Để hạn chế xung đột khi nhiều thành viên cùng làm việc, nên thống nhất quy trình sau:
+
+### 16.1. Quy trình thực hiện chức năng
+
+1. Đọc tài liệu chức năng tương ứng trong `docs/`.
+2. Xác định vai trò sử dụng, dữ liệu đầu vào, kết quả và quy tắc nghiệp vụ.
+3. Kiểm tra ERD và các bảng liên quan trong `database/`.
+4. Nếu cần thay đổi database, tạo migration mới.
+5. Triển khai Domain/Application/Infrastructure/API theo trách nhiệm từng lớp.
+6. Kết nối giao diện với API theo API contract.
+7. Kiểm thử và cập nhật tài liệu.
+8. Tạo Pull Request để kiểm tra trước khi hợp nhất vào nhánh chính.
+
+### 16.2. Quy tắc làm việc với database
+
+- Thống nhất tên bảng, tên cột và kiểu dữ liệu trước khi triển khai.
+- Mọi thay đổi schema cần có migration tương ứng.
+- Không tự ý sửa migration đã chạy trên môi trường dùng chung.
+- Không commit mật khẩu, JWT key hoặc thông tin kết nối thật.
+- Cập nhật ERD và tài liệu khi thay đổi quan hệ dữ liệu.
+
+### 16.3. Quy tắc làm việc với API
+
+- Dùng endpoint và cấu trúc dữ liệu thống nhất trong API contract.
+- Kiểm tra xác thực và phân quyền ở các endpoint cần bảo vệ.
+- Trả mã trạng thái HTTP phù hợp.
+- Không trả thông tin nhạy cảm trong response hoặc log.
+- Cập nhật tài liệu khi thay đổi route hoặc request/response.
+
+### 16.4. Git cơ bản
+
+```bash
 git status
 git pull
 git checkout -b feature/ten-chuc-nang
 git add .
 git commit -m "feat: mo ta thay doi"
 git push -u origin feature/ten-chuc-nang
-Tên nhánh và nội dung cam kết cần phải đánh giá tính chính xác của công việc được thực hiện. Trước khi tạo Yêu cầu kéo, cần kiểm tra thay đổi và chạy xây dựng/kiểm tra mức độ phù hợp.
-17. Tài liệu liên quan
-Tài liệu	Nội dung
-[`docs/README.md`](docs/README.md)	Hướng dẫn đọc và sử dụng dự án tài liệu.
-[`docs/PROJECT-TREE.md`](docs/PROJECT-TREE.md)	Chi tiết thư mục cấu trúc.
-[`docs/API-CONTRACT-GUIDE.md`](docs/API-CONTRACT-GUIDE.md)	Quy định giao tiếp giữa Frontend và Backend.
-[`docs/api-hoc-vu.md`](docs/api-hoc-vu.md)	Tài liệu API học vụ.
-[`docs/FE01-user-account-management.md`](docs/FE01-user-account-management.md)	Quản lý người dùng tài khoản.
-[`docs/FE02-subject-syllabus-management.md`](docs/FE02-subject-syllabus-management.md)	Quản lý môn học và đề cương.
-[`docs/FE03-class-management.md`](docs/FE03-class-management.md)	Quản lý lớp học.
-[`docs/FE04-project-management.md`](docs/FE04-project-management.md)	Quản lý dự án.
-[`docs/FE05-team-workspace-management.md`](docs/FE05-team-workspace-management.md)	Quản lý nhóm và không làm việc.
-[`docs/FE06-milestone-checkpoint-management.md`](docs/FE06-milestone-checkpoint-management.md)	Quản lý cột cột và điểm kiểm tra.
-[`docs/FE07-communication-meetings.md`](docs/FE07-communication-meetings.md)	Giao tiếp và cuộc họp.
-[`docs/FE08-resource-management.md`](docs/FE08-resource-management.md)	Quản lý tài nguyên.
-[`docs/FE09-realtime-collaboration-tools.md`](docs/FE09-realtime-collaboration-tools.md)	Công cụ cộng tác thời gian thực hiện.
-[`docs/FE10-assessment-feedback.md`](docs/FE10-assessment-feedback.md)	Đánh giá và phản hồi.
-[`docs/FE11-ai-assistance.md`](docs/FE11-ai-assistance.md)	Hỗ trợ AI học tập.
-[`docs/FE12-notification-management.md`](docs/FE12-notification-management.md)	Quản lý thông báo.
-[`database/01-erd.md`](database/01-erd.md)	Mô hình thực thi và quan hệ dữ liệu.
-[`database/schema.sql`](database/schema.sql)	Schema MySQL tổng hợp.
-[`backend/README.md`](backend/README.md)	Hướng dẫn kỹ thuật chi tiết cho Backend.
-[`frontend/README.md`](frontend/README.md)	Tài liệu Frontend
+```
 
+Tên nhánh và nội dung commit cần phản ánh đúng phần việc được thực hiện. Trước khi tạo Pull Request, cần kiểm tra thay đổi và chạy build/test phù hợp.
 
-18. Phạm vi phát triển khai hiện tại
-Phần này giúp phân biệt phạm vi chức năng của toàn bộ dự án và những thành phần đã có trong kho lưu trữ tại bản cập nhật README thời điểm hiện tại.
-18.1. Phần phụ trợ
-Theo tài liệu Backend và nguồn cấu trúc hiện tại:
-- Đã có API dự án, Ứng dụng, Miền và Cơ sở hạ tầng trên .NET 10.
-- Đã cấu hình kết nối MySQL, JWT Bearer và chạy SQL Migration.
-- Đã có Migration 001 đến 007 và file Seed.
+---
+
+## 17. Tài liệu liên quan
+
+| Tài liệu | Nội dung |
+|---|---|
+| [`docs/README.md`](docs/README.md) | Hướng dẫn đọc và sử dụng tài liệu dự án. |
+| [`docs/PROJECT-TREE.md`](docs/PROJECT-TREE.md) | Cấu trúc thư mục chi tiết. |
+| [`docs/API-CONTRACT-GUIDE.md`](docs/API-CONTRACT-GUIDE.md) | Quy ước giao tiếp giữa Frontend và Backend. |
+| [`docs/api-hoc-vu.md`](docs/api-hoc-vu.md) | Tài liệu API học vụ. |
+| [`docs/FE01-user-account-management.md`](docs/FE01-user-account-management.md) | Quản lý tài khoản người dùng. |
+| [`docs/FE02-subject-syllabus-management.md`](docs/FE02-subject-syllabus-management.md) | Quản lý môn học và đề cương. |
+| [`docs/FE03-class-management.md`](docs/FE03-class-management.md) | Quản lý lớp học. |
+| [`docs/FE04-project-management.md`](docs/FE04-project-management.md) | Quản lý dự án. |
+| [`docs/FE05-team-workspace-management.md`](docs/FE05-team-workspace-management.md) | Quản lý nhóm và không gian làm việc. |
+| [`docs/FE06-milestone-checkpoint-management.md`](docs/FE06-milestone-checkpoint-management.md) | Quản lý cột mốc và điểm kiểm tra. |
+| [`docs/FE07-communication-meetings.md`](docs/FE07-communication-meetings.md) | Giao tiếp và cuộc họp. |
+| [`docs/FE08-resource-management.md`](docs/FE08-resource-management.md) | Quản lý tài nguyên. |
+| [`docs/FE09-realtime-collaboration-tools.md`](docs/FE09-realtime-collaboration-tools.md) | Công cụ cộng tác thời gian thực. |
+| [`docs/FE10-assessment-feedback.md`](docs/FE10-assessment-feedback.md) | Đánh giá và phản hồi. |
+| [`docs/FE11-ai-assistance.md`](docs/FE11-ai-assistance.md) | Hỗ trợ học tập bằng AI. |
+| [`docs/FE12-notification-management.md`](docs/FE12-notification-management.md) | Quản lý thông báo. |
+| [`database/01-erd.md`](database/01-erd.md) | Mô hình thực thể và quan hệ dữ liệu. |
+| [`database/schema.sql`](database/schema.sql) | Schema MySQL tổng hợp. |
+| [`backend/README.md`](backend/README.md) | Hướng dẫn kỹ thuật chi tiết cho Backend. |
+| [`frontend/README.md`](frontend/README.md) | Tài liệu Frontend. |
+
+---
+
+## 18. Phạm vi triển khai hiện tại
+
+Phần này giúp phân biệt giữa **phạm vi chức năng của toàn dự án** và **những thành phần đã có trong repository** tại thời điểm cập nhật README.
+
+### 18.1. Backend
+
+Theo tài liệu Backend và cấu trúc source hiện tại:
+
+- Đã có các project API, Application, Domain và Infrastructure trên .NET 10.
+- Đã có cấu hình kết nối MySQL, JWT Bearer và bộ chạy SQL migration.
+- Đã có các migration `001` đến `007` và nhóm file seed.
 - Các API học vụ hiện có tập trung vào xác thực, môn học, đề cương, lớp học và phân công thành viên lớp.
-- Cơ sở dữ liệu đã có cấu trúc cho nhiều nhóm dịch vụ khác; API của các nhóm đã được hoàn thiện không đồng nghĩa.
-18.2. Giao diện người dùng
-- Có cấu trúc trang, thành phần, dịch vụ, tuyến đường, bối cảnh và tiện ích.
-- Nguồn đang chứa .jsx , .razor và .cs .
-- Hiện tại gói cấu hình chưa đủ để xác nhận toàn bộ giao diện có thể chạy bằng tiêu chuẩn npm lệnh.
-- Cần thống nhất hướng dẫn phát triển giao diện người dùng và hoàn thiện cấu hình xây dựng/chạy trước khi xem đây là bản phát hành hoàn chỉnh.
-18.3. Tác nhân AI
-- Có mô-đun Python dành riêng trong backend/ai-agent/ .
-- Có các nhóm mô hình, tuyến đường, dịch vụ và đại lý.
-- Cần kiểm tra cấu hình môi trường và thực thi hợp lệ luồng trước khi xác nhận AI Agent đã kết nối hoàn chỉnh với chính API.
-18.4. Trạng thái cập nhật nguyên tắc
-README này không đánh dấu toàn bộ bộ FE01–FE12 đã hoàn thành. Khi một chức năng được phát triển, cần phải cập nhật trạng thái dựa trên mã, API, giao diện và kết quả kiểm tra thực tế.
-19. Phát triển định hướng
+- Database đã có cấu trúc cho nhiều nhóm nghiệp vụ khác; không đồng nghĩa API của toàn bộ các nhóm đó đã hoàn thiện.
+
+### 18.2. Frontend
+
+- Có cấu trúc trang, component, service, route, context và tiện ích.
+- Source đang chứa kết hợp `.jsx`, `.razor` và `.cs`.
+- Cấu hình package hiện tại chưa đủ để khẳng định toàn bộ giao diện có thể chạy bằng một lệnh npm tiêu chuẩn.
+- Cần thống nhất hướng triển khai frontend và hoàn thiện cấu hình build/run trước khi xem đây là bản phát hành hoàn chỉnh.
+
+### 18.3. AI Agent
+
+- Có module Python riêng trong `backend/ai-agent/`.
+- Có các nhóm model, route, service và agent.
+- Cần kiểm tra cấu hình môi trường và luồng tích hợp thực tế trước khi xác nhận AI Agent đã kết nối hoàn chỉnh với API chính.
+
+### 18.4. Nguyên tắc cập nhật trạng thái
+
+README này không đánh dấu toàn bộ FE01–FE12 là đã hoàn thành. Khi một chức năng được triển khai, cần cập nhật trạng thái dựa trên code, API, giao diện và kết quả kiểm thử thực tế.
+
+---
+
+## 19. Định hướng phát triển
+
 Các hướng phát triển tiếp theo của CollabSphere:
-1. Frontend kiến ​​trúc hoàn thiện và hệ thống nhất.
-2. API mở rộng cho các dự án nghiệp vụ, nhóm, nhiệm vụ, bài phụ và đánh giá.
-3. Đồng bộ thực thể, ánh xạ EF Core và lược đồ MySQL.
-4. Hoàn thiện kiểm soát quyền theo vai trò trò chơi và theo phạm vi dữ liệu.
-5. Hoàn thiện các chức năng cộng đồng, thông báo và trao đổi thời gian.
-6. Làm rõ cơ chế AI Agent hợp lý với Backend chính.
-7. Thử nghiệm tự động và tài liệu API bổ sung.
-8. Chuẩn bị hóa cấu hình môi trường phát triển, kiểm tra và phát triển khai báo.
-quyền và đóng góp
-CollabSphere là một dự án phát triển phần mềm dịch vụ đào tạo mục tiêu và thực hành xây dựng hệ thống. Các thành viên tham gia cần bổ sung quy ước mã nguồn, tài liệu và quy trình cộng tác của kho lưu trữ.
-CollabSphere — Học tập thông qua dự án, cộng tác để phát triển.
+
+1. Hoàn thiện và thống nhất kiến trúc Frontend.
+2. Mở rộng API cho các nghiệp vụ dự án, nhóm, nhiệm vụ, bài nộp và đánh giá.
+3. Đồng bộ entity, mapping EF Core và schema MySQL.
+4. Hoàn thiện kiểm soát quyền theo vai trò và theo phạm vi dữ liệu.
+5. Hoàn thiện các chức năng cộng tác, thông báo và trao đổi thời gian thực.
+6. Làm rõ cơ chế tích hợp AI Agent với Backend chính.
+7. Bổ sung kiểm thử tự động và tài liệu API.
+8. Chuẩn hóa cấu hình môi trường phát triển, kiểm thử và triển khai.
+
+---
+
+## Bản quyền và đóng góp
+
+CollabSphere là dự án phát triển phần mềm phục vụ mục tiêu học tập và thực hành xây dựng hệ thống. Các thành viên tham gia cần tuân thủ quy ước mã nguồn, tài liệu và quy trình cộng tác của repository.
+
+---
+
+**CollabSphere — Học tập thông qua dự án, cộng tác để phát triển.**
