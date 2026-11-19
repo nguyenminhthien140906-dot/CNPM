@@ -21,3 +21,6 @@ __pycache__/
 .venv/
 venv/
 
+
+# Node.js dependencies
+node_modules/

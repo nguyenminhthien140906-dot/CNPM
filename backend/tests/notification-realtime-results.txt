@@ -1,0 +1,11 @@
+﻿=== NOTIFICATION REALTIME TEST ===
+PASS: Student02 dang nhap thanh cong
+PASS: Ket noi NotificationHub thanh cong
+PASS: Admin them Student02 vao lop (201)
+PASS: NotificationService luu thong bao
+PASS: Student02 nhan ReceiveNotification
+PASS: NotificationId = 6
+PASS: UserId = 6
+PASS: IsRead = false
+
+Ket qua: 6 PASS, 0 FAIL
