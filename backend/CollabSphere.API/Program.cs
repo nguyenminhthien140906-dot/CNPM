@@ -14,6 +14,7 @@ using CollabSphere.Infrastructure.Database;
 using CollabSphere.API.Middleware;
 using CollabSphere.API.Hubs;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
@@ -40,6 +41,7 @@ builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
+builder.Services.AddScoped<NotificationService>();
 
 var connectionString = builder.Configuration
     .GetConnectionString("DefaultConnection")
@@ -91,19 +93,22 @@ builder.Services
         options.Events = new JwtBearerEvents
         {
 
-           OnMessageReceived = context =>
-           {
-               var accessToken = context.Request.Query["access_token"];
-               var path = context.HttpContext.Request.Path;
 
-               if (!string.IsNullOrEmpty(accessToken) &&
-                  path.StartsWithSegments("/hubs/chat"))
-               {
-                  context.Token = accessToken;
-               }
+OnMessageReceived = context =>
+{
+    var accessToken = context.Request.Query["access_token"];
+    var path = context.HttpContext.Request.Path;
 
-               return Task.CompletedTask;
-            },
+    if (!string.IsNullOrEmpty(accessToken) &&
+        (path.StartsWithSegments("/hubs/chat") ||
+         path.StartsWithSegments("/hubs/notifications")))
+    {
+        context.Token = accessToken;
+    }
+
+    return Task.CompletedTask;
+},
+
 
             OnChallenge = async context =>
             {
@@ -175,4 +180,5 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/hubs/chat");
+app.MapHub<NotificationHub>("/hubs/notifications");
 app.Run();

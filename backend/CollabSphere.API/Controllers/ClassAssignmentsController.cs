@@ -1,3 +1,4 @@
+using CollabSphere.API.Services;
 using CollabSphere.API.Contracts;
 using CollabSphere.Domain.Entities;
 using CollabSphere.Infrastructure.Persistence;
@@ -12,12 +13,18 @@ namespace CollabSphere.API.Controllers;
 public class ClassAssignmentsController : ApiControllerBase
 {
     private const string ManageRoles = "ADMIN,HEAD,STAFF";
-    private readonly ApplicationDbContext _context;
 
-    public ClassAssignmentsController(ApplicationDbContext context)
-    {
-        _context = context;
-    }
+private readonly ApplicationDbContext _context;
+private readonly NotificationService _notificationService;
+
+public ClassAssignmentsController(
+    ApplicationDbContext context,
+    NotificationService notificationService)
+{
+    _context = context;
+    _notificationService = notificationService;
+}
+
 
     [HttpGet("lecturers")]
     [Authorize(Roles = ManageRoles)]
@@ -179,9 +186,28 @@ public class ClassAssignmentsController : ApiControllerBase
         };
 
         _context.ClassStudents.Add(enrollment);
-        await _context.SaveChangesAsync();
+await _context.SaveChangesAsync();
 
-        return CreatedOk(new { enrollment.ClassId, enrollment.StudentId }, "Thêm sinh viên vào lớp thành công.");
+// Tim tai khoan cua sinh vien vua duoc them
+var studentUserId = await _context.Students
+    .Where(s => s.StudentId == request.StudentId)
+    .Select(s => s.UserId)
+    .FirstOrDefaultAsync();
+
+// Gui thong bao Realtime
+if (studentUserId > 0)
+{
+    await _notificationService.SendAsync(
+        studentUserId,
+        "Ban da duoc them vao lop",
+        $"Ban da duoc them vao lop {studyClass.ClassName}."
+    );
+}
+
+return CreatedOk(
+    new { enrollment.ClassId, enrollment.StudentId },
+    "Thêm sinh viên vào lớp thành công."
+);
     }
 
     [HttpDelete("classes/{classId:long}/students/{studentId:long}")]
