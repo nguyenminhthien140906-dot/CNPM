@@ -1,6 +1,3 @@
-
-USE collabsphere;
-
 -- ==========================================
 -- 1. TAO LOP CONG NGHE PHAN MEM
 -- ==========================================
@@ -193,4 +190,3 @@ INNER JOIN students s
 INNER JOIN users u
     ON u.user_id = s.user_id
 ORDER BY c.class_code, s.student_code;
-

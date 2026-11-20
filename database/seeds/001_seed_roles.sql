@@ -1,6 +1,3 @@
-
-USE collabsphere;
-
 INSERT INTO roles (role_code, role_name, description)
 VALUES
     ('ADMIN', 'Administrator', 'Quan tri vien he thong'),
@@ -16,4 +13,3 @@ ON DUPLICATE KEY UPDATE
 SELECT role_id, role_code, role_name
 FROM roles
 ORDER BY role_id;
-

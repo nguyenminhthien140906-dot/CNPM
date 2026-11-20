@@ -34,12 +34,12 @@ def analyze_team_progress(team_id):
         else:
             pending += 1
 
-        if (
-            deadline is not None
-            and status != "COMPLETED"
-            and deadline.replace(tzinfo=timezone.utc) < now
-        ):
-            overdue += 1
+        if deadline is not None and status != "COMPLETED":
+            if deadline.tzinfo is None:
+               deadline = deadline.replace(tzinfo=timezone.utc)
+
+            if deadline.astimezone(timezone.utc) < now:
+               overdue += 1
 
     completion_rate = round(
         completed / total * 100, 2

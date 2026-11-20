@@ -1,7 +1,3 @@
-
-
-USE collabsphere;
-
 INSERT INTO subjects
     (subject_code, subject_name, description)
 SELECT
@@ -40,6 +36,3 @@ SELECT
     description
 FROM subjects
 ORDER BY subject_id;
-
-
-

@@ -1,6 +1,3 @@
-
-USE collabsphere;
-
 -- DE CUONG CONG NGHE PHAN MEM
 INSERT INTO syllabi
     (subject_id, version, title, content)
@@ -63,4 +60,3 @@ FROM syllabi sy
 INNER JOIN subjects s
     ON sy.subject_id = s.subject_id
 ORDER BY sy.syllabus_id;
-

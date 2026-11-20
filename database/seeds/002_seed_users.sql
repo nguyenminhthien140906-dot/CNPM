@@ -1,6 +1,3 @@
-
-USE collabsphere;
-
 -- ADMIN
 INSERT INTO users
     (role_id, username, email, password_hash, full_name, phone, is_active)
@@ -142,4 +139,3 @@ ORDER BY u.user_id;
 
 SELECT * FROM lecturers;
 SELECT * FROM students;
-
