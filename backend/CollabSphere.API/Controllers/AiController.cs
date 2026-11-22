@@ -33,6 +33,10 @@ public class AiController : ControllerBase
         return long.TryParse(value, out var id) ? id : 0;
     }
 
+    // =====================================================
+    // 1. AI CHATBOT
+    // =====================================================
+
     [HttpPost("chat")]
     public async Task<IActionResult> Chat(
         [FromBody] AiChatRequest request,
@@ -165,6 +169,10 @@ public class AiController : ControllerBase
         }
     }
 
+    // =====================================================
+    // 2. LỊCH SỬ HỘI THOẠI AI
+    // =====================================================
+
     [HttpGet("conversations/{conversationId:long}/messages")]
     public async Task<IActionResult> GetMessages(
         long conversationId,
@@ -207,7 +215,225 @@ public class AiController : ControllerBase
             messages
         });
     }
+
+    // =====================================================
+    // 3. PHÂN TÍCH TIẾN ĐỘ NHÓM
+    // =====================================================
+
+    [HttpGet("teams/{teamId:long}/progress")]
+    public async Task<IActionResult> GetTeamProgress(
+        long teamId,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetUserId();
+
+        if (userId <= 0)
+            return Unauthorized();
+
+        var team = await _db.Teams
+            .Where(t => t.TeamId == teamId)
+            .Select(t => new
+            {
+                t.TeamId,
+                t.TeamName,
+                t.ProjectId,
+                t.Project!.ClassId,
+                t.Project.CreatedBy
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (team == null)
+        {
+            return NotFound(new
+            {
+                success = false,
+                message = "Không tìm thấy nhóm."
+            });
+        }
+
+        var isMember = await _db.TeamMembers.AnyAsync(
+            tm => tm.TeamId == teamId &&
+                  _db.Students.Any(s =>
+                      s.StudentId == tm.StudentId &&
+                      s.UserId == userId),
+            cancellationToken);
+
+        var isLecturer = await _db.ClassLecturers.AnyAsync(
+            cl => cl.ClassId == team.ClassId &&
+                  _db.Lecturers.Any(l =>
+                      l.LecturerId == cl.LecturerId &&
+                      l.UserId == userId),
+            cancellationToken);
+
+        if (!isMember && !isLecturer && team.CreatedBy != userId)
+        {
+            return StatusCode(403, new
+            {
+                success = false,
+                message = "Bạn không có quyền xem tiến độ nhóm này."
+            });
+        }
+
+        var tasks = await _db.Tasks
+    .Where(t => t.TeamId == teamId)
+    .Select(t => new
+    {
+        t.Status,
+        t.Deadline
+    })
+    .ToListAsync(cancellationToken);
+
+        var total = tasks.Count;
+
+        var completed = tasks.Count(t =>
+            string.Equals(
+                t.Status,
+                "DONE",
+                StringComparison.OrdinalIgnoreCase));
+
+        var overdue = tasks.Count(t =>
+            !string.Equals(
+                t.Status,
+                "DONE",
+                StringComparison.OrdinalIgnoreCase)
+            && t.Deadline.HasValue
+            && t.Deadline.Value < DateTime.UtcNow);
+
+        var completionRate = total == 0
+            ? 0
+            : Math.Round(completed * 100.0 / total, 2);
+
+        return Ok(new
+        {
+            success = true,
+            data = new
+            {
+                team_id = team.TeamId,
+                team_name = team.TeamName,
+                total_tasks = total,
+                completed_tasks = completed,
+                overdue_tasks = overdue,
+                completion_rate = completionRate
+            }
+        });
+    }
+
+    // =====================================================
+    // 4. PHÂN TÍCH ĐÓNG GÓP THÀNH VIÊN
+    // =====================================================
+
+    [HttpGet("teams/{teamId:long}/contributions")]
+    public async Task<IActionResult> GetTeamContributions(
+        long teamId,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetUserId();
+
+        if (userId <= 0)
+            return Unauthorized();
+
+        var team = await _db.Teams
+            .Where(t => t.TeamId == teamId)
+            .Select(t => new
+            {
+                t.TeamId,
+                t.TeamName,
+                ClassId = t.Project!.ClassId,
+                CreatedBy = t.Project.CreatedBy
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (team == null)
+        {
+            return NotFound(new
+            {
+                success = false,
+                message = "Không tìm thấy nhóm."
+            });
+        }
+
+        var isMember = await _db.TeamMembers.AnyAsync(
+            tm => tm.TeamId == teamId &&
+                  _db.Students.Any(s =>
+                      s.StudentId == tm.StudentId &&
+                      s.UserId == userId),
+            cancellationToken);
+
+        var isLecturer = await _db.ClassLecturers.AnyAsync(
+            cl => cl.ClassId == team.ClassId &&
+                  _db.Lecturers.Any(l =>
+                      l.LecturerId == cl.LecturerId &&
+                      l.UserId == userId),
+            cancellationToken);
+
+        if (!isMember && !isLecturer && team.CreatedBy != userId)
+        {
+            return StatusCode(403, new
+            {
+                success = false,
+                message = "Bạn không có quyền xem đóng góp nhóm này."
+            });
+        }
+
+        var members = await _db.TeamMembers
+            .Where(tm => tm.TeamId == teamId)
+            .Select(tm => new
+            {
+                tm.StudentId,
+                FullName = tm.Student!.User!.FullName
+            })
+            .ToListAsync(cancellationToken);
+
+        var tasks = await _db.Tasks
+    .Where(t => t.TeamId == teamId)
+    .Select(t => new
+    {
+        t.Status,
+        StudentIds = t.Assignees
+            .Select(a => a.StudentId)
+            .ToList()
+    })
+    .ToListAsync(cancellationToken);
+
+        var contributions = members.Select(m =>
+        {
+            var assigned = tasks
+                .Where(t => t.StudentIds.Contains(m.StudentId))
+                .ToList();
+
+            var completed = assigned.Count(t =>
+                string.Equals(
+                    t.Status,
+                    "DONE",
+                    StringComparison.OrdinalIgnoreCase));
+
+            return new
+            {
+                student_id = m.StudentId,
+                full_name = m.FullName,
+                assigned_tasks = assigned.Count,
+                completed_tasks = completed,
+                completion_rate = assigned.Count == 0
+                    ? 0
+                    : Math.Round(
+                        completed * 100.0 / assigned.Count,
+                        2)
+            };
+        }).ToList();
+
+        return Ok(new
+        {
+            success = true,
+            team_id = team.TeamId,
+            team_name = team.TeamName,
+            contributions
+        });
+    }
 }
+
+// =====================================================
+// REQUEST MODEL
+// =====================================================
 
 public class AiChatRequest
 {

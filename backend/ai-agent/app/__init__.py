@@ -44,10 +44,10 @@ def create_app():
 #    # from app.routes.history_routes import history_bp
 #    # app.register_blueprint(history_bp)
 
-    from app.routes.progress_routes import progress_bp
-    app.register_blueprint(progress_bp)
+#    from app.routes.progress_routes import progress_bp
+#    app.register_blueprint(progress_bp)
 
-    from app.routes.contribution_routes import contribution_bp
-    app.register_blueprint(contribution_bp)
+#    from app.routes.contribution_routes import contribution_bp
+#    app.register_blueprint(contribution_bp)
 
     return app
