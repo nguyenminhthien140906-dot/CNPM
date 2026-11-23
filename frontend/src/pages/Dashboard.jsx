@@ -1,0 +1,36 @@
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth, ROLE_LABELS } from '../contexts/AuthContext';
+import { useDemo } from '../contexts/DemoContext';
+import { useNotifications } from '../contexts/NotificationContext';
+import { Avatar, Badge, Button, Empty, Icon, Metric, PageHeader, Panel, Progress, Status, dateLabel, useCollection } from '../components/ui';
+
+export default function Dashboard() {
+  const { user, isDemo } = useAuth(); const { data } = useDemo(); const { unread } = useNotifications(); const navigate = useNavigate();
+  const { items: classes } = useCollection('/api/classes', data.classes);
+  const { items: subjects } = useCollection('/api/subjects', data.subjects);
+  const projects = isDemo ? data.projects : []; const tasks = isDemo ? data.tasks : [];
+  const done = tasks.filter((t) => t.status === 'DONE').length;
+  const progress = tasks.length ? Math.round(done / tasks.length * 100) : 0;
+  const activeProjects = projects.filter((p) => p.status === 'IN_PROGRESS' || p.status === 'APPROVED');
+  const role = ROLE_LABELS[user?.roleCode] || 'Thành viên';
+  const first = (user?.fullName || user?.username || 'bạn').trim().split(' ').slice(-1)[0];
+  const activity = isDemo ? [
+    { icon: 'checkcircle', color: 'green', title: 'Hoàn thành thiết kế cơ sở dữ liệu', detail: 'Nhóm Innovators · Dự án CollabSphere', time: '09:40' },
+    { icon: 'message', color: 'purple', title: 'Có tin nhắn mới trong nhóm', detail: 'Phạm Thu Thảo đã gửi một tin nhắn', time: '09:05' },
+    { icon: 'star', color: 'orange', title: 'Giảng viên đã gửi đánh giá', detail: 'Đánh giá tiến độ nhóm Innovators', time: 'Hôm qua' },
+  ] : [];
+  return <>
+    <PageHeader eyebrow={`KHÔNG GIAN HỌC TẬP / ${role.toUpperCase()}`} title={`Chào ${first}, một ngày tốt lành! 👋`} description="Tổng quan tiến độ học tập, công việc và các hoạt động của bạn." action={<Button variant="outline" icon="calendar" onClick={() => navigate('/meetings')}>Lịch họp nhóm</Button>}/>
+    <div className="welcome-banner"><div className="welcome-text"><span className="banner-tag"><Icon name="sparkles" size={15}/> KHÔNG GIAN PBL THỐNG NHẤT</span><h2>Cùng nhau biến ý tưởng<br/>thành sản phẩm thực tế.</h2><p>Quản lý dự án, theo dõi công việc và cộng tác hiệu quả trong một nền tảng duy nhất.</p><Button variant="white" icon="arrow" onClick={() => navigate('/projects')}>Khám phá dự án</Button></div><div className="banner-art" aria-hidden="true"><div className="art-orbit orbit-a"/><div className="art-orbit orbit-b"/><div className="art-card art-main"><div className="art-card-top"><span className="art-dots">•••</span><span className="art-chip">PBL</span></div><div className="art-lines"><span/><span/><span/></div><div className="art-mini-progress"><i/></div></div><div className="art-card art-small"><Icon name="checkcircle" size={26}/><div><b>72%</b><small>Tiến độ</small></div></div><div className="art-sparkle"><Icon name="sparkles" size={30}/></div></div></div>
+    <div className="metrics-grid"><Metric icon="folder" color="purple" label="Dự án đang triển khai" value={isDemo ? activeProjects.length : '—'} hint={isDemo ? `${projects.length} dự án trong không gian` : 'Cần API dự án'}/><Metric icon="classes" color="blue" label="Lớp học" value={classes.length} hint="Lớp học được quản lý"/><Metric icon="checkcircle" color="green" label="Công việc hoàn thành" value={isDemo ? `${done}/${tasks.length}` : '—'} hint={isDemo ? `${progress}% nhiệm vụ đã xong` : 'Cần API công việc'}/><Metric icon="bell" color="orange" label="Thông báo chưa đọc" value={unread} hint="Cập nhật dành cho bạn"/></div>
+    <div className="dashboard-columns"><div className="dashboard-primary"><Panel title="Dự án nổi bật" subtitle="Theo dõi những dự án bạn đang tham gia" action={<button className="text-action" onClick={() => navigate('/projects')}>Xem tất cả <Icon name="arrow" size={15}/></button>}>
+      {activeProjects.length ? <div className="project-rows">{activeProjects.slice(0,3).map((p) => <button key={p.id} className="project-row" onClick={() => navigate('/projects')}><div className="project-row-icon"><Icon name="folder" size={22}/></div><div className="project-row-info"><strong>{p.name}</strong><span>{p.code} · {p.subject}</span><div className="project-row-progress"><Progress value={p.progress}/><b>{p.progress}%</b></div></div><Status value={p.status}/></button>)}</div> : <Empty icon="folder" title="Chưa có dự án" text={isDemo ? 'Hãy tạo dự án mới để bắt đầu.' : 'API quản lý dự án chưa có trong backend được gửi.'}/>}</Panel>
+      <Panel title="Công việc cần tập trung" subtitle="Các nhiệm vụ đang thực hiện và sắp đến hạn" action={<button className="text-action" onClick={() => navigate('/tasks')}>Mở bảng công việc <Icon name="arrow" size={15}/></button>}>
+        {tasks.length ? <div className="task-list">{tasks.filter((t) => t.status !== 'DONE').slice(0,4).map((t) => <div className="task-list-row" key={t.id}><div className={`task-status-icon ${t.status === 'IN_PROGRESS' ? 'inprogress' : ''}`}><Icon name={t.status === 'REVIEW' ? 'eye' : 'circle'} size={17}/></div><div><strong>{t.title}</strong><small>{t.assignee} · Hạn {dateLabel(t.due)}</small></div><Status value={t.priority}/></div>)}</div> : <Empty icon="tasks" title="Chưa có công việc" text="API công việc chưa có trong backend được gửi."/>}</Panel>
+    </div><div className="dashboard-secondary"><Panel title="Tiến độ học tập" subtitle="Tổng quan hoạt động của nhóm"><div className="progress-summary"><div className="progress-ring" style={{ '--pct': `${progress}%` }}><div><strong>{isDemo ? `${progress}%` : '—'}</strong><small>Hoàn thành</small></div></div><p>{isDemo ? `Bạn đã hoàn thành ${done} trên ${tasks.length} công việc mẫu.` : 'Tiến độ sẽ được hiển thị khi có dữ liệu công việc.'}</p></div><div className="progress-legend"><span><i className="legend-dot purple"/> Đã hoàn thành</span><b>{done}</b></div><div className="progress-legend"><span><i className="legend-dot light"/> Còn lại</span><b>{tasks.length - done}</b></div></Panel>
+      <Panel title="Hoạt động gần đây" subtitle="Những cập nhật trong không gian của bạn">{activity.length ? <div className="activity-list">{activity.map((a,i) => <div className="activity-item" key={i}><div className={`activity-icon ${a.color}`}><Icon name={a.icon} size={17}/></div><div><strong>{a.title}</strong><small>{a.detail}</small><em>{a.time}</em></div></div>)}</div> : <Empty icon="clock" title="Chưa có hoạt động" text="Hoạt động sẽ xuất hiện khi backend cung cấp API nhật ký."/>}</Panel>
+    </div></div>
+    <div className="quick-section"><div className="section-title"><h2>Truy cập nhanh</h2><p>Những công cụ thường dùng trong quá trình học tập</p></div><div className="quick-grid">{[['teams','Nhóm của tôi','Cộng tác với thành viên','/teams','purple'],['message','Trò chuyện','Trao đổi thời gian thực','/chat','green'],['sparkles','Trợ lý AI','Gợi ý ý tưởng & giải pháp','/ai','blue'],['chart','Báo cáo','Theo dõi kết quả dự án','/reports','orange']].map(([icon,title,sub,path,color]) => <button key={path} className="quick-card" onClick={() => navigate(path)}><span className={`quick-icon ${color}`}><Icon name={icon} size={22}/></span><strong>{title}</strong><small>{sub}</small><Icon name="arrow" size={17} className="quick-arrow"/></button>)}</div></div>
+  </>;
+}

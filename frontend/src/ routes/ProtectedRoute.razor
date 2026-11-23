@@ -1,0 +1,54 @@
+
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView>
+
+    <Authorized>
+        @ChildContent
+    </Authorized>
+
+    <NotAuthorized>
+        <section class="access-message">
+            <h2>Bạn chưa đăng nhập</h2>
+
+            <p>
+                Vui lòng đăng nhập tài khoản CollabSphere
+                để tiếp tục sử dụng hệ thống.
+            </p>
+
+            <a href="/login">Đăng nhập</a>
+        </section>
+    </NotAuthorized>
+
+    <Authorizing>
+        <section class="access-message">
+            <p>Đang xác thực tài khoản...</p>
+        </section>
+    </Authorizing>
+
+</AuthorizeView>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}
+
+<style>
+    .access-message {
+        padding: 24px;
+        margin: 24px auto;
+        text-align: center;
+        border-radius: 10px;
+        background: #f8fafc;
+    }
+
+    .access-message p {
+        color: #64748b;
+    }
+
+    .access-message a {
+        color: #2563eb;
+        font-weight: 600;
+    }
+</style>
+

@@ -1,0 +1,58 @@
+
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView Roles="@Roles">
+
+    <Authorized>
+        @ChildContent
+    </Authorized>
+
+    <NotAuthorized>
+        <section class="role-message">
+            <h2>Truy cập bị từ chối</h2>
+
+            <p>
+                Bạn không có quyền sử dụng chức năng này.
+            </p>
+
+            <a href="/dashboard">
+                Quay về Dashboard
+            </a>
+        </section>
+    </NotAuthorized>
+
+    <Authorizing>
+        <section class="role-message">
+            <p>Đang kiểm tra vai trò...</p>
+        </section>
+    </Authorizing>
+
+</AuthorizeView>
+
+@code {
+    [Parameter]
+    public string Roles { get; set; } = string.Empty;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}
+
+<style>
+    .role-message {
+        padding: 24px;
+        margin: 24px auto;
+        text-align: center;
+        border-radius: 10px;
+        background: #fff7ed;
+    }
+
+    .role-message p {
+        color: #64748b;
+    }
+
+    .role-message a {
+        color: #2563eb;
+        font-weight: 600;
+    }
+</style>
+
