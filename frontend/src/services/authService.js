@@ -2,43 +2,48 @@
 import apiClient from "./apiClient";
 
 const authService = {
-    async login(usernameOrEmail, password) {
-        const response = await apiClient.post(
-            "/api/Auth/login",
-            {
-                usernameOrEmail,
-                password
-            }
-        );
+    login: async (email, password) => {
+        return await apiClient.post("/auth/login", {
+            email,
+            password
+        });
+    },
 
-        const data = response?.data ?? response?.Data;
+    register: async (data) => {
+        return await apiClient.post("/auth/register", {
+            fullName: data.fullName,
+            email: data.email,
+            password: data.password
+        });
+    },
 
-        if (!data?.accessToken && !data?.AccessToken) {
-            throw new Error("Không nhận được Access Token.");
-        }
+    getCurrentUser: async () => {
+        return await apiClient.get("/auth/me");
+    },
 
-        const token = data.accessToken ?? data.AccessToken;
+    logout: () => {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("user");
+    },
 
-        apiClient.setToken(token);
+    saveSession: (token, user) => {
+        localStorage.setItem("authToken", token);
+        localStorage.setItem("user", JSON.stringify(user));
+    },
+
+    getSession: () => {
+        const token = localStorage.getItem("authToken");
+        const user = localStorage.getItem("user");
 
         return {
-            accessToken: token,
-            user: data.user ?? data.User
+            token,
+            user: user ? JSON.parse(user) : null
         };
     },
 
-    async getCurrentUser() {
-        const response = await apiClient.get("/api/Auth/me");
-
-        return response?.data ?? response?.Data ?? null;
-    },
-
-    logout() {
-        apiClient.setToken(null);
-    },
-
-    isAuthenticated() {
-        return Boolean(apiClient.getToken());
+    clearSession: () => {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("user");
     }
 };
 
