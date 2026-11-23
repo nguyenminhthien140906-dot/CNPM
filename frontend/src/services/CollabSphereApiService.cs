@@ -1,231 +1,363 @@
-using System.Net.Http.Json;
 
-namespace CollabSphere.Frontend.Services
-{
-    // === MODELS / DTOs ===
-    public class UserDto
-    {
-        public string Id { get; set; } = Guid.NewGuid().ToString("N")[..6].ToUpper();
-        public string FullName { get; set; } = "";
-        public string Email { get; set; } = "";
-        public string Role { get; set; } = "Staff"; // Admin, Head, Staff, Lecturer, Student
-        public bool IsActive { get; set; } = true;
+import apiClient from "./apiClient";
+
+import {
+    UserDto,
+    SubjectDto,
+    SyllabusDto,
+    ClassDto,
+    ProjectDto
+} from "./ApiModels";
+
+class CollabSphereApiService {
+
+    // 1. USERS (Admin)
+
+    async getUsers() {
+        try {
+            const res = await apiClient.get("/users");
+
+            return res
+                ? res.map(user => new UserDto(user))
+                : this.getMockUsers();
+        } catch {
+            return this.getMockUsers();
+        }
     }
 
-    public class SubjectDto
-    {
-        public string Id { get; set; } = "";
-        public string Code { get; set; } = "";
-        public string Name { get; set; } = "";
-        public int Credits { get; set; } = 3;
-        public string Department { get; set; } = "Công nghệ phần mềm";
+    async createUser(user) {
+        try {
+            await apiClient.post(
+                "/users",
+                new UserDto(user)
+            );
+
+            return true;
+        } catch (error) {
+            console.error("Create user failed:", error);
+            return false;
+        }
     }
 
-    public class SyllabusDto
-    {
-        public string Id { get; set; } = "";
-        public string SubjectCode { get; set; } = "";
-        public string SubjectName { get; set; } = "";
-        public string Version { get; set; } = "1.0";
-        public string Description { get; set; } = "";
-        public string Status { get; set; } = "Chờ duyệt"; // Đã duyệt, Chờ duyệt, Nháp
+    async updateUser(user) {
+        try {
+            await apiClient.put(
+                `/users/${user.id}`,
+                user
+            );
+
+            return true;
+        } catch (error) {
+            console.error("Update user failed:", error);
+            return false;
+        }
     }
 
-    public class ClassDto
-    {
-        public string Id { get; set; } = "";
-        public string ClassCode { get; set; } = "";
-        public string SubjectCode { get; set; } = "";
-        public string LecturerName { get; set; } = "";
-        public string Semester { get; set; } = "HK1-2026";
-        public int StudentCount { get; set; }
+    async toggleUserStatus(id, isActive) {
+        try {
+            await apiClient.patch(
+                `/users/${id}/status`,
+                { isActive }
+            );
+
+            return true;
+        } catch (error) {
+            console.error("Toggle user status failed:", error);
+            return false;
+        }
     }
 
-    public class ProjectDto
-    {
-        public string Id { get; set; } = "";
-        public string Name { get; set; } = "";
-        public string GroupName { get; set; } = "";
-        public string LecturerName { get; set; } = "";
-        public string Status { get; set; } = "Chờ duyệt"; // Chờ duyệt, Đã duyệt, Từ chối
-        public string Note { get; set; } = "";
+    // 2. SUBJECTS (Môn học)
+
+    async getSubjects() {
+        try {
+            const res = await apiClient.get("/subjects");
+
+            return res
+                ? res.map(subject => new SubjectDto(subject))
+                : this.getMockSubjects();
+        } catch {
+            return this.getMockSubjects();
+        }
     }
 
-    // === API SERVICE ===
-    public class CollabSphereApiService
-    {
-        private readonly HttpClient _http;
-
-        public CollabSphereApiService(HttpClient http)
-        {
-            _http = http;
-        }
-
-        // 1. USERS (Admin)
-        public async Task<List<UserDto>> GetUsersAsync()
-        {
-            try
-            {
-                var res = await _http.GetFromJsonAsync<List<UserDto>>("api/users");
-                return res ?? GetMockUsers();
+    async saveSubject(subject, isNew) {
+        try {
+            if (isNew) {
+                await apiClient.post(
+                    "/subjects",
+                    subject
+                );
+            } else {
+                await apiClient.put(
+                    `/subjects/${subject.id}`,
+                    subject
+                );
             }
-            catch { return GetMockUsers(); }
-        }
 
-        public async Task<bool> CreateUserAsync(UserDto user)
-        {
-            try { return (await _http.PostAsJsonAsync("api/users", user)).IsSuccessStatusCode; }
-            catch { return true; }
+            return true;
+        } catch (error) {
+            console.error("Save subject failed:", error);
+            return false;
         }
+    }
 
-        public async Task<bool> UpdateUserAsync(UserDto user)
-        {
-            try { return (await _http.PutAsJsonAsync($"api/users/{user.Id}", user)).IsSuccessStatusCode; }
-            catch { return true; }
+    async deleteSubject(id) {
+        try {
+            await apiClient.delete(`/subjects/${id}`);
+            return true;
+        } catch (error) {
+            console.error("Delete subject failed:", error);
+            return false;
         }
+    }
 
-        public async Task<bool> ToggleUserStatusAsync(string id, bool isActive)
-        {
-            try { return (await _http.PatchAsJsonAsync($"api/users/{id}/status", new { isActive })).IsSuccessStatusCode; }
-            catch { return true; }
+    // 3. SYLLABUS (Đề cương)
+
+    async getSyllabuses() {
+        try {
+            const res = await apiClient.get("/syllabuses");
+
+            return res
+                ? res.map(item => new SyllabusDto(item))
+                : this.getMockSyllabuses();
+        } catch {
+            return this.getMockSyllabuses();
         }
+    }
 
-        // 2. SUBJECTS (Môn học)
-        public async Task<List<SubjectDto>> GetSubjectsAsync()
-        {
-            try
-            {
-                var res = await _http.GetFromJsonAsync<List<SubjectDto>>("api/subjects");
-                return res ?? GetMockSubjects();
+    async saveSyllabus(syllabus, isNew) {
+        try {
+            if (isNew) {
+                await apiClient.post(
+                    "/syllabuses",
+                    syllabus
+                );
+            } else {
+                await apiClient.put(
+                    `/syllabuses/${syllabus.id}`,
+                    syllabus
+                );
             }
-            catch { return GetMockSubjects(); }
-        }
 
-        public async Task<bool> SaveSubjectAsync(SubjectDto subject, bool isNew)
-        {
-            try
-            {
-                var resp = isNew
-                    ? await _http.PostAsJsonAsync("api/subjects", subject)
-                    : await _http.PutAsJsonAsync($"api/subjects/{subject.Id}", subject);
-                return resp.IsSuccessStatusCode;
+            return true;
+        } catch (error) {
+            console.error("Save syllabus failed:", error);
+            return false;
+        }
+    }
+
+    async deleteSyllabus(id) {
+        try {
+            await apiClient.delete(`/syllabuses/${id}`);
+            return true;
+        } catch (error) {
+            console.error("Delete syllabus failed:", error);
+            return false;
+        }
+    }
+
+    // 4. CLASSES (Lớp học - Staff)
+
+    async getClasses() {
+        try {
+            const res = await apiClient.get("/classes");
+
+            return res
+                ? res.map(item => new ClassDto(item))
+                : this.getMockClasses();
+        } catch {
+            return this.getMockClasses();
+        }
+    }
+
+    async saveClass(cls, isNew) {
+        try {
+            if (isNew) {
+                await apiClient.post("/classes", cls);
+            } else {
+                await apiClient.put(
+                    `/classes/${cls.id}`,
+                    cls
+                );
             }
-            catch { return true; }
+
+            return true;
+        } catch (error) {
+            console.error("Save class failed:", error);
+            return false;
         }
+    }
 
-        public async Task<bool> DeleteSubjectAsync(string id)
-        {
-            try { return (await _http.DeleteAsync($"api/subjects/{id}")).IsSuccessStatusCode; }
-            catch { return true; }
+    async deleteClass(id) {
+        try {
+            await apiClient.delete(`/classes/${id}`);
+            return true;
+        } catch (error) {
+            console.error("Delete class failed:", error);
+            return false;
         }
+    }
 
-        // 3. SYLLABUS (Đề cương)
-        public async Task<List<SyllabusDto>> GetSyllabusesAsync()
-        {
-            try
-            {
-                var res = await _http.GetFromJsonAsync<List<SyllabusDto>>("api/syllabuses");
-                return res ?? GetMockSyllabuses();
-            }
-            catch { return GetMockSyllabuses(); }
+    // 5. PROJECTS (Duyệt dự án - Head Department)
+
+    async getProjects() {
+        try {
+            const res = await apiClient.get("/projects");
+
+            return res
+                ? res.map(project => new ProjectDto(project))
+                : this.getMockProjects();
+        } catch {
+            return this.getMockProjects();
         }
+    }
 
-        public async Task<bool> SaveSyllabusAsync(SyllabusDto syllabus, bool isNew)
-        {
-            try
-            {
-                var resp = isNew
-                    ? await _http.PostAsJsonAsync("api/syllabuses", syllabus)
-                    : await _http.PutAsJsonAsync($"api/syllabuses/{syllabus.Id}", syllabus);
-                return resp.IsSuccessStatusCode;
-            }
-            catch { return true; }
+    async updateProjectStatus(id, status, note = "") {
+        try {
+            await apiClient.patch(
+                `/projects/${id}/status`,
+                { status, note }
+            );
+
+            return true;
+        } catch (error) {
+            console.error("Update project status failed:", error);
+            return false;
         }
+    }
 
-        public async Task<bool> DeleteSyllabusAsync(string id)
-        {
-            try { return (await _http.DeleteAsync($"api/syllabuses/{id}")).IsSuccessStatusCode; }
-            catch { return true; }
-        }
+    // MOCK DATA
 
-        // 4. CLASSES (Lớp học - Staff)
-        public async Task<List<ClassDto>> GetClassesAsync()
-        {
-            try
-            {
-                var res = await _http.GetFromJsonAsync<List<ClassDto>>("api/classes");
-                return res ?? GetMockClasses();
-            }
-            catch { return GetMockClasses(); }
-        }
+    getMockUsers() {
+        return [
+            new UserDto({
+                id: "U001",
+                fullName: "Nguyễn Văn An",
+                email: "an.nv@ut.edu.vn",
+                role: "Admin",
+                isActive: true
+            }),
 
-        public async Task<bool> SaveClassAsync(ClassDto cls, bool isNew)
-        {
-            try
-            {
-                var resp = isNew
-                    ? await _http.PostAsJsonAsync("api/classes", cls)
-                    : await _http.PutAsJsonAsync($"api/classes/{cls.Id}", cls);
-                return resp.IsSuccessStatusCode;
-            }
-            catch { return true; }
-        }
+            new UserDto({
+                id: "U002",
+                fullName: "Trần Thị Bình",
+                email: "binh.tt@ut.edu.vn",
+                role: "Head",
+                isActive: true
+            }),
 
-        public async Task<bool> DeleteClassAsync(string id)
-        {
-            try { return (await _http.DeleteAsync($"api/classes/{id}")).IsSuccessStatusCode; }
-            catch { return true; }
-        }
+            new UserDto({
+                id: "U003",
+                fullName: "Lê Hoàng Cường",
+                email: "cuong.lh@ut.edu.vn",
+                role: "Staff",
+                isActive: true
+            }),
 
-        // 5. PROJECTS (Duyệt dự án - Head Department)
-        public async Task<List<ProjectDto>> GetProjectsAsync()
-        {
-            try
-            {
-                var res = await _http.GetFromJsonAsync<List<ProjectDto>>("api/projects");
-                return res ?? GetMockProjects();
-            }
-            catch { return GetMockProjects(); }
-        }
+            new UserDto({
+                id: "U004",
+                fullName: "Phạm Minh Dung",
+                email: "dung.pm@ut.edu.vn",
+                role: "Lecturer",
+                isActive: false
+            })
+        ];
+    }
 
-        public async Task<bool> UpdateProjectStatusAsync(string id, string status, string note = "")
-        {
-            try { return (await _http.PatchAsJsonAsync($"api/projects/{id}/status", new { status, note })).IsSuccessStatusCode; }
-            catch { return true; }
-        }
+    getMockSubjects() {
+        return [
+            new SubjectDto({
+                id: "S01",
+                code: "SE104",
+                name: "Nhập môn Công nghệ phần mềm",
+                credits: 4,
+                department: "CNPM"
+            }),
 
-        // === DỮ LIỆU MẪU KHI CHƯA CÓ API ===
-        private List<UserDto> GetMockUsers() => new()
-        {
-            new UserDto { Id = "U001", FullName = "Nguyễn Văn An", Email = "an.nv@ut.edu.vn", Role = "Admin", IsActive = true },
-            new UserDto { Id = "U002", FullName = "Trần Thị Bình", Email = "binh.tt@ut.edu.vn", Role = "Head", IsActive = true },
-            new UserDto { Id = "U003", FullName = "Lê Hoàng Cường", Email = "cuong.lh@ut.edu.vn", Role = "Staff", IsActive = true },
-            new UserDto { Id = "U004", FullName = "Phạm Minh Dung", Email = "dung.pm@ut.edu.vn", Role = "Lecturer", IsActive = false }
-        };
+            new SubjectDto({
+                id: "S02",
+                code: "CS112",
+                name: "Phân tích và thiết kế thuật toán",
+                credits: 4,
+                department: "KHMT"
+            }),
 
-        private List<SubjectDto> GetMockSubjects() => new()
-        {
-            new SubjectDto { Id = "S01", Code = "SE104", Name = "Nhập môn Công nghệ phần mềm", Credits = 4, Department = "CNPM" },
-            new SubjectDto { Id = "S02", Code = "CS112", Name = "Phân tích và thiết kế thuật toán", Credits = 4, Department = "KHMT" },
-            new SubjectDto { Id = "S03", Code = "IS201", Name = "Phân tích thiết kế hệ thống thông tin", Credits = 4, Department = "HTTT" }
-        };
+            new SubjectDto({
+                id: "S03",
+                code: "IS201",
+                name: "Phân tích thiết kế hệ thống thông tin",
+                credits: 4,
+                department: "HTTT"
+            })
+        ];
+    }
 
-        private List<SyllabusDto> GetMockSyllabuses() => new()
-        {
-            new SyllabusDto { Id = "SYL01", SubjectCode = "SE104", SubjectName = "Nhập môn Công nghệ phần mềm", Version = "2026.1", Description = "Quy trình phát triển phần mềm Agile/Scrum", Status = "Đã duyệt" },
-            new SyllabusDto { Id = "SYL02", SubjectCode = "CS112", SubjectName = "Phân tích và thiết kế thuật toán", Version = "2026.1", Description = "Quy hoạch động, tham lam, đồ thị", Status = "Chờ duyệt" }
-        };
+    getMockSyllabuses() {
+        return [
+            new SyllabusDto({
+                id: "SYL01",
+                subjectCode: "SE104",
+                subjectName: "Nhập môn Công nghệ phần mềm",
+                version: "2026.1",
+                description: "Quy trình phát triển phần mềm Agile/Scrum",
+                status: "Đã duyệt"
+            }),
 
-        private List<ClassDto> GetMockClasses() => new()
-        {
-            new ClassDto { Id = "C01", ClassCode = "SE104.O21", SubjectCode = "SE104", LecturerName = "ThS. Nguyễn Văn A", Semester = "HK1-2026", StudentCount = 45 },
-            new ClassDto { Id = "C02", ClassCode = "CS112.O22", SubjectCode = "CS112", LecturerName = "TS. Lê Thị B", Semester = "HK1-2026", StudentCount = 50 }
-        };
+            new SyllabusDto({
+                id: "SYL02",
+                subjectCode: "CS112",
+                subjectName: "Phân tích và thiết kế thuật toán",
+                version: "2026.1",
+                description: "Quy hoạch động, tham lam, đồ thị",
+                status: "Chờ duyệt"
+            })
+        ];
+    }
 
-        private List<ProjectDto> GetMockProjects() => new()
-        {
-            new ProjectDto { Id = "PRJ01", Name = "Hệ thống quản lý học tập CollabSphere", GroupName = "Nhóm 01 - SE104.O21", LecturerName = "ThS. Nguyễn Văn A", Status = "Chờ duyệt" },
-            new ProjectDto { Id = "PRJ02", Name = "Ứng dụng đặt lịch phòng khám", GroupName = "Nhóm 04 - SE104.O21", LecturerName = "ThS. Nguyễn Văn A", Status = "Đã duyệt" }
-        };
+    getMockClasses() {
+        return [
+            new ClassDto({
+                id: "C01",
+                classCode: "SE104.O21",
+                subjectCode: "SE104",
+                lecturerName: "ThS. Nguyễn Văn A",
+                semester: "HK1-2026",
+                studentCount: 45
+            }),
+
+            new ClassDto({
+                id: "C02",
+                classCode: "CS112.O22",
+                subjectCode: "CS112",
+                lecturerName: "TS. Lê Thị B",
+                semester: "HK1-2026",
+                studentCount: 50
+            })
+        ];
+    }
+
+    getMockProjects() {
+        return [
+            new ProjectDto({
+                id: "PRJ01",
+                name: "Hệ thống quản lý học tập CollabSphere",
+                groupName: "Nhóm 01 - SE104.O21",
+                lecturerName: "ThS. Nguyễn Văn A",
+                status: "Chờ duyệt"
+            }),
+
+            new ProjectDto({
+                id: "PRJ02",
+                name: "Ứng dụng đặt lịch phòng khám",
+                groupName: "Nhóm 04 - SE104.O21",
+                lecturerName: "ThS. Nguyễn Văn A",
+                status: "Đã duyệt"
+            })
+        ];
     }
 }
+
+const collabSphereApiService = new CollabSphereApiService();
+
+export default collabSphereApiService;
