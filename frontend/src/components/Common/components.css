@@ -1,0 +1,25 @@
+.empty-state {
+    padding: 45px 20px;
+    text-align: center;
+    background: white;
+    border-radius: 10px;
+    color: #64748b;
+}
+
+.empty-state-icon {
+    font-size: 42px;
+    margin-bottom: 12px;
+}
+
+.empty-state h3 {
+    color: #334155;
+}
+
+.empty-state button {
+    padding: 9px 18px;
+    border: none;
+    border-radius: 6px;
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+}
