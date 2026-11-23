@@ -1,0 +1,55 @@
+
+.assessment-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.assessment-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.assessment-card-header h3 {
+    color: #1e293b;
+    margin: 0;
+}
+
+.assessment-card-header span {
+    padding: 5px 10px;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+.assessment-card p {
+    color: #64748b;
+    margin: 15px 0;
+}
+
+.assessment-score {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.assessment-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.assessment-actions button {
+    padding: 8px 13px;
+    border: none;
+    border-radius: 6px;
+    background: #eff6ff;
+    color: #2563eb;
+    cursor: pointer;
+}
