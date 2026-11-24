@@ -9,32 +9,23 @@ Hệ thống hướng đến việc tập trung các hoạt động quản lý h
 > Chọn một mục bên dưới để chuyển nhanh đến phần cần xem. Các liên kết sử dụng anchor Markdown, hoạt động trên GitHub và các nền tảng hỗ trợ README.
 
 1. [Mục tiêu và phạm vi hệ thống](#1-mục-tiêu-và-phạm-vi-hệ-thống)
-2. [Cơ sở lý thuyết và nguyên lý hoạt động](#11-cơ-sở-lý-thuyết-và-nguyên-lý-hoạt-động)
-3. [Công nghệ sử dụng](#2-công-nghệ-sử-dụng)
-4. [Cấu trúc repository](#3-cấu-trúc-repository)
-5. [Yêu cầu môi trường](#4-yêu-cầu-môi-trường)
-6. [Cài đặt MySQL](#5-cài-đặt-cơ-sở-dữ-liệu-mysql)
-7. [Cách chạy dự án](#6-cách-chạy-dự-án-backend-và-frontend)
-8. [Kết nối Frontend và Backend](#7-kết-nối-frontend--backend)
-9. [Các chức năng FE01–FE12](#8-các-chức-năng-chính)
-10. [API và JWT](#9-api-và-xác-thực)
-11. [SignalR](#10-giao-tiếp-thời-gian-thực-signalr)
-12. [AI Agent](#11-ai-agent-dịch-vụ-tùy-chọn)
-13. [Kiểm thử và Build](#12-kiểm-thử-và-build)
-14. [Các lỗi thường gặp](#13-một-số-lỗi-thường-gặp)
-15. [Bảo mật và lưu ý phát triển](#14-bảo-mật-và-lưu-ý-phát-triển)
-
-### Tài liệu tham khảo trong repository
-
-- [Tài liệu chức năng FE01–FE12](docs/README.md)
-- [Hướng dẫn API Contract](docs/API-CONTRACT-GUIDE.md)
-- [API học vụ](docs/api-hoc-vu.md)
-- [Cấu trúc dự án](docs/PROJECT-TREE.md)
-- [ERD cơ sở dữ liệu](database/01-erd.md)
-- [Schema database](database/schema.sql)
-- [README Backend](backend/README.md)
-- [README Frontend](frontend/README.md)
-- [Thông tin repository](#16-repository)
+   - [1.1. Cơ sở lý thuyết và nguyên lý hoạt động](#11-cơ-sở-lý-thuyết-và-nguyên-lý-hoạt-động)
+2. [Công nghệ sử dụng](#2-công-nghệ-sử-dụng)
+3. [Cấu trúc repository](#3-cấu-trúc-repository)
+4. [Yêu cầu môi trường](#4-yêu-cầu-môi-trường)
+5. [Cài đặt cơ sở dữ liệu MySQL](#5-cài-đặt-cơ-sở-dữ-liệu-mysql)
+6. [Cách chạy dự án (Backend và Frontend)](#6-cách-chạy-dự-án-backend-và-frontend)
+   - [6.3. Đăng nhập và tài khoản](#63-đăng-nhập-và-tài-khoản)
+7. [Kết nối Frontend – Backend](#7-kết-nối-frontend--backend)
+8. [Các chức năng chính (FE01–FE12)](#8-các-chức-năng-chính)
+9. [API và xác thực](#9-api-và-xác-thực)
+10. [Giao tiếp thời gian thực (SignalR)](#10-giao-tiếp-thời-gian-thực-signalr)
+11. [AI Agent (dịch vụ tùy chọn)](#11-ai-agent-dịch-vụ-tùy-chọn)
+12. [Kiểm thử và build](#12-kiểm-thử-và-build)
+13. [Một số lỗi thường gặp](#13-một-số-lỗi-thường-gặp)
+14. [Bảo mật và lưu ý phát triển](#14-bảo-mật-và-lưu-ý-phát-triển)
+15. [Tài liệu tham khảo trong repository](#15-tài-liệu-tham-khảo-trong-repository)
+16. [Repository](#16-repository)
 
 ---
 
@@ -49,7 +40,14 @@ CollabSphere hỗ trợ quy trình học tập theo dự án:
 - Hỗ trợ giao tiếp, cuộc họp và cộng tác.
 - Theo dõi thông báo và các hoạt động liên quan.
 - Tích hợp dịch vụ AI riêng để hỗ trợ một số chức năng học tập.
+
 **Lưu ý về phạm vi triển khai:** tài liệu yêu cầu, cấu trúc cơ sở dữ liệu và mã nguồn có thể mô tả các mức độ hoàn thiện khác nhau. Việc một chức năng xuất hiện trong tài liệu hoặc có bảng dữ liệu không đồng nghĩa toàn bộ API và giao diện của chức năng đó đã hoàn thiện. Khi đánh giá trạng thái triển khai, cần kiểm tra mã nguồn và chạy thử luồng thực tế.
+
+Cụ thể ở trạng thái hiện tại:
+
+- **Backend** có Controller cho: xác thực, quản trị người dùng, môn học, đề cương, lớp học, phân công và ghi danh, cuộc họp, thông báo, AI, kiểm tra hệ thống, cùng hai SignalR Hub.
+- **Frontend** có giao diện cho đủ các nhóm chức năng. Chế độ **dùng thử** chạy hoàn toàn bằng dữ liệu mẫu trong trình duyệt; chế độ đăng nhập thật chỉ hoạt động với những phần Backend đã có API.
+- Trong `frontend/src` còn một số file `.cs` và `.razor` không được dùng khi chạy Vite.
 
 ### 1.1. Cơ sở lý thuyết và nguyên lý hoạt động
 
@@ -83,6 +81,7 @@ Backend được chia thành các project có trách nhiệm riêng:
 | Infrastructure | Hiện thực truy cập dữ liệu và tích hợp kỹ thuật | `CollabSphere.Infrastructure`, EF Core, MySQL |
 
 Cách phân tầng này giúp hạn chế việc giao diện API phụ thuộc trực tiếp vào chi tiết lưu trữ. Ví dụ, Controller tiếp nhận yêu cầu từ người dùng, các thành phần ứng dụng xử lý luồng nghiệp vụ, còn Infrastructure đảm nhiệm việc làm việc với cơ sở dữ liệu.
+
 #### c. REST API – Cách Frontend trao đổi với Backend
 
 REST API là cách tổ chức giao tiếp qua HTTP theo tài nguyên. Frontend gửi request đến Backend; Backend kiểm tra request, thực hiện xử lý và trả kết quả thường ở dạng JSON.
@@ -150,6 +149,7 @@ JWT không phải là nơi để lưu mật khẩu hay dữ liệu bí mật. Pa
 #### e. Cơ sở dữ liệu quan hệ và Entity Framework Core
 
 CollabSphere sử dụng MySQL – hệ quản trị cơ sở dữ liệu quan hệ. Dữ liệu được tổ chức thành các bảng; các bảng liên kết với nhau bằng khóa chính (Primary Key) và khóa ngoại (Foreign Key).
+
 Ví dụ về quan hệ trong một hệ thống học tập:
 
 - Một môn học có thể được mở thành nhiều lớp học.
@@ -158,6 +158,8 @@ Ví dụ về quan hệ trong một hệ thống học tập:
 - Một nhóm có thể có nhiều thành viên.
 
 Các quan hệ này cần được thiết kế rõ ràng để giảm dữ liệu trùng lặp và bảo đảm tính nhất quán. Entity Framework Core (EF Core) là ORM giúp ánh xạ đối tượng C# với dữ liệu quan hệ, hỗ trợ truy vấn và thao tác dữ liệu mà không phải tự viết toàn bộ câu SQL cho từng thao tác.
+
+Riêng việc **tạo và nâng cấp cấu trúc bảng** trong dự án này được thực hiện bằng các file SQL migration, không dùng cơ chế migration của EF Core (xem [mục 5.3](#53-migration-và-seed-tự-động)).
 
 #### f. SignalR – Giao tiếp thời gian thực
 
@@ -198,10 +200,12 @@ flowchart TD
     APP --> DOMAIN[Domain Layer]
     APP --> INFRA[Infrastructure Layer]
     INFRA --> DB[(MySQL Database)]
-API -->|HTTP khi cần AI| AI[AI Agent - Python Flask]
+    API -->|HTTP khi cần AI| AI[AI Agent - Python Flask]
 ```
 
 **Điểm đáng chú ý:** CollabSphere kết hợp nhiều kiểu giao tiếp cho những nhu cầu khác nhau: REST API cho thao tác dữ liệu theo request/response, SignalR cho cập nhật thời gian thực và HTTP giữa Backend với AI Agent. Việc phân chia đúng trách nhiệm giúp hệ thống dễ phát triển, kiểm thử và bảo trì hơn.
+
+---
 
 ## 2. Công nghệ sử dụng
 
@@ -222,12 +226,14 @@ API -->|HTTP khi cần AI| AI[AI Agent - Python Flask]
 | AI Agent | Python Flask service riêng |
 | Quản lý mã nguồn | Git |
 
+---
+
 ## 3. Cấu trúc repository
 
 ```text
 CNPM-main/
 ├── backend/
-│   ├── CollabSphere.API/             # ASP.NET Core Web API
+│   ├── CollabSphere.API/              # ASP.NET Core Web API
 │   ├── CollabSphere.Application/      # DTO, interface và xử lý ứng dụng
 │   ├── CollabSphere.Domain/           # Entity và mô hình nghiệp vụ cốt lõi
 │   ├── CollabSphere.Infrastructure/   # Database, repository, migration, seed
@@ -242,9 +248,9 @@ CNPM-main/
 │   │   ├── assets/
 │   │   ├── components/
 │   │   ├── contexts/
+│   │   ├── data/                      # Dữ liệu mẫu cho chế độ dùng thử
 │   │   ├── hooks/
 │   │   ├── pages/
-│   │   ├── routes/
 │   │   ├── services/
 │   │   ├── utils/
 │   │   ├── App.jsx
@@ -254,8 +260,8 @@ CNPM-main/
 │   └── README.md
 │
 ├── database/
-│   ├── schema.sql                     # Schema cơ sở dữ liệu
-│   ├── migrations/                    # Các migration SQL
+│   ├── schema.sql                     # Schema cơ sở dữ liệu (tham khảo)
+│   ├── migrations/versions/           # Các migration SQL (*.up.sql, *.down.sql)
 │   ├── seeds/                         # Dữ liệu khởi tạo
 │   ├── scripts/                       # Script hỗ trợ database
 │   └── 01-erd.md                      # Tài liệu ERD
@@ -287,7 +293,7 @@ CNPM-main/
 - **backend/CollabSphere.API:** nhận HTTP request, xử lý controller, xác thực JWT, phân quyền và cung cấp SignalR Hub.
 - **backend/CollabSphere.Application:** các DTO, interface và thành phần thuộc tầng ứng dụng.
 - **backend/CollabSphere.Domain:** các entity, enum, exception và mô hình nghiệp vụ cốt lõi.
-- **backend/CollabSphere.Infrastructure:** truy cập dữ liệu, cấu hình Entity Framework, repository, SQL migration và seed.
+- **backend/CollabSphere.Infrastructure:** truy cập dữ liệu, cấu hình Entity Framework, repository, chạy SQL migration và seed.
 - **backend/ai-agent:** dịch vụ Python chạy độc lập với ASP.NET Core API.
 - **database:** schema, migration, seed và tài liệu cơ sở dữ liệu.
 - **docs:** tài liệu yêu cầu chức năng, hướng dẫn API và cấu trúc dự án.
@@ -304,6 +310,7 @@ Cài đặt các công cụ sau trước khi chạy dự án:
 | Node.js | Phiên bản 18 trở lên |
 | npm | Đi kèm Node.js |
 | MySQL Server | MySQL 8.0 trở lên |
+| MySQL Workbench hoặc MySQL Command Line Client | Để tạo database (lệnh SQL không chạy được trong PowerShell) |
 | Git | Phiên bản phù hợp với hệ điều hành |
 | PowerShell | Khuyến nghị trên Windows để chạy các lệnh bên dưới |
 | Python | Chỉ cần khi chạy AI Agent |
@@ -313,20 +320,37 @@ Kiểm tra cài đặt:
 ```powershell
 dotnet --version
 node -v
-npm -v
+npm.cmd -v
 mysql --version
 python --version
 ```
 
+---
+
 ## 5. Cài đặt cơ sở dữ liệu MySQL
 
-### 5.1. Khởi động MySQL
+### 5.1. Cài đặt và bật MySQL
 
-Khởi động MySQL Server và bảo đảm máy chủ đang lắng nghe tại `localhost:3306`. Nếu MySQL của bạn dùng cổng hoặc tài khoản khác, hãy sử dụng đúng thông tin đó trong chuỗi kết nối ở phần chạy Backend.
+Kiểm tra máy đã có dịch vụ MySQL chưa (PowerShell):
+
+```powershell
+Get-Service *mysql*
+```
+
+- **Có hiện dịch vụ** (ví dụ `MySQL80`) và trạng thái `Stopped`: bật bằng cách mở PowerShell **với quyền Administrator** rồi chạy `Start-Service MySQL80` (thay đúng tên dịch vụ). Hoặc nhấn `Win + R`, gõ `services.msc`, tìm dịch vụ MySQL, chuột phải chọn **Start**.
+- **Không hiện gì:** máy chưa cài MySQL. Tải **MySQL Installer** tại <https://dev.mysql.com/downloads/installer/>, cài **MySQL Server 8.0 trở lên** và đặt mật khẩu cho tài khoản `root`. Hãy nhớ mật khẩu này vì sẽ dùng ở bước chạy Backend.
+
+Kiểm tra MySQL đã lắng nghe ở cổng 3306:
+
+```powershell
+Test-NetConnection localhost -Port 3306
+```
+
+Kết quả `TcpTestSucceeded : True` nghĩa là MySQL đang chạy. Nếu MySQL dùng cổng hoặc tài khoản khác, hãy dùng đúng thông tin đó trong chuỗi kết nối ở mục 6.1.
 
 ### 5.2. Tạo database
 
-Mở MySQL Workbench, phpMyAdmin hoặc MySQL command line và thực thi:
+Mở **MySQL Workbench** hoặc **MySQL Command Line Client**, đăng nhập bằng tài khoản `root`, rồi chạy lệnh SQL sau. **Không gõ lệnh này vào PowerShell**, vì PowerShell sẽ báo `The term 'CREATE' is not recognized`.
 
 ```sql
 CREATE DATABASE collabsphere
@@ -336,20 +360,50 @@ CREATE DATABASE collabsphere
 
 Nếu database đã tồn tại thì không cần tạo lại.
 
-### 5.3. Nạp cấu trúc và dữ liệu
+**Chỉ cần tạo database rỗng.** Không cần nạp `schema.sql` hay chạy seed thủ công khi chạy hệ thống bằng Backend, vì Backend sẽ tự tạo bảng và dữ liệu mẫu (xem mục 5.3).
 
-Repository có `database/schema.sql`, các thư mục migration và seed. Có thể dùng công cụ MySQL để nạp schema theo quy trình của nhóm. Script `database/scripts/run_mysql.sh` là script Bash dành cho môi trường có MySQL client; script kiểm tra kết nối, tạo database nếu chưa có và áp dụng `schema.sql`.
+### 5.3. Migration và seed tự động
+
+Khi khởi động, Backend tự thực hiện:
+
+1. **Migration:** tìm các file `database/migrations/versions/*.up.sql`, sắp xếp theo tên và chạy những phiên bản chưa có trong bảng `schema_migrations`. Mỗi migration thành công được ghi vào bảng này, nên các lần chạy sau sẽ hiện `Skipped`. File `*.down.sql` là script rollback **thủ công**, không tự chạy.
+2. **Seed** (chỉ ở môi trường `Development` và khi đã đặt `Seed:DefaultPassword`): chạy các file trong `database/seeds/` theo thứ tự `001_seed_roles.sql` → `005_seed_classes.sql`. File seed dùng chuỗi giữ chỗ cho mật khẩu, được thay bằng hash sinh lúc chạy, nên không lưu mật khẩu dạng rõ.
+
+Các bảng được tạo:
+
+| Migration | Các bảng |
+|---|---|
+| `001_identity_academic` | `roles`, `users`, `students`, `lecturers`, `subjects`, `syllabi`, `study_classes`, `class_students`, `class_lecturers` |
+| `002_projects_teams` | `projects`, `teams`, `team_members` |
+| `003_progress_tasks_submissions` | `milestones`, `checkpoints`, `tasks`, `task_assignees`, `submissions` |
+| `004_resources_communication` | `resources`, `meetings`, `meeting_participants`, `messages` |
+| `005_workspaces_documents` | `workspaces`, `whiteboard_snapshots`, `workspace_documents`, `document_versions` |
+| `006_evaluations_notifications_ai` | `evaluations`, `notifications`, `ai_conversations`, `ai_messages` |
+| `007_seed_roles` | Dữ liệu vai trò |
+
+Sơ đồ quan hệ đầy đủ xem tại [`database/01-erd.md`](database/01-erd.md).
+
+Khi cần thay đổi schema, tạo migration **phiên bản mới** (một file `.up.sql` và một file `.down.sql`), không sửa migration đã được áp dụng. Nếu migration lỗi giữa chừng, đọc tên migration và thông báo lỗi trước khi xử lý; với database đã có dữ liệu, sao lưu trước khi xóa hoặc tạo lại.
 
 Không chạy script kiểm thử hoặc seed trên cơ sở dữ liệu production. Nên sử dụng database phát triển riêng.
 
 ---
 
 ## 6. Cách chạy dự án (Backend và Frontend)
+
 Đây là quy trình chạy ứng dụng trên Windows bằng PowerShell. **Backend và Frontend phải được chạy ở hai cửa sổ Terminal riêng biệt** và cần giữ cả hai cửa sổ hoạt động trong khi sử dụng hệ thống.
+
+Sơ đồ kết nối khi chạy:
+
+```text
+Trình duyệt ──► Frontend (Vite :5173) ──proxy /api, /hubs──► Backend (:5000) ──► MySQL (:3306)
+```
+
+**Điều kiện trước khi chạy:** MySQL đã bật (mục 5.1) và đã tạo database `collabsphere` (mục 5.2).
 
 ### 6.1. Chạy Backend API
 
-Mở Terminal PowerShell thứ nhất tại thư mục chứa repository, sau đó thực hiện lần lượt:
+Mở Terminal PowerShell thứ nhất, di chuyển tới thư mục chứa repository. Nếu đường dẫn có dấu cách, đặt trong dấu ngoặc kép, ví dụ `cd "C:\Users\Ten\Downloads\CNPM-main (13)\CNPM-main\backend\CollabSphere.API"`. Sau đó thực hiện lần lượt:
 
 ```powershell
 cd CNPM-main\backend\CollabSphere.API
@@ -367,28 +421,36 @@ dotnet run --urls "http://localhost:5000"
 
 **Cần thay đổi trước khi chạy:**
 
-- Thay `MAT_KHAU_MYSQL` bằng mật khẩu tài khoản MySQL đang sử dụng. Nếu tài khoản `root` không có mật khẩu, để trống phần sau `Password=`, ví dụ `Password=;`.
-- Các lệnh `user-secrets` lưu cấu hình bí mật cho project .NET ở máy hiện tại, không ghi mật khẩu vào source code.
+- Thay `MAT_KHAU_MYSQL` bằng **mật khẩu thật** của tài khoản MySQL (không để nguyên chữ giữ chỗ). Nếu tài khoản `root` không có mật khẩu, để trống phần sau `Password=`, ví dụ `Password=;`.
+- Các lệnh `user-secrets` lưu cấu hình bí mật cho project .NET ở máy hiện tại, không ghi mật khẩu vào source code. Chỉ cần chạy **một lần** trên mỗi máy. Muốn xem lại các giá trị đã lưu: `dotnet user-secrets list`.
 - Lệnh tạo `Jwt:Key` sinh khóa ngẫu nhiên. Khi chạy lại lệnh này, khóa JWT sẽ thay đổi; các token được phát hành bằng khóa cũ sẽ không còn xác thực được.
-- `Seed:DefaultPassword` là mật khẩu mặc định dùng cho các tài khoản mẫu khi cơ chế seed Development được kích hoạt. Mật khẩu đăng nhập mẫu cần đối chiếu với dữ liệu seed/tài liệu của nhóm.
+- `Seed:DefaultPassword` là mật khẩu chung cho các tài khoản mẫu (xem mục 6.3.1). Nếu không đặt, hệ thống sẽ bỏ qua bước seed và không có tài khoản để đăng nhập.
+- `$env:ASPNETCORE_ENVIRONMENT = "Development"` chỉ có hiệu lực trong Terminal hiện tại. Mở Terminal mới thì phải đặt lại.
+- **Hãy chạy bằng `dotnet run` như trên, không dùng nút chạy (F5) của Visual Studio**, vì Visual Studio có thể chọn cổng khác 5000 khiến Frontend không gọi được API.
 
-Khi Backend chạy thành công, API sử dụng địa chỉ:
-
-```text
-http://localhost:5000
-```
-
-Có thể kiểm tra trạng thái API và kết nối database tại:
+**Backend chạy thành công** khi Terminal hiện các dòng sau và giữ nguyên, không thoát:
 
 ```text
-http://localhost:5000/api/system/status
+[Migration] Applied: 001_identity_academic
+...
+[Migration] Hoàn tất.
+[Seed] OK: 001_seed_roles.sql
+...
+[Seed] Hoàn tất.
+Now listening on: http://localhost:5000
 ```
 
-Trong môi trường Development, tài liệu OpenAPI được ánh xạ tại:
+Từ lần chạy thứ hai, các dòng migration sẽ hiện `Skipped`. Lần chạy đầu có thể mất từ vài chục giây đến một hai phút vì phải build và tạo bảng.
 
-```text
-http://localhost:5000/openapi/v1.json
-```
+Nếu Terminal dừng với lỗi đỏ (ví dụ `Unable to connect to any of the specified MySQL hosts`), xem [mục 13](#13-một-số-lỗi-thường-gặp).
+
+Kiểm tra bằng trình duyệt:
+
+| Địa chỉ | Mô tả |
+|---|---|
+| `http://localhost:5000/api/system/status` | Trạng thái API và kết nối database |
+| `http://localhost:5000/api/system/database-check` | Kiểm tra khả năng truy cập database |
+| `http://localhost:5000/openapi/v1.json` | Tài liệu OpenAPI (chỉ ở môi trường Development) |
 
 ### 6.2. Chạy Frontend
 
@@ -404,7 +466,13 @@ npm.cmd run dev
 
 - `npm.cmd install`: cài đặt các thư viện được khai báo trong `package.json`.
 - `npm.cmd run dev`: khởi động máy chủ phát triển Vite.
-- Dùng `npm.cmd` để tránh một số trường hợp PowerShell chặn script `npm.ps1`.
+- Dùng `npm.cmd` để tránh trường hợp PowerShell chặn script `npm.ps1` (lỗi `running scripts is disabled on this system`). Hoặc cho phép chạy script một lần, rồi mở lại Terminal để dùng `npm` bình thường:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+
+Vite chạy ở cổng cố định 5173 (`strictPort`): nếu cổng bị chiếm, Vite sẽ báo lỗi thay vì tự đổi cổng.
 
 Khi chạy thành công, mở trình duyệt tại:
 
@@ -412,14 +480,88 @@ Khi chạy thành công, mở trình duyệt tại:
 http://localhost:5173
 ```
 
-### 6.3. Thứ tự khởi động và sử dụng
+### 6.3. Đăng nhập và tài khoản
 
-1. Khởi động MySQL Server.
-2. Chạy Backend theo mục **6.1** và chờ API khởi động thành công.
+Trang đăng nhập có hai cách vào hệ thống:
+
+| Cách | Mô tả | Cần Backend và MySQL |
+|---|---|---|
+| **Đăng nhập thật** | Nhập tên đăng nhập (hoặc email) và mật khẩu của một tài khoản mẫu ở bảng 6.3.1 | Có |
+| **Dùng thử dữ liệu mẫu** | Cuộn xuống phần "Trải nghiệm nhanh", chọn vai trò rồi bấm **"Dùng thử với dữ liệu mẫu"** (xem 6.3.2) | Không |
+
+#### 6.3.1. Tài khoản đăng nhập thật
+
+Các tài khoản này được tạo tự động khi chạy Backend ở môi trường `Development` và đã đặt `Seed:DefaultPassword` (mục 6.1). **Tất cả tài khoản dùng chung một mật khẩu: giá trị `Seed:DefaultPassword`.** Với hướng dẫn trong tài liệu này, mật khẩu là `Collab@12345`.
+
+| # | Vai trò | Tên đăng nhập | Mật khẩu | Họ tên | Email | Mã hồ sơ |
+|---|---|---|---|---|---|---|
+| 1 | Quản trị viên (`ADMIN`) | `admin` | `Collab@12345` | System Administrator | admin@collabsphere.local | — |
+| 2 | Trưởng bộ môn (`HEAD`) | `head01` | `Collab@12345` | Department Head | head01@collabsphere.local | — |
+| 3 | Nhân viên học vụ (`STAFF`) | `staff01` | `Collab@12345` | Academic Staff | staff01@collabsphere.local | — |
+| 4 | Giảng viên (`LECTURER`) | `lecturer01` | `Collab@12345` | Nguyen Van Giang | lecturer01@collabsphere.local | `GV001` |
+| 5 | Sinh viên (`STUDENT`) | `student01` | `Collab@12345` | Tran Van An | student01@collabsphere.local | `SV001` |
+| 6 | Sinh viên (`STUDENT`) | `student02` | `Collab@12345` | Le Thi Binh | student02@collabsphere.local | `SV002` |
+
+Nguồn dữ liệu: `database/seeds/002_seed_users.sql`. Có thể đăng nhập bằng tên đăng nhập hoặc email.
+
+> Đây là tài khoản và mật khẩu dành cho môi trường phát triển. Không dùng cho môi trường production.
+
+**Quyền của từng vai trò trong Backend hiện tại** (đối chiếu từ các Controller):
+
+| Chức năng | `ADMIN` | `HEAD` | `STAFF` | `LECTURER` | `STUDENT` |
+|---|:-:|:-:|:-:|:-:|:-:|
+| Xem môn học, đề cương, lớp học | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Tạo, sửa, xóa môn học, đề cương, lớp học | ✓ | ✓ | ✓ | — | — |
+| Phân công giảng viên, ghi danh sinh viên | ✓ | ✓ | ✓ | — | — |
+| Quản trị người dùng (xem danh sách, khóa/mở tài khoản) | ✓ | — | — | — | — |
+| Cuộc họp, thông báo, AI | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+Các API cuộc họp, thông báo và AI chỉ yêu cầu đăng nhập ở cấp Controller; có thể còn kiểm tra thêm bên trong từng chức năng.
+
+**Lưu ý khi dùng tài khoản thật:**
+
+- Tài khoản chỉ được tạo **một lần**: file seed chỉ thêm tài khoản nếu chưa tồn tại. Vì vậy nếu bạn **đổi `Seed:DefaultPassword` sau khi đã seed**, mật khẩu của các tài khoản đã có **không đổi theo**, và bạn vẫn phải đăng nhập bằng mật khẩu cũ.
+- Muốn đặt lại mật khẩu về giá trị mới (chỉ làm trên database phát triển, mất toàn bộ dữ liệu): trong MySQL chạy `DROP DATABASE collabsphere;`, tạo lại database theo mục 5.2, đặt `Seed:DefaultPassword` mới rồi chạy lại Backend.
+- Tài khoản bị khóa (`is_active = false`) sẽ không đăng nhập được. `admin` có thể khóa hoặc mở tài khoản qua `PATCH /api/admin/users/{id}/status`.
+- Đăng nhập báo sai tên hoặc mật khẩu trong khi chưa thấy dòng `[Seed] OK` ở Terminal Backend: chưa seed, xem mục 13.
+
+Thử đăng nhập nhanh bằng PowerShell (không cần mở web):
+
+```powershell
+Invoke-RestMethod -Method Post -Uri "http://localhost:5000/api/auth/login" `
+  -ContentType "application/json" `
+  -Body '{"usernameOrEmail":"admin","password":"Collab@12345"}'
+```
+
+Nếu thành công, kết quả có `Success = True` kèm access token trong phần `Data`.
+
+#### 6.3.2. Tài khoản dùng thử (dữ liệu mẫu, không cần mật khẩu)
+
+Ở trang đăng nhập, chọn một vai trò trong danh sách rồi bấm **"Dùng thử với dữ liệu mẫu"**. Hệ thống vào thẳng, không cần Backend, MySQL hay mật khẩu. Dữ liệu chỉ lưu trên trình duyệt và không gửi đến máy chủ.
+
+| Vai trò | Tên hiển thị trong chế độ dùng thử |
+|---|---|
+| Quản trị viên | Quản trị viên |
+| Trưởng bộ môn | Trưởng bộ môn |
+| Nhân viên học vụ | Nhân viên học vụ |
+| Giảng viên | Giảng viên Nguyễn Minh Anh |
+| Sinh viên | Sinh viên Trần Gia Bảo |
+
+Trong chế độ này có thể đổi vai trò bất kỳ lúc nào ở thanh thông báo màu trên cùng của trang ("Vai trò: ..."). Kết nối realtime (chat, thông báo) không hoạt động ở chế độ dùng thử.
+
+### 6.4. Thứ tự khởi động và dừng hệ thống
+
+1. Bật MySQL Server và tạo database (mục 5).
+2. Chạy Backend theo mục **6.1** và chờ dòng `Now listening on: http://localhost:5000`.
 3. Chạy Frontend theo mục **6.2** ở Terminal khác.
 4. Mở `http://localhost:5173` để sử dụng hệ thống.
 5. Khi kết thúc, nhấn `Ctrl + C` ở từng Terminal để dừng Frontend và Backend.
-**Lưu ý:** Frontend được cấu hình proxy các đường dẫn `/api` và `/hubs` về Backend. Mặc định proxy trỏ đến `http://localhost:5000`; nếu đổi cổng Backend, cần cập nhật `VITE_API_URL` hoặc cấu hình tương ứng trong `frontend/vite.config.js`.
+
+**Lưu ý:** Frontend được cấu hình proxy các đường dẫn `/api` và `/hubs` về Backend. Mặc định proxy trỏ đến `http://localhost:5000`. Nếu đổi cổng Backend, tạo file `frontend/.env` với nội dung sau rồi khởi động lại `npm.cmd run dev`:
+
+```text
+VITE_API_URL=http://localhost:CỔNG_CỦA_BẠN
+```
 
 ---
 
@@ -435,6 +577,15 @@ Frontend sử dụng REST API để trao đổi dữ liệu với Backend. Vite 
 Cấu hình proxy nằm trong `frontend/vite.config.js`. Giá trị mặc định của `VITE_API_URL` là `http://localhost:5000`.
 
 Không cần ghi địa chỉ Backend đầy đủ cho từng request nếu Frontend đang gọi API thông qua các đường dẫn tương đối và sử dụng proxy của Vite.
+
+Khi triển khai Frontend và Backend ở hai tên miền khác nhau, đặt biến `VITE_PUBLIC_API_URL` ở Frontend và bật CORS ở API.
+
+| Biến Frontend | Mặc định | Mô tả |
+|---|---|---|
+| `VITE_API_URL` | `http://localhost:5000` | Địa chỉ Backend mà Vite proxy tới (khi phát triển) |
+| `VITE_PUBLIC_API_URL` | Trống | Địa chỉ API khi Frontend và Backend ở tên miền khác nhau |
+
+---
 
 ## 8. Các chức năng chính
 
@@ -457,22 +608,68 @@ Các nhóm chức năng được mô tả trong tài liệu dự án:
 
 Danh sách trên là các nhóm chức năng trong tài liệu yêu cầu. Mức độ hoàn thiện của từng chức năng cần được xác nhận bằng mã nguồn và kiểm thử thực tế.
 
+---
+
 ## 9. API và xác thực
 
-Backend cung cấp REST API. Một số endpoint hiện có trong source:
+Backend cung cấp REST API. Các endpoint hiện có trong source:
+
+### Hệ thống và xác thực
 
 | Method | Endpoint | Mô tả |
 |---|---|---|
-| `POST` | `/api/auth/login` | Đăng nhập và nhận JWT |
-| `GET` | `/api/auth/me` | Lấy thông tin tài khoản hiện tại |
 | `GET` | `/api/system/status` | Kiểm tra trạng thái API và database |
 | `GET` | `/api/system/database-check` | Kiểm tra khả năng truy cập database |
-| `GET/POST/PUT/DELETE` | `/api/subjects` | Quản lý môn học |
-| `GET/POST/PUT/DELETE` | `/api/syllabi` | Quản lý đề cương |
-| `GET/POST/PUT/PATCH/DELETE` | `/api/classes` | Quản lý lớp học |
-| `GET/POST/DELETE` | `/api/classes/{id}/lecturers` | Phân công giảng viên |
-| `GET/POST/DELETE` | `/api/classes/{id}/students` | Ghi danh sinh viên |
-| `GET/PATCH` | `/api/admin/users` | Quản lý tài khoản quản trị |
+| `POST` | `/api/auth/login` | Đăng nhập và nhận JWT |
+| `GET` | `/api/auth/me` | Lấy thông tin tài khoản hiện tại |
+
+Ví dụ đăng nhập:
+
+```http
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "usernameOrEmail": "admin",
+  "password": "Collab@12345"
+}
+```
+
+### Quản trị, học vụ
+
+| Method | Endpoint | Mô tả |
+|---|---|---|
+| `GET` | `/api/admin/users` | Danh sách người dùng |
+| `GET` | `/api/admin/users/{id}` | Chi tiết người dùng |
+| `PATCH` | `/api/admin/users/{id}/status` | Khóa hoặc mở tài khoản |
+| `GET/POST` | `/api/subjects` | Danh sách, tạo môn học |
+| `GET/PUT/DELETE` | `/api/subjects/{id}` | Xem, sửa, xóa môn học |
+| `GET` | `/api/subjects/{id}/syllabus` | Đề cương của môn học |
+| `GET/POST` | `/api/syllabi` | Danh sách, tạo đề cương |
+| `GET/PUT/DELETE` | `/api/syllabi/{id}` | Xem, sửa, xóa đề cương |
+| `GET/POST` | `/api/classes` | Danh sách, tạo lớp học |
+| `GET/PUT/PATCH/DELETE` | `/api/classes/{id}` | Xem, cập nhật, xóa lớp học |
+| `PATCH` | `/api/classes/{id}/status` | Đổi trạng thái lớp |
+| `GET` | `/api/lecturers`, `/api/students` | Danh sách giảng viên, sinh viên |
+| `GET/POST/DELETE` | `/api/classes/{classId}/lecturers` | Xem, phân công, gỡ giảng viên |
+| `GET/POST/DELETE` | `/api/classes/{classId}/students` | Xem, ghi danh, gỡ sinh viên |
+
+### Cuộc họp, thông báo, AI
+
+| Method | Endpoint | Mô tả |
+|---|---|---|
+| `GET` | `/api/meetings/team/{teamId}` | Cuộc họp của nhóm |
+| `POST` | `/api/meetings` | Tạo cuộc họp |
+| `POST` | `/api/meetings/{meetingId}/join` | Tham gia cuộc họp |
+| `PUT/DELETE` | `/api/meetings/{meetingId}` | Sửa, xóa cuộc họp |
+| `GET` | `/api/notifications` | Danh sách thông báo |
+| `PATCH` | `/api/notifications/{id}/read` | Đánh dấu đã đọc |
+| `POST` | `/api/ai/chat` | Hỏi đáp với trợ lý AI |
+| `GET` | `/api/ai/conversations/{conversationId}/messages` | Lịch sử hội thoại |
+| `GET` | `/api/ai/teams/{teamId}/progress` | Tiến độ của nhóm |
+| `GET` | `/api/ai/teams/{teamId}/contributions` | Đóng góp của thành viên |
+
+### Xác thực và phân quyền
 
 Các API được bảo vệ yêu cầu gửi JWT trong header:
 
@@ -480,7 +677,19 @@ Các API được bảo vệ yêu cầu gửi JWT trong header:
 Authorization: Bearer <access_token>
 ```
 
-Một số quyền được sử dụng trong Backend gồm `ADMIN`, `HEAD` và `STAFF`; API quản trị người dùng yêu cầu quyền `ADMIN`. Xem chi tiết route, request/response và quy tắc nghiệp vụ tại [docs/api-hoc-vu.md](docs/api-hoc-vu.md) và [docs/API-CONTRACT-GUIDE.md](docs/API-CONTRACT-GUIDE.md).
+Backend có các policy theo vai trò `ADMIN`, `HEAD`, `STAFF`, `LECTURER`, `STUDENT`; API quản trị người dùng yêu cầu quyền `ADMIN`. Xem chi tiết route, request/response và quy tắc nghiệp vụ tại [docs/api-hoc-vu.md](docs/api-hoc-vu.md) và [docs/API-CONTRACT-GUIDE.md](docs/API-CONTRACT-GUIDE.md).
+
+### Cấu hình Backend
+
+| Khóa | Nơi đặt | Bắt buộc | Mô tả |
+|---|---|---|---|
+| `ConnectionStrings:DefaultConnection` | User Secrets | Có | Chuỗi kết nối MySQL |
+| `Jwt:Key` | User Secrets | Có | Khóa ký JWT, Base64, tối thiểu 32 byte sau giải mã |
+| `Jwt:Issuer` | `appsettings.json` | Có | Mặc định `CollabSphere` |
+| `Jwt:Audience` | `appsettings.json` | Có | Mặc định `CollabSphereUsers` |
+| `Seed:DefaultPassword` | User Secrets | Không | Mật khẩu tài khoản mẫu (chỉ dùng ở Development) |
+
+---
 
 ## 10. Giao tiếp thời gian thực (SignalR)
 
@@ -493,11 +702,13 @@ Backend đăng ký các SignalR Hub:
 
 Frontend sử dụng thư viện `@microsoft/signalr` để kết nối. Kết nối Hub cần Backend hoạt động và thông tin xác thực hợp lệ. Backend hỗ trợ truyền JWT qua query parameter `access_token` đối với các kết nối Hub được cấu hình.
 
-Vite proxy đã bật WebSocket cho đường dẫn `/hubs`.
+Vite proxy đã bật WebSocket cho đường dẫn `/hubs`. Ở chế độ dùng thử dữ liệu mẫu, kết nối realtime không hoạt động.
+
+---
 
 ## 11. AI Agent (dịch vụ tùy chọn)
 
-Thư mục `backend/ai-agent` chứa dịch vụ Python riêng, không tự khởi chạy cùng Backend .NET.
+Thư mục `backend/ai-agent` chứa dịch vụ Python riêng, không tự khởi chạy cùng Backend .NET. Chỉ cần chạy khi kiểm thử hoặc sử dụng các chức năng có phụ thuộc vào dịch vụ này.
 
 Backend đăng ký HttpClient tên `FlaskAI`, mặc định gọi dịch vụ tại:
 
@@ -505,14 +716,38 @@ Backend đăng ký HttpClient tên `FlaskAI`, mặc định gọi dịch vụ t�
 http://127.0.0.1:5001
 ```
 
-Để cài thư viện Python, mở Terminal tại thư mục AI Agent:
+**Bước 1. Cài thư viện** (Terminal riêng):
 
 ```powershell
 cd CNPM-main\backend\ai-agent
+python -m venv venv
+venv\Scripts\activate
 python -m pip install -r requirements.txt
 ```
 
-AI Agent chỉ cần chạy khi kiểm thử hoặc sử dụng các chức năng có phụ thuộc vào dịch vụ này. Cách cấu hình và khởi chạy chi tiết cần đối chiếu với `run.py` và cấu hình bên trong `backend/ai-agent`.
+Nếu `pip install` báo lỗi đọc `requirements.txt`, file đang lưu ở dạng UTF-16. Mở bằng Notepad, chọn **Save As** và đổi Encoding thành **UTF-8**.
+
+**Bước 2. Tạo file `backend/ai-agent/.env`** (dịch vụ đọc thông tin MySQL từ file này):
+
+```text
+DB_USER=root
+DB_PASSWORD=MAT_KHAU_MYSQL
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=collabsphere
+```
+
+**Bước 3. Chạy dịch vụ:**
+
+```powershell
+python run.py
+```
+
+Kiểm tra: mở `http://127.0.0.1:5001/health`; kết quả đúng có `"database": "connected"`.
+
+Không commit file `.env` lên Git.
+
+---
 
 ## 12. Kiểm thử và build
 
@@ -526,13 +761,15 @@ dotnet restore CollabSphere.sln
 dotnet build CollabSphere.sln
 ```
 
-Script smoke test API:
+Các script kiểm thử API nằm trong `backend/tests/`: `api-smoke-test.ps1`, `notification-test.ps1`, `meeting-test.ps1`, `ai-test.ps1` (script AI cần AI Agent đang chạy).
+
+Chạy smoke test từ thư mục gốc repository:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\backend\tests\api-smoke-test.ps1 -BaseUrl "http://localhost:5000" -Password "Collab@12345"
 ```
 
-Chạy lệnh trên từ thư mục gốc repository. Script cần Backend và MySQL đang hoạt động, đồng thời cần tài khoản seed phù hợp. Script tạo và dọn dữ liệu thử nghiệm, vì vậy chỉ chạy trên database phát triển/kiểm thử.
+Tham số `-Password` phải trùng với `Seed:DefaultPassword` bạn đã đặt. Script cần Backend và MySQL đang hoạt động, đồng thời cần tài khoản seed phù hợp. Script tạo và dọn dữ liệu thử nghiệm, vì vậy chỉ chạy trên database phát triển/kiểm thử.
 
 ### Frontend
 
@@ -542,42 +779,60 @@ Các lệnh sau chạy từ thư mục `frontend`:
 npm.cmd run build
 npm.cmd run preview
 ```
+
 Kiểm tra realtime (nếu đã chuẩn bị tài khoản và biến môi trường kiểm thử):
 
 ```powershell
 npm.cmd run test:realtime
 ```
 
+---
+
 ## 13. Một số lỗi thường gặp
 
 | Hiện tượng | Nguyên nhân có thể | Cách xử lý |
 |---|---|---|
-| Backend không kết nối được MySQL | MySQL chưa chạy, sai port, username hoặc password | Kiểm tra MySQL Server và `ConnectionStrings:DefaultConnection` |
-| `Access denied for user` | Sai thông tin đăng nhập MySQL | Cập nhật lại `ConnectionStrings:DefaultConnection` bằng `dotnet user-secrets set` |
-| Database không tồn tại | Chưa tạo database `collabsphere` | Tạo database theo mục 5 |
-| Cổng 5000 đang được sử dụng | Có tiến trình khác chiếm cổng | Dừng tiến trình đó hoặc chọn cổng khác và cập nhật proxy Frontend |
+| `npm.ps1 cannot be loaded because running scripts is disabled` | PowerShell chặn chạy script | Dùng `npm.cmd`, hoặc chạy `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` rồi mở lại Terminal |
+| Trang `localhost:5173` trắng | Lỗi JavaScript khi tải trang, hoặc `App.jsx` / `main.jsx` bị rỗng | Mở F12, tab Console để xem lỗi đỏ. Kiểm tra `frontend/src/App.jsx` và `main.jsx` có nội dung; `main.jsx` phải bọc `BrowserRouter`, `AuthProvider`, `DemoProvider`, `NotificationProvider` |
+| Đăng nhập báo `API trả về HTTP 500` (không kèm nội dung) | Backend chưa chạy, đã dừng do lỗi, hoặc chạy sai cổng | Kiểm tra Terminal Backend có dòng `Now listening on: http://localhost:5000` không. Mở `http://localhost:5000/api/system/status` để thử |
+| Backend: `Unable to connect to any of the specified MySQL hosts` | MySQL chưa chạy hoặc chưa cài | Bật dịch vụ MySQL hoặc cài MySQL (mục 5.1), kiểm tra `Test-NetConnection localhost -Port 3306`, rồi chạy lại Backend |
+| Backend: `Access denied for user 'root'` | Sai mật khẩu MySQL (hoặc đang để nguyên `MAT_KHAU_MYSQL`) | Chạy lại `dotnet user-secrets set "ConnectionStrings:DefaultConnection" ...` với mật khẩu đúng |
+| Backend: `Unknown database 'collabsphere'` | Chưa tạo database | Tạo database theo mục 5.2 |
+| Backend: `Thiếu Jwt:Key` hoặc `JWT signing key phải có ít nhất 32 bytes` | Chưa đặt hoặc đặt sai `Jwt:Key` | Chạy lại lệnh sinh `Jwt:Key` ở mục 6.1 |
+| Backend: `Migration ... thất bại` | Lỗi khi chạy file SQL migration | Đọc tên migration và nội dung lỗi trong Terminal. Với database đã có dữ liệu, sao lưu trước khi xử lý |
+| `[Seed] Bỏ qua: chưa đặt Seed:DefaultPassword` hoặc đăng nhập báo sai tên/mật khẩu | Chưa đặt `Seed:DefaultPassword`, hoặc chưa chạy ở chế độ Development nên chưa có tài khoản mẫu | Đặt `Seed:DefaultPassword` và `$env:ASPNETCORE_ENVIRONMENT = "Development"` rồi chạy lại Backend |
+| `CREATE : The term 'CREATE' is not recognized` | Lệnh SQL đang gõ nhầm vào PowerShell | Chạy trong MySQL Workbench hoặc MySQL Command Line Client |
+| Cổng 5000 đang được sử dụng | Có tiến trình khác chiếm cổng | Dừng tiến trình đó, hoặc chạy Backend ở cổng khác và đặt `VITE_API_URL` |
+| Cổng 5173 đang được sử dụng | Vite đặt `strictPort` nên báo lỗi | Tắt chương trình đang dùng cổng 5173 |
+| Backend chạy từ Visual Studio (F5) nhưng web không gọi được API | Visual Studio có thể chọn cổng khác 5000 | Chạy bằng `dotnet run --urls "http://localhost:5000"` |
 | Frontend không gọi được API | Backend chưa chạy hoặc proxy sai địa chỉ | Kiểm tra Backend tại `http://localhost:5000` và `VITE_API_URL` |
-| Không cài được package Frontend | Node/npm chưa đúng phiên bản hoặc mạng gặp sự cố | Kiểm tra `node -v`, `npm -v`, sau đó chạy lại `npm.cmd install` |
+| Không cài được package Frontend | Node/npm chưa đúng phiên bản hoặc mạng gặp sự cố | Kiểm tra `node -v`, `npm.cmd -v`, sau đó chạy lại `npm.cmd install` |
 | JWT không còn hợp lệ sau khi đổi key | Đã tạo `Jwt:Key` mới | Đăng nhập lại để nhận token mới |
-| Chức năng AI không phản hồi | AI Agent chưa chạy hoặc không ở cổng 5001 | Kiểm tra dịch vụ Python và cấu hình địa chỉ AI |
+| Chat và thông báo realtime không hoạt động | Đang ở chế độ dùng thử, hoặc Backend chưa chạy | Đăng nhập thật và bảo đảm Backend đang chạy |
+| Chức năng AI không phản hồi | AI Agent chưa chạy, chưa cấu hình `.env`, hoặc không ở cổng 5001 | Kiểm tra dịch vụ Python (mục 11) và mở `http://127.0.0.1:5001/health` |
+
+---
 
 ## 14. Bảo mật và lưu ý phát triển
 
-- Không commit mật khẩu MySQL, JWT key, access token hoặc thông tin bí mật lên Git.
-- Không sử dụng mật khẩu mẫu cho môi trường production.
+- Không commit mật khẩu MySQL, JWT key, access token, file `.env` hoặc thông tin bí mật lên Git.
+- Không sử dụng mật khẩu mẫu (`Collab@12345`) cho môi trường production.
 - Không dùng database production để chạy seed hoặc script kiểm thử có thao tác ghi/xóa dữ liệu.
-- Khi thay đổi cấu trúc database, cập nhật schema/migration và các cấu hình ánh xạ liên quan.
+- Khi thay đổi cấu trúc database, tạo migration phiên bản mới (`.up.sql` và `.down.sql`) và cập nhật các cấu hình ánh xạ liên quan; không sửa migration đã áp dụng.
 - Khi thêm hoặc sửa API, cập nhật contract, phân quyền, kiểm thử và tài liệu.
 - Kiểm tra quyền truy cập ở Backend; không chỉ dựa vào việc ẩn/hiện thành phần giao diện.
 - Cần xác nhận các luồng nghiệp vụ bằng kiểm thử thực tế trước khi kết luận chức năng đã hoàn thiện.
 
+---
+
 ## 15. Tài liệu tham khảo trong repository
 
-- [Tài liệu chức năng](docs/README.md)
-- [Cấu trúc dự án](docs/PROJECT-TREE.md)
+- [Tài liệu chức năng FE01–FE12](docs/README.md)
 - [Hướng dẫn API Contract](docs/API-CONTRACT-GUIDE.md)
 - [API học vụ](docs/api-hoc-vu.md)
+- [Cấu trúc dự án](docs/PROJECT-TREE.md)
 - [ERD cơ sở dữ liệu](database/01-erd.md)
+- [Schema database](database/schema.sql)
 - [README Backend](backend/README.md)
 - [README Frontend](frontend/README.md)
 
@@ -592,4 +847,3 @@ npm.cmd run test:realtime
 ---
 
 **CollabSphere – Supporting Project-Based Learning Through Collaboration.**
-
