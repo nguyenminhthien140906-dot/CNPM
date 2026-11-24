@@ -7,22 +7,22 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { DemoProvider } from "./contexts/DemoContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
 
-import "./assets/styles/global.css";
 import "./assets/styles/variables.css";
+import "./assets/styles/global.css";
 import "./assets/styles/components.css";
-import "./assets/styles/responsive.css";
 import "./assets/styles/app.css";
+import "./assets/styles/responsive.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <DemoProvider>
-        <AuthProvider>
-          <NotificationProvider>
-            <App />
-          </NotificationProvider>
-        </AuthProvider>
-      </DemoProvider>
-    </BrowserRouter>
-  </React.StrictMode>
+    <React.StrictMode>
+        <BrowserRouter>
+            <AuthProvider>
+                <DemoProvider>
+                    <NotificationProvider>
+                        <App />
+                    </NotificationProvider>
+                </DemoProvider>
+            </AuthProvider>
+        </BrowserRouter>
+    </React.StrictMode>
 );
