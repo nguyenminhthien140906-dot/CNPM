@@ -291,25 +291,19 @@ CNPM/
 │   └── CollabSphere.sln
 │
 ├── frontend/
-│   ├── public/
-│   ├── src/
-│   │   ├── assets/
-│   │   ├── components/
-│   │   ├── contexts/
-│   │   ├── hooks/
-│   │   ├── pages/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   └── utils/
-│   ├── package.json
-│   └── README.md
-│
-└── figma/
-    ├── assets/
-    ├── design-system/
-    ├── prototypes/
-    └── wireframes/
-```
+   ├── public/
+   ├── src/
+   │   ├── assets/
+   │   ├── components/
+   │   ├── contexts/
+   │   ├── hooks/
+   │   ├── pages/
+   │   ├── routes/
+   │   ├── services/
+   │   └── utils/
+   ├── package.json
+   └── README.md
+
 
 ### 7.1. Vai trò từng thư mục
 
