@@ -450,6 +450,7 @@ Backend ASP.NET gọi dịch vụ Flask AI tại `http://127.0.0.1:5001/api/chat
 cd ".\CNPM-main\backend\ai-agent"
 
 python -m venv .venv
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\.venv\Scripts\Activate.ps1
 
 pip install Flask flask-cors Flask-SQLAlchemy PyMySQL python-dotenv cryptography
@@ -457,7 +458,7 @@ pip install Flask flask-cors Flask-SQLAlchemy PyMySQL python-dotenv cryptography
 $env:DB_HOST = "localhost"
 $env:DB_PORT = "3306"
 $env:DB_USER = "root"
-$env:DB_PASSWORD = "MAT_KHAU_ROOT"
+$env:DB_PASSWORD = "036207003262"
 $env:DB_NAME = "collabsphere"
 
 python run.py
