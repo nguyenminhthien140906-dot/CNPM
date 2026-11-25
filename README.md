@@ -427,7 +427,7 @@ dotnet run --no-launch-profile --urls "http://localhost:5000"
 
 - Nếu `cd` báo `Cannot find path`, thư mục không đúng. Có thể có thêm một lớp `CNPM-main\CNPM-main`.
 - Nếu dán xong không tự chạy, bấm **Enter** thêm một lần.
-- Lần đầu chạy mất khoảng 10 đến 30 giây (build, rồi chạy migration và seed).
+- Lần đầu chạy mất khoảng 10 đến 30 giây (build, rồi chạy migration và seed). 
 
 ### Kết quả đúng
 
