@@ -408,7 +408,7 @@ Trình duyệt ──► Frontend (Vite :5173) ──proxy /api, /hubs──► 
 Dùng terminal Visual Studio (Developer PowerShell) hoặc PowerShell thường:
 
 ```powershell
-cd "C:\Users\Duy\Downloads\CNPM-main\backend\CollabSphere.API"
+cd ".\CNPM-main\backend\CollabSphere.API"
 
 $env:ASPNETCORE_ENVIRONMENT = "Development"
 $env:ConnectionStrings__DefaultConnection = "Server=localhost;Port=3306;Database=collabsphere;User=root;Password=036207003262;"
