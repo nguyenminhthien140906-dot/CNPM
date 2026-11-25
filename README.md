@@ -403,7 +403,7 @@ Trình duyệt ──► Frontend (Vite :5173) ──proxy /api, /hubs──► 
 
 ### 6.1. Chạy Backend API
 
-Mở Terminal PowerShell thứ nhất, di chuyển tới thư mục chứa repository. Nếu đường dẫn có dấu cách, đặt trong dấu ngoặc kép, ví dụ `cd "C:\Users\Ten\Downloads\CNPM-main (13)\CNPM-main\backend\CollabSphere.API"`. Sau đó thực hiện lần lượt:
+Mở Terminal PowerShell thứ nhất, di chuyển tới thư mục chứa repository. Nếu đường dẫn có dấu cách, đặt trong dấu ngoặc kép, ví dụ `cd "C:\Users\Ten\Downloads\CNPM-main \CNPM-main\backend\CollabSphere.API"`. Sau đó thực hiện lần lượt:
 
 ```powershell
 cd CNPM-main\backend\CollabSphere.API
