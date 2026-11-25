@@ -440,6 +440,40 @@ Now listening on: http://localhost:5000
 ```
 
 **Giữ terminal này mở.** Đóng là backend tắt và web lại báo HTTP 500.
+Backend ASP.NET gọi dịch vụ Flask AI tại `http://127.0.0.1:5001/api/chat`. Dịch vụ này nằm trong `backend/ai-agent` và **phải chạy riêng** bằng Python. Nếu không chạy, trang Trợ lý AI báo `Không thể kết nối đến Flask AI`.
+
+### Yêu cầu
+
+- Python 3 (kiểm tra bằng `python --version`)
+- MySQL đang chạy và đã có database `collabsphere`
+- Backend ASP.NET đang chạy ở terminal khác
+
+### Các bước
+
+Mở một terminal mới (không đóng terminal backend và frontend):
+
+```powershell
+cd "C:\Users\Duy\Downloads\CNPM-main (15)\CNPM-main\backend\ai-agent"
+
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+
+pip install Flask flask-cors Flask-SQLAlchemy PyMySQL python-dotenv cryptography
+
+$env:DB_HOST = "localhost"
+$env:DB_PORT = "3306"
+$env:DB_USER = "root"
+$env:DB_PASSWORD = "MAT_KHAU_ROOT"
+$env:DB_NAME = "collabsphere"
+
+python run.py
+```
+
+Kết quả đúng:
+
+```
+* Running on http://127.0.0.1:5001
+```
 ### 6.2. Chạy Frontend
 
 Mở **Terminal PowerShell thứ hai** tại thư mục chứa repository và chạy:
