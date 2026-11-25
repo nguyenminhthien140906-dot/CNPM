@@ -442,15 +442,9 @@ Now listening on: http://localhost:5000
 **Giữ terminal này mở.** Đóng là backend tắt và web lại báo HTTP 500.
 Backend ASP.NET gọi dịch vụ Flask AI tại `http://127.0.0.1:5001/api/chat`. Dịch vụ này nằm trong `backend/ai-agent` và **phải chạy riêng** bằng Python. Nếu không chạy, trang Trợ lý AI báo `Không thể kết nối đến Flask AI`.
 
-### Yêu cầu
 
-- Python 3 (kiểm tra bằng `python --version`)
-- MySQL đang chạy và đã có database `collabsphere`
-- Backend ASP.NET đang chạy ở terminal khác
 
-### Các bước
-
-Mở một terminal mới (không đóng terminal backend và frontend):
+**### Mở một terminal mới (không đóng terminal backend và frontend):**
 
 ```powershell
 cd ".\CNPM-main\backend\ai-agent"
