@@ -403,55 +403,43 @@ Trình duyệt ──► Frontend (Vite :5173) ──proxy /api, /hubs──► 
 
 ### 6.1. Chạy Backend API
 
-Mở Terminal PowerShell thứ nhất, di chuyển tới thư mục chứa repository. Nếu đường dẫn có dấu cách, đặt trong dấu ngoặc kép, ví dụ `cd "C:\Users\Ten\Downloads\CNPM-main \CNPM-main\backend\CollabSphere.API"`. Sau đó thực hiện lần lượt:
+## Chạy Backend (ASP.NET Core)
+
+Dùng terminal Visual Studio (Developer PowerShell) hoặc PowerShell thường:
 
 ```powershell
-cd CNPM-main\backend\CollabSphere.API
-
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3306;Database=collabsphere;User=root;Password=MAT_KHAU_MYSQL;"
-
-dotnet user-secrets set "Jwt:Key" ([Convert]::ToBase64String((1..48 | ForEach-Object { Get-Random -Maximum 256 })))
-
-dotnet user-secrets set "Seed:DefaultPassword" "Collab@12345"
+cd "C:\Users\Duy\Downloads\CNPM-main\backend\CollabSphere.API"
 
 $env:ASPNETCORE_ENVIRONMENT = "Development"
+$env:ConnectionStrings__DefaultConnection = "Server=localhost;Port=3306;Database=collabsphere;User=root;Password=036207003262;"
+$env:Seed__DefaultPassword = "Collab@12345"
 
-dotnet run --urls "http://localhost:5000"
+$key = New-Object byte[] 32
+$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+$rng.GetBytes($key)
+$rng.Dispose()
+$env:Jwt__Key = [Convert]::ToBase64String($key)
+
+dotnet run --no-launch-profile --urls "http://localhost:5000"
 ```
 
-**Cần thay đổi trước khi chạy:**
+### Lưu ý
 
-- Thay `MAT_KHAU_MYSQL` bằng **mật khẩu thật** của tài khoản MySQL (không để nguyên chữ giữ chỗ). Nếu tài khoản `root` không có mật khẩu, để trống phần sau `Password=`, ví dụ `Password=;`.
-- Các lệnh `user-secrets` lưu cấu hình bí mật cho project .NET ở máy hiện tại, không ghi mật khẩu vào source code. Chỉ cần chạy **một lần** trên mỗi máy. Muốn xem lại các giá trị đã lưu: `dotnet user-secrets list`.
-- Lệnh tạo `Jwt:Key` sinh khóa ngẫu nhiên. Khi chạy lại lệnh này, khóa JWT sẽ thay đổi; các token được phát hành bằng khóa cũ sẽ không còn xác thực được.
-- `Seed:DefaultPassword` là mật khẩu chung cho các tài khoản mẫu (xem mục 6.3.1). Nếu không đặt, hệ thống sẽ bỏ qua bước seed và không có tài khoản để đăng nhập.
-- `$env:ASPNETCORE_ENVIRONMENT = "Development"` chỉ có hiệu lực trong Terminal hiện tại. Mở Terminal mới thì phải đặt lại.
-- **Hãy chạy bằng `dotnet run` như trên, không dùng nút chạy (F5) của Visual Studio**, vì Visual Studio có thể chọn cổng khác 5000 khiến Frontend không gọi được API.
+- Nếu `cd` báo `Cannot find path`, thư mục không đúng. Có thể có thêm một lớp `CNPM-main\CNPM-main`.
+- Nếu dán xong không tự chạy, bấm **Enter** thêm một lần.
+- Lần đầu chạy mất khoảng 10 đến 30 giây (build, rồi chạy migration và seed).
 
-**Backend chạy thành công** khi Terminal hiện các dòng sau và giữ nguyên, không thoát:
+### Kết quả đúng
 
-```text
-[Migration] Applied: 001_identity_academic
-...
+```
+[Migration] Applied: ...
 [Migration] Hoàn tất.
-[Seed] OK: 001_seed_roles.sql
-...
+[Seed] OK: ...
 [Seed] Hoàn tất.
 Now listening on: http://localhost:5000
 ```
 
-Từ lần chạy thứ hai, các dòng migration sẽ hiện `Skipped`. Lần chạy đầu có thể mất từ vài chục giây đến một hai phút vì phải build và tạo bảng.
-
-Nếu Terminal dừng với lỗi đỏ (ví dụ `Unable to connect to any of the specified MySQL hosts`), xem [mục 13](#13-một-số-lỗi-thường-gặp).
-
-Kiểm tra bằng trình duyệt:
-
-| Địa chỉ | Mô tả |
-|---|---|
-| `http://localhost:5000/api/system/status` | Trạng thái API và kết nối database |
-| `http://localhost:5000/api/system/database-check` | Kiểm tra khả năng truy cập database |
-| `http://localhost:5000/openapi/v1.json` | Tài liệu OpenAPI (chỉ ở môi trường Development) |
-
+**Giữ terminal này mở.** Đóng là backend tắt và web lại báo HTTP 500.
 ### 6.2. Chạy Frontend
 
 Mở **Terminal PowerShell thứ hai** tại thư mục chứa repository và chạy:
