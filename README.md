@@ -444,7 +444,7 @@ Backend ASP.NET gọi dịch vụ Flask AI tại `http://127.0.0.1:5001/api/chat
 
 
 
-**### Mở một terminal mới (không đóng terminal backend và frontend):**
+### Mở một terminal mới (không đóng terminal backend và frontend)
 
 ```powershell
 cd ".\CNPM-main\backend\ai-agent"
