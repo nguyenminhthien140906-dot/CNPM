@@ -453,7 +453,7 @@ Backend ASP.NET gọi dịch vụ Flask AI tại `http://127.0.0.1:5001/api/chat
 Mở một terminal mới (không đóng terminal backend và frontend):
 
 ```powershell
-cd "C:\Users\Duy\Downloads\CNPM-main (15)\CNPM-main\backend\ai-agent"
+cd ".\CNPM-main\backend\ai-agent"
 
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
