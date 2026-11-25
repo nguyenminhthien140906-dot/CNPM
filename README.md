@@ -14,7 +14,7 @@ Hệ thống hướng đến việc tập trung các hoạt động quản lý h
 3. [Cấu trúc repository](#3-cấu-trúc-repository)
 4. [Yêu cầu môi trường](#4-yêu-cầu-môi-trường)
 5. [Cài đặt cơ sở dữ liệu MySQL](#5-cài-đặt-cơ-sở-dữ-liệu-mysql)
-6. [Cách chạy dự án (Backend và Frontend)](#6-cách-chạy-dự-án-backend-và-frontend)
+6. [Cách chạy dự án ](#6-cách-chạy-dự-án-backend-và-frontend)
    - [6.3. Đăng nhập và tài khoản](#63-đăng-nhập-và-tài-khoản)
 7. [Kết nối Frontend – Backend](#7-kết-nối-frontend--backend)
 8. [Các chức năng chính (FE01–FE12)](#8-các-chức-năng-chính)
