@@ -8,7 +8,6 @@ VALUES
 ON DUPLICATE KEY UPDATE
     role_name = VALUES(role_name),
     description = VALUES(description);
-
 -- Kiem tra
 SELECT role_id, role_code, role_name
 FROM roles
